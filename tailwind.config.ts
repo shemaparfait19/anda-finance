@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['"PT Sans"', 'sans-serif'],
-        headline: ['"Space Grotesk"', 'sans-serif'],
+        body: ['"Avenir Next World"', 'sans-serif'],
+        headline: ['"Avenir Next World"', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
