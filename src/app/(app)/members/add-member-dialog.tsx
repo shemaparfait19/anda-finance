@@ -1,0 +1,114 @@
+
+'use client';
+
+import { useState } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
+import { PlusCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { addMember } from './actions';
+import { useToast } from '@/hooks/use-toast';
+
+const initialState = {
+  message: '',
+};
+
+function SubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending}>
+            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Member
+        </Button>
+    )
+}
+
+export default function AddMemberDialog() {
+  const [open, setOpen] = useState(false);
+  const [state, formAction] = useFormState(addMember, initialState);
+  const { toast } = useToast();
+
+  if (state.message) {
+    if (state.message === "Member added successfully") {
+        toast({
+            title: "Success",
+            description: state.message,
+        });
+        // This is a bit of a hack to reset the form state message
+        // so the toast doesn't re-appear on every render.
+        state.message = "";
+        setOpen(false);
+    } else if (!state.fields) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: state.message,
+        });
+        state.message = "";
+    }
+  }
+
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="h-8 gap-1">
+          <PlusCircle className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+            Add Member
+          </span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Add New Member</DialogTitle>
+          <DialogDescription>
+            Fill in the details below to add a new member to the group.
+          </DialogDescription>
+        </DialogHeader>
+        <form action={formAction} className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Name
+            </Label>
+            <div className='col-span-3'>
+              <Input id="name" name="name" className="w-full" />
+              {state.fields?.name && <p className="text-sm text-destructive mt-1">{state.fields.name}</p>}
+            </div>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="memberId" className="text-right">
+              Member ID
+            </Label>
+            <div className='col-span-3'>
+              <Input id="memberId" name="memberId" className="w-full" />
+               {state.fields?.memberId && <p className="text-sm text-destructive mt-1">{state.fields.memberId}</p>}
+            </div>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="joinDate" className="text-right">
+              Join Date
+            </Label>
+            <div className='col-span-3'>
+              <Input id="joinDate" name="joinDate" type="date" className="w-full" />
+              {state.fields?.joinDate && <p className="text-sm text-destructive mt-1">{state.fields.joinDate}</p>}
+            </div>
+          </div>
+          <DialogFooter>
+            <SubmitButton />
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

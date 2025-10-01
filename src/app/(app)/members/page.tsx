@@ -1,3 +1,4 @@
+
 import {
   File,
   ListFilter,
@@ -43,6 +44,7 @@ import {
 
 import { members } from '@/lib/data';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import AddMemberDialog from './add-member-dialog';
 
 export default function MembersPage() {
   return (
@@ -78,12 +80,7 @@ export default function MembersPage() {
               Export
             </span>
           </Button>
-          <Button size="sm" className="h-8 gap-1">
-            <PlusCircle className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Add Member
-            </span>
-          </Button>
+          <AddMemberDialog />
         </div>
       </div>
       <TabsContent value="all">
