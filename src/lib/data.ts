@@ -1,0 +1,200 @@
+import type { Member, Transaction, SavingsAccount, Loan, CashbookEntry } from "./types";
+
+export const members: Member[] = [
+  {
+    id: "1",
+    name: "Alice Johnson",
+    memberId: "MEM001",
+    joinDate: "2023-01-15",
+    savingsBalance: 5200.5,
+    loanBalance: 15000.0,
+    status: "Active",
+    avatarId: "avatar1",
+  },
+  {
+    id: "2",
+    name: "Bob Williams",
+    memberId: "MEM002",
+    joinDate: "2023-02-20",
+    savingsBalance: 7800.0,
+    loanBalance: 0.0,
+    status: "Active",
+    avatarId: "avatar2",
+  },
+  {
+    id: "3",
+    name: "Charlie Brown",
+    memberId: "MEM003",
+    joinDate: "2023-03-10",
+    savingsBalance: 2100.75,
+    loanBalance: 5000.0,
+    status: "Active",
+    avatarId: "avatar3",
+  },
+  {
+    id: "4",
+    name: "Diana Miller",
+    memberId: "MEM004",
+    joinDate: "2023-04-05",
+    savingsBalance: 10500.0,
+    loanBalance: 25000.0,
+    status: "Active",
+    avatarId: "avatar4",
+  },
+  {
+    id: "5",
+    name: "Ethan Davis",
+    memberId: "MEM005",
+    joinDate: "2023-05-25",
+    savingsBalance: 320.0,
+    loanBalance: 0.0,
+    status: "Inactive",
+    avatarId: "avatar5",
+  },
+];
+
+export const transactions: Transaction[] = [
+  {
+    id: "txn1",
+    member: { name: "Alice Johnson", avatarId: "avatar1" },
+    type: "Deposit",
+    amount: 500.0,
+    date: "2024-07-28",
+    status: "Completed",
+  },
+  {
+    id: "txn2",
+    member: { name: "Charlie Brown", avatarId: "avatar3" },
+    type: "Loan Repayment",
+    amount: 1200.0,
+    date: "2024-07-27",
+    status: "Completed",
+  },
+  {
+    id: "txn3",
+    member: { name: "Diana Miller", avatarId: "avatar4" },
+    type: "Loan Disbursement",
+    amount: 10000.0,
+    date: "2024-07-26",
+    status: "Completed",
+  },
+  {
+    id: "txn4",
+    member: { name: "Bob Williams", avatarId: "avatar2" },
+    type: "Deposit",
+    amount: 1000.0,
+    date: "2024-07-25",
+    status: "Completed",
+  },
+  {
+    id: "txn5",
+    member: { name: "Alice Johnson", avatarId: "avatar1" },
+    type: "Withdrawal",
+    amount: 200.0,
+    date: "2024-07-24",
+    status: "Completed",
+  },
+];
+
+export const savingsAccounts: SavingsAccount[] = [
+  {
+    id: "sav1",
+    memberId: "1",
+    memberName: "Alice Johnson",
+    accountNumber: "SAV001",
+    type: "Compulsory",
+    balance: 5200.5,
+    openDate: "2023-01-15",
+  },
+  {
+    id: "sav2",
+    memberId: "2",
+    memberName: "Bob Williams",
+    accountNumber: "SAV002",
+    type: "Voluntary",
+    balance: 7800.0,
+    openDate: "2023-02-20",
+  },
+  {
+    id: "sav3",
+    memberId: "3",
+    memberName: "Charlie Brown",
+    accountNumber: "SAV003",
+    type: "Compulsory",
+    balance: 2100.75,
+    openDate: "2023-03-10",
+  },
+];
+
+export const loans: Loan[] = [
+  {
+    id: "loan1",
+    memberId: "1",
+    memberName: "Alice Johnson",
+    loanId: "LN001",
+    principal: 20000.0,
+    balance: 15000.0,
+    interestRate: 10,
+    issueDate: "2024-03-01",
+    dueDate: "2024-08-01",
+    status: "Active",
+  },
+  {
+    id: "loan2",
+    memberId: "3",
+    memberName: "Charlie Brown",
+    loanId: "LN002",
+    principal: 5000.0,
+    balance: 5000.0,
+    interestRate: 12,
+    issueDate: "2024-06-15",
+    dueDate: "2024-09-15",
+    status: "Active",
+  },
+  {
+    id: "loan3",
+    memberId: "4",
+    memberName: "Diana Miller",
+    loanId: "LN003",
+    principal: 30000.0,
+    balance: 25000.0,
+    interestRate: 8,
+    issueDate: "2024-01-20",
+    dueDate: "2024-07-20",
+    status: "Overdue",
+  },
+  {
+    id: "loan4",
+    memberId: "5",
+    memberName: "Ethan Davis",
+    loanId: "LN004",
+    principal: 10000.0,
+    balance: 0,
+    interestRate: 10,
+    issueDate: "2023-09-01",
+    dueDate: "2024-03-01",
+    status: "Paid",
+  },
+];
+
+export const income: CashbookEntry[] = [
+    { id: 'inc1', date: '2024-07-01', description: 'Loan Interest - Alice Johnson', category: 'Loan Interest', amount: 150.00 },
+    { id: 'inc2', date: '2024-07-05', description: 'Late Payment Fees', category: 'Fees', amount: 50.00 },
+    { id: 'inc3', date: '2024-07-10', description: 'Group Contribution', category: 'Contributions', amount: 1000.00 },
+];
+
+export const expenses: CashbookEntry[] = [
+    { id: 'exp1', date: '2024-07-02', description: 'Office Stationery', category: 'Office Supplies', amount: 75.50 },
+    { id: 'exp2', date: '2024-07-15', description: 'Bank Charges', category: 'Bank Fees', amount: 25.00 },
+    { id: 'exp3', date: '2024-07-20', description: 'Software Subscription', category: 'IT', amount: 99.99 },
+];
+
+export const chartData = [
+  { month: "Jan", savings: 4000, loans: 2400 },
+  { month: "Feb", savings: 3000, loans: 1398 },
+  { month: "Mar", savings: 2000, loans: 9800 },
+  { month: "Apr", savings: 2780, loans: 3908 },
+  { month: "May", savings: 1890, loans: 4800 },
+  { month: "Jun", savings: 2390, loans: 3800 },
+  { month: "Jul", savings: 3490, loans: 4300 },
+];
