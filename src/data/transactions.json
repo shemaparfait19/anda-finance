@@ -1,6 +1,17 @@
 [
   {
     "member": {
+      "name": "Anathalie Mukamana",
+      "avatarId": "avatar1"
+    },
+    "type": "Deposit",
+    "amount": 4000,
+    "date": "2025-10-01",
+    "id": "TXN1759331469659",
+    "status": "Completed"
+  },
+  {
+    "member": {
       "name": "Jean Bosco Nsengiyumva",
       "avatarId": "avatar2"
     },

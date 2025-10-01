@@ -14,8 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PlusCircle } from 'lucide-react';
 import { getInvestments } from '@/lib/data-service';
+import AddInvestmentDialog from './add-investment-dialog';
 
 export default async function InvestmentsPage() {
     const investments = await getInvestments();
@@ -72,12 +72,7 @@ export default async function InvestmentsPage() {
                     Track the performance of your group's investments.
                 </CardDescription>
             </div>
-            <Button size="sm" className="h-8 gap-1">
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Add Investment
-                </span>
-            </Button>
+            <AddInvestmentDialog />
         </CardHeader>
         <CardContent>
           <Table>
