@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useActionState } from 'react';
+import { useState, useEffect } from 'react';
+import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,10 @@ export default function AddMemberDialog() {
           description: state.message,
         });
         setOpen(false);
+        // Reset form state on success
+        state.message = '';
+        state.success = false;
+        state.fields = {};
       } else if (state.fields) {
         // Validation errors are displayed next to fields, no toast needed.
       } else {
@@ -61,6 +66,15 @@ export default function AddMemberDialog() {
     }
   }, [state, toast]);
 
+  // Reset form action state when dialog is closed
+  useEffect(() => {
+      if (!open) {
+          state.message = '';
+          state.success = false;
+          state.fields = {};
+      }
+  },[open, state]);
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -73,13 +87,13 @@ export default function AddMemberDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Add New Member</DialogTitle>
-          <DialogDescription>
-            Fill in the details below to add a new member to the group.
-          </DialogDescription>
-        </DialogHeader>
         <form action={formAction}>
+            <DialogHeader>
+            <DialogTitle>Add New Member</DialogTitle>
+            <DialogDescription>
+                Fill in the details below to add a new member to the group.
+            </DialogDescription>
+            </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="name" className="text-right">

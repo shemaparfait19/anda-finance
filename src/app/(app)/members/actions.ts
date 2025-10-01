@@ -2,7 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { addMember as addMemberToDb } from '@/lib/data-service';
+import { addMember as addMemberToDb, updateMember as updateMemberInDb } from '@/lib/data-service';
 import { revalidatePath } from 'next/cache';
 import type { Member } from '@/lib/types';
 
@@ -12,6 +12,11 @@ const AddMemberFormSchema = z.object({
     memberId: z.string().min(1, { message: 'Member ID is required.' }),
     joinDate: z.string().min(1, { message: 'Join date is required.' }),
 });
+
+const EditMemberFormSchema = AddMemberFormSchema.extend({
+    id: z.string(),
+    status: z.enum(['Active', 'Inactive'])
+})
 
 type FormState = {
     message: string;
@@ -54,7 +59,7 @@ export async function addMember(
     revalidatePath('/members');
 
     return {
-        message: "Member added successfully",
+        message: "Member added successfully.",
         success: true,
     }
 
@@ -66,3 +71,42 @@ export async function addMember(
     }
   }
 }
+
+export async function editMember(
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+    try {
+        const rawData = Object.fromEntries(formData);
+        const parsed = EditMemberFormSchema.safeParse(rawData);
+
+        if (!parsed.success) {
+            const fields: Record<string, string> = {};
+             for (const key in parsed.error.format()) {
+                if (key !== "_errors") {
+                    fields[key] = (parsed.error.format() as any)[key]?._errors.join(", ");
+                }
+            }
+            return { message: 'Invalid form data.', fields, success: false };
+        }
+
+        const { id, ...updates } = parsed.data;
+        await updateMemberInDb(id, updates);
+
+        return { message: 'Member updated successfully.', success: true };
+    } catch (e) {
+        const error = e as Error;
+        return { message: error.message || 'An unexpected error occurred.', success: false };
+    }
+}
+
+export async function deactivateMember(memberId: string): Promise<FormState> {
+    try {
+        await updateMemberInDb(memberId, { status: 'Inactive' });
+        return { message: 'Member has been deactivated.', success: true };
+    } catch (e) {
+        const error = e as Error;
+        return { message: error.message || 'An unexpected error occurred.', success: false };
+    }
+}
+
