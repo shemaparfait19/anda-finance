@@ -1,13 +1,55 @@
-
 {
-    "income": [
-        { "id": "inc1", "date": "2024-07-01", "description": "Loan Interest - Anathalie Mukamana", "category": "Loan Interest", "amount": 1500 },
-        { "id": "inc2", "date": "2024-07-05", "description": "Late Payment Fees", "category": "Fees", "amount": 5000 },
-        { "id": "inc3", "date": "2024-07-10", "description": "Group Contribution", "category": "Contributions", "amount": 100000 }
-    ],
-    "expenses": [
-        { "id": "exp1", "date": "2024-07-02", "description": "Office Stationery", "category": "Office Supplies", "amount": 7600 },
-        { "id": "exp2", "date": "2024-07-15", "description": "Bank Charges", "category": "Bank Fees", "amount": 2500 },
-        { "id": "exp3", "date": "2024-07-20", "description": "Software Subscription", "category": "IT", "amount": 10000 }
-    ]
+  "income": [
+    {
+      "id": "inc1",
+      "date": "2024-07-01",
+      "description": "Loan Interest - Anathalie Mukamana",
+      "category": "Loan Interest",
+      "amount": 1500
+    },
+    {
+      "id": "inc2",
+      "date": "2024-07-05",
+      "description": "Late Payment Fees",
+      "category": "Fees",
+      "amount": 5000
+    },
+    {
+      "id": "inc3",
+      "date": "2024-07-10",
+      "description": "Group Contribution",
+      "category": "Contributions",
+      "amount": 100000
+    },
+    {
+      "date": "2025-10-01",
+      "description": "kasdjlkajsd",
+      "category": "kkasjd",
+      "amount": 40000,
+      "id": "inc1759331779464"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "exp1",
+      "date": "2024-07-02",
+      "description": "Office Stationery",
+      "category": "Office Supplies",
+      "amount": 7600
+    },
+    {
+      "id": "exp2",
+      "date": "2024-07-15",
+      "description": "Bank Charges",
+      "category": "Bank Fees",
+      "amount": 2500
+    },
+    {
+      "id": "exp3",
+      "date": "2024-07-20",
+      "description": "Software Subscription",
+      "category": "IT",
+      "amount": 10000
+    }
+  ]
 }
