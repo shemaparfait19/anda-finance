@@ -60,3 +60,24 @@ export type NavLink = {
   icon: LucideIcon;
   active?: boolean;
 };
+
+export type Investment = {
+  id: string;
+  name: string;
+  type: 'Stock' | 'Real Estate' | 'Bond' | 'Agribusiness';
+  amountInvested: number;
+  currentValue: number;
+  purchaseDate: string;
+  returnOnInvestment: number;
+};
+
+export type AuditLog = {
+  id: string;
+  timestamp: string;
+  user: {
+    name: string;
+    avatarId: string;
+  };
+  action: string;
+  details: string;
+};
