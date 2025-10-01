@@ -83,6 +83,39 @@ export async function getSavingsAccounts(): Promise<SavingsAccount[]> {
     return readData<SavingsAccount[]>('savings.json');
 }
 
+export async function updateSavingsAccount(memberId: string, amount: number): Promise<SavingsAccount> {
+    const accounts = await getSavingsAccounts();
+    const accountIndex = accounts.findIndex(a => a.memberId === memberId);
+
+    if (accountIndex === -1) {
+        // If no account, create one. This is a simple approach for the demo.
+        const members = await getMembers();
+        const member = members.find(m => m.id === memberId);
+        if (!member) throw new Error("Member not found for creating savings account");
+        
+        const newAccount: SavingsAccount = {
+            id: `SAV${Date.now()}`,
+            memberId: member.id,
+            memberName: member.name,
+            accountNumber: `SAV${member.memberId}`,
+            type: 'Voluntary', // Default to voluntary
+            balance: amount,
+            openDate: new Date().toISOString().split('T')[0],
+        };
+        accounts.push(newAccount);
+        await writeData('savings.json', accounts);
+        revalidatePath('/savings');
+        return newAccount;
+    } else {
+        const updatedAccount = { ...accounts[accountIndex], balance: accounts[accountIndex].balance + amount };
+        accounts[accountIndex] = updatedAccount;
+        await writeData('savings.json', accounts);
+        revalidatePath('/savings');
+        return updatedAccount;
+    }
+}
+
+
 // Loans
 export async function getLoans(): Promise<Loan[]> {
     return readData<Loan[]>('loans.json');

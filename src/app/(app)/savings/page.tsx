@@ -1,6 +1,7 @@
 import {
   ArrowDownCircle,
-  ArrowUpCircle
+  ArrowUpCircle,
+  MoreHorizontal,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -27,11 +28,22 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-import { getSavingsAccounts } from '@/lib/data-service';
+import { getSavingsAccounts, getMembers } from '@/lib/data-service';
+import NewDepositDialog from './new-deposit-dialog';
+import NewWithdrawalDialog from './new-withdrawal-dialog';
 
 export default async function SavingsPage() {
     const savingsAccounts = await getSavingsAccounts();
+    const members = await getMembers();
+
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
@@ -41,18 +53,8 @@ export default async function SavingsPage() {
           <TabsTrigger value="voluntary">Voluntary</TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
-          <Button size="sm" variant="outline" className="h-8 gap-1">
-            <ArrowUpCircle className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              New Withdrawal
-            </span>
-          </Button>
-          <Button size="sm" className="h-8 gap-1">
-            <ArrowDownCircle className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              New Deposit
-            </span>
-          </Button>
+          <NewWithdrawalDialog members={members} />
+          <NewDepositDialog members={members} />
         </div>
       </div>
       <TabsContent value="all">
@@ -95,8 +97,25 @@ export default async function SavingsPage() {
                     <TableCell className="text-right">
                       RWF {account.balance.toLocaleString()}
                     </TableCell>
-                    <TableCell>
-                      {/* Actions Dropdown Here */}
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            aria-haspopup="true"
+                            size="icon"
+                            variant="ghost"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>View Statement</DropdownMenuItem>
+                          <DropdownMenuItem>Make Deposit</DropdownMenuItem>
+                           <DropdownMenuItem>Make Withdrawal</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
