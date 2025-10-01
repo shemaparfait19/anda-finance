@@ -172,6 +172,26 @@ export async function addCashbookEntry(type: 'income' | 'expenses', entry: Omit<
     return newEntry;
 }
 
+export async function updateCashbookEntry(type: 'income' | 'expenses', id: string, updates: Partial<Omit<CashbookEntry, 'id'>>) {
+    const cashbook = await getCashbook();
+    const entryIndex = cashbook[type].findIndex(e => e.id === id);
+    if (entryIndex === -1) throw new Error('Entry not found');
+    
+    const updatedEntry = { ...cashbook[type][entryIndex], ...updates };
+    cashbook[type][entryIndex] = updatedEntry;
+    await writeData('cashbook.json', cashbook);
+    revalidatePath('/accounting');
+    return updatedEntry;
+}
+
+export async function deleteCashbookEntry(type: 'income' | 'expenses', id: string) {
+    const cashbook = await getCashbook();
+    cashbook[type] = cashbook[type].filter(e => e.id !== id);
+    await writeData('cashbook.json', cashbook);
+    revalidatePath('/accounting');
+}
+
+
 // Investments
 export async function getInvestments(): Promise<Investment[]> {
     return readData<Investment[]>('investments.json');

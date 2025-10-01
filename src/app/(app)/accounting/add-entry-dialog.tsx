@@ -25,8 +25,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { addCashbookEntry } from './actions';
+import { addCashbookEntry, updateCashbookEntry } from './actions';
 import { useToast } from '@/hooks/use-toast';
+import type { CashbookEntry } from '@/lib/types';
+
 
 const initialState = {
   message: '',
@@ -34,19 +36,28 @@ const initialState = {
   success: false,
 };
 
-function SubmitButton() {
+function SubmitButton({ isEditMode }: { isEditMode: boolean }) {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" disabled={pending}>
             {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Entry
+            {isEditMode ? 'Save Changes' : 'Save Entry'}
         </Button>
     )
 }
 
-export default function AddEntryDialog() {
+interface AddEntryDialogProps {
+    entry?: CashbookEntry;
+    children?: React.ReactNode;
+}
+
+export default function AddEntryDialog({ entry, children }: AddEntryDialogProps) {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useActionState(addCashbookEntry, initialState);
+  const isEditMode = !!entry;
+
+  const action = isEditMode ? updateCashbookEntry : addCashbookEntry;
+  const [state, formAction] = useActionState(action, initialState);
+
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -76,27 +87,34 @@ export default function AddEntryDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-8 gap-1">
-          <PlusCircle className="h-3.5 w-3.5" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Add Entry
-          </span>
-        </Button>
-      </DialogTrigger>
+        {children ? (
+             <DialogTrigger asChild>{children}</DialogTrigger>
+        ) : (
+            <DialogTrigger asChild>
+                <Button size="sm" className="h-8 gap-1">
+                <PlusCircle className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Add Entry
+                </span>
+                </Button>
+            </DialogTrigger>
+        )}
+     
       <DialogContent className="sm:max-w-lg">
         <form ref={formRef} action={formAction}>
+           {isEditMode && <input type="hidden" name="id" value={entry.id} />}
+           {isEditMode && <input type="hidden" name="entryType" value={entry.amount > 0 ? 'income' : 'expenses'} />}
           <DialogHeader>
-            <DialogTitle>Add New Cashbook Entry</DialogTitle>
+            <DialogTitle>{isEditMode ? 'Edit' : 'Add New'} Cashbook Entry</DialogTitle>
             <DialogDescription>
-              Record a new income or expense transaction.
+              {isEditMode ? 'Update the details of this transaction.' : 'Record a new income or expense transaction.'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                     <Label htmlFor="type">Entry Type *</Label>
-                    <Select name="type">
+                    <Select name="type" defaultValue={isEditMode ? (entry.category === 'Loan Interest' || entry.category === 'Fees' || entry.category === 'Contributions' ? 'income' : 'expenses') : undefined}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select type" />
                         </SelectTrigger>
@@ -109,24 +127,24 @@ export default function AddEntryDialog() {
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="date">Date *</Label>
-                    <Input id="date" name="date" type="date" />
+                    <Input id="date" name="date" type="date" defaultValue={entry?.date} />
                     {state.fields?.date && <p className="text-sm text-destructive">{state.fields.date}</p>}
                 </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Description *</Label>
-              <Textarea id="description" name="description" placeholder="e.g., Member contributions for July" />
+              <Textarea id="description" name="description" placeholder="e.g., Member contributions for July" defaultValue={entry?.description} />
               {state.fields?.description && <p className="text-sm text-destructive">{state.fields.description}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                     <Label htmlFor="category">Category *</Label>
-                    <Input id="category" name="category" placeholder="e.g., Contributions, Office Supplies" />
+                    <Input id="category" name="category" placeholder="e.g., Contributions, Office Supplies" defaultValue={entry?.category}/>
                     {state.fields?.category && <p className="text-sm text-destructive">{state.fields.category}</p>}
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="amount">Amount (RWF) *</Label>
-                    <Input id="amount" name="amount" type="number" step="1" placeholder="e.g., 150000" />
+                    <Input id="amount" name="amount" type="number" step="1" placeholder="e.g., 150000" defaultValue={entry?.amount}/>
                     {state.fields?.amount && <p className="text-sm text-destructive">{state.fields.amount}</p>}
                 </div>
             </div>
@@ -135,7 +153,7 @@ export default function AddEntryDialog() {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <SubmitButton />
+            <SubmitButton isEditMode={isEditMode} />
           </DialogFooter>
         </form>
       </DialogContent>
