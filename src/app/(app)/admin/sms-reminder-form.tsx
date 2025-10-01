@@ -89,8 +89,8 @@ export default function SmsReminderForm() {
            {state.fields?.configuredReminderSettings && <p className="text-sm text-destructive">{state.fields.configuredReminderSettings}</p>}
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="outstandingBalance">Outstanding Balance ($)</Label>
-          <Input id="outstandingBalance" name="outstandingBalance" type="number" step="0.01" placeholder="e.g., 15000.00" />
+          <Label htmlFor="outstandingBalance">Outstanding Balance (RWF)</Label>
+          <Input id="outstandingBalance" name="outstandingBalance" type="number" step="1" placeholder="e.g., 15000" />
           {state.fields?.outstandingBalance && <p className="text-sm text-destructive">{state.fields.outstandingBalance}</p>}
         </div>
         <SubmitButton />

@@ -111,10 +111,10 @@ export default function LoansPage() {
                       {loan.dueDate}
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-right">
-                      ${loan.principal.toLocaleString()}
+                      RWF {loan.principal.toLocaleString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      ${loan.balance.toLocaleString()}
+                      RWF {loan.balance.toLocaleString()}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>

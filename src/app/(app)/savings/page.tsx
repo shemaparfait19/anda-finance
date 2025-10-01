@@ -105,7 +105,7 @@ export default function SavingsPage() {
                       {account.openDate}
                     </TableCell>
                     <TableCell className="text-right">
-                      ${account.balance.toLocaleString()}
+                      RWF {account.balance.toLocaleString()}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>

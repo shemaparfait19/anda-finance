@@ -138,10 +138,10 @@ export default function MembersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      ${member.savingsBalance.toLocaleString()}
+                      RWF {member.savingsBalance.toLocaleString()}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      ${member.loanBalance.toLocaleString()}
+                      RWF {member.loanBalance.toLocaleString()}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       {member.joinDate}

@@ -23,7 +23,7 @@ export default function SettingsPage() {
                 <Input id="savings-interest-rate" type="number" defaultValue="2" />
             </div>
              <div className="grid gap-2">
-                <Label htmlFor="late-penalty-fee">Late Payment Penalty Fee ($)</Label>
+                <Label htmlFor="late-penalty-fee">Late Payment Penalty Fee (RWF)</Label>
                 <Input id="late-penalty-fee" type="number" defaultValue="50" />
             </div>
              <div className="grid gap-2">

@@ -49,7 +49,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold font-headline">
-                ${totalSavings.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                RWF {totalSavings.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 +20.1% from last month
@@ -65,7 +65,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold font-headline">
-                ${totalLoans.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                RWF {totalLoans.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 +180.1% from last month
@@ -106,12 +106,14 @@ export default function DashboardPage() {
                   Recent transactions from your group.
                 </CardDescription>
               </div>
-              <Button asChild size="sm" className="ml-auto gap-1">
-                <Link href="#">
-                  View All
-                  <ArrowUpRight className="h-4 w-4" />
-                </Link>
-              </Button>
+              <Link href="#" passHref legacyBehavior>
+                <Button asChild size="sm" className="ml-auto gap-1">
+                  <a>
+                    View All
+                    <ArrowUpRight className="h-4 w-4" />
+                  </a>
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent>
               <Table>
@@ -162,7 +164,7 @@ export default function DashboardPage() {
                         {transaction.date}
                       </TableCell>
                       <TableCell className="text-right">
-                        ${transaction.amount.toLocaleString('en-US')}
+                        RWF {transaction.amount.toLocaleString()}
                       </TableCell>
                     </TableRow>
                   )})}

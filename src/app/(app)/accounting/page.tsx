@@ -49,12 +49,12 @@ function CashbookTable({ data, type }: { data: CashbookEntry[], type: 'Income' |
                 <TableCell>{entry.date}</TableCell>
                 <TableCell className="font-medium">{entry.description}</TableCell>
                 <TableCell className='hidden md:table-cell'>{entry.category}</TableCell>
-                <TableCell className="text-right">${entry.amount.toFixed(2)}</TableCell>
+                <TableCell className="text-right">RWF {entry.amount.toLocaleString()}</TableCell>
               </TableRow>
             ))}
             <TableRow className='bg-muted/50 font-bold'>
                 <TableCell colSpan={3}>Total</TableCell>
-                <TableCell className='text-right'>${total.toFixed(2)}</TableCell>
+                <TableCell className='text-right'>RWF {total.toLocaleString()}</TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -74,19 +74,19 @@ export default function AccountingPage() {
             <Card>
                 <CardHeader className="pb-2">
                     <CardDescription>Total Income</CardDescription>
-                    <CardTitle className="text-4xl font-headline text-green-600">${totalIncome.toFixed(2)}</CardTitle>
+                    <CardTitle className="text-4xl font-headline text-green-600">RWF {totalIncome.toLocaleString()}</CardTitle>
                 </CardHeader>
             </Card>
             <Card>
                 <CardHeader className="pb-2">
                     <CardDescription>Total Expenses</CardDescription>
-                    <CardTitle className="text-4xl font-headline text-red-600">${totalExpenses.toFixed(2)}</CardTitle>
+                    <CardTitle className="text-4xl font-headline text-red-600">RWF {totalExpenses.toLocaleString()}</CardTitle>
                 </CardHeader>
             </Card>
             <Card>
                 <CardHeader className="pb-2">
                     <CardDescription>Net Balance</CardDescription>
-                    <CardTitle className={`text-4xl font-headline ${netBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>${netBalance.toFixed(2)}</CardTitle>
+                    <CardTitle className={`text-4xl font-headline ${netBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>RWF {netBalance.toLocaleString()}</CardTitle>
                 </CardHeader>
             </Card>
         </div>
