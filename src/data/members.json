@@ -1,7 +1,13 @@
+
 [
   {
     "id": "1",
     "name": "Anathalie Mukamana",
+    "firstName": "Anathalie",
+    "lastName": "Mukamana",
+    "phoneNumber": "0788888881",
+    "savingsGroup": "Group-A",
+    "memberRole": "Member",
     "memberId": "MEM001",
     "joinDate": "2023-01-15",
     "savingsBalance": 52000,
@@ -12,6 +18,11 @@
   {
     "id": "2",
     "name": "Jean Bosco Nsengiyumva",
+    "firstName": "Jean Bosco",
+    "lastName": "Nsengiyumva",
+    "phoneNumber": "0788888882",
+    "savingsGroup": "Group-A",
+    "memberRole": "Member",
     "memberId": "MEM002",
     "joinDate": "2023-02-20",
     "savingsBalance": 78000,
@@ -22,6 +33,11 @@
   {
     "id": "3",
     "name": "Clementine Uwera",
+    "firstName": "Clementine",
+    "lastName": "Uwera",
+    "phoneNumber": "0788888883",
+    "savingsGroup": "Group-B",
+    "memberRole": "Member",
     "memberId": "MEM003",
     "joinDate": "2023-03-10",
     "savingsBalance": 21010,
@@ -32,6 +48,11 @@
   {
     "id": "4",
     "name": "Emmanuel Habimana",
+    "firstName": "Emmanuel",
+    "lastName": "Habimana",
+    "phoneNumber": "0788888884",
+    "savingsGroup": "Group-B",
+    "memberRole": "Member",
     "memberId": "MEM004",
     "joinDate": "2023-04-05",
     "savingsBalance": 105000,
@@ -42,6 +63,11 @@
   {
     "id": "5",
     "name": "Solange Irakoze",
+    "firstName": "Solange",
+    "lastName": "Irakoze",
+    "phoneNumber": "0788888885",
+    "savingsGroup": "Group-A",
+    "memberRole": "Member",
     "memberId": "MEM005",
     "joinDate": "2023-05-25",
     "savingsBalance": 3200,
@@ -50,13 +76,18 @@
     "avatarId": "avatar5"
   },
   {
-    "name": "shema",
-    "memberId": "MEM005",
+    "id": "MEM1759327314229",
+    "name": "shema parfait",
+    "firstName": "shema",
+    "lastName": "parfait",
+    "phoneNumber": "0787844326",
+    "savingsGroup": "Group-A",
+    "memberRole": "Member",
+    "memberId": "MEM006",
     "joinDate": "2025-10-01",
     "savingsBalance": 0,
     "loanBalance": 0,
     "status": "Active",
-    "avatarId": "avatar4",
-    "id": "MEM1759327314229"
+    "avatarId": "avatar4"
   }
 ]

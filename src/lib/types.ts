@@ -2,7 +2,21 @@ import type { LucideIcon } from "lucide-react";
 
 export type Member = {
   id: string;
-  name: string;
+  name: string; // This will now be a concatenation of firstName and lastName
+  firstName: string;
+  lastName: string;
+  dateOfBirth?: string;
+  gender?: 'Male' | 'Female' | 'Other';
+  nationalId?: string;
+  phoneNumber: string;
+  email?: string;
+  alternativePhone?: string;
+  address?: string;
+  savingsGroup: string;
+  memberRole: 'Member' | 'Chairperson' | 'Treasurer' | 'Secretary' | 'Teller';
+  monthlyContribution?: number;
+  profilePhotoPath?: string;
+  nationalIdCopyPath?: string;
   memberId: string;
   joinDate: string;
   savingsBalance: number;
@@ -58,7 +72,6 @@ export type NavLink = {
   href: string;
   label: string;
   icon: LucideIcon;
-  active?: boolean;
 };
 
 export type Investment = {

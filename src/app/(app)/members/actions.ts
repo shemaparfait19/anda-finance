@@ -8,9 +8,22 @@ import type { Member } from '@/lib/types';
 
 
 const AddMemberFormSchema = z.object({
-    name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-    memberId: z.string().min(1, { message: 'Member ID is required.' }),
+    firstName: z.string().min(2, { message: 'First name must be at least 2 characters.' }),
+    lastName: z.string().min(2, { message: 'Last name must be at least 2 characters.' }),
+    dateOfBirth: z.string().optional(),
+    gender: z.enum(['Male', 'Female', 'Other']).optional(),
+    nationalId: z.string().optional(),
+    phoneNumber: z.string().min(10, { message: 'Phone number is required.' }),
+    email: z.string().email({ message: 'Invalid email address.' }).optional().or(z.literal('')),
+    alternativePhone: z.string().optional(),
+    address: z.string().optional(),
+    savingsGroup: z.string().min(1, { message: 'Savings group is required.' }),
+    memberRole: z.enum(['Member', 'Chairperson', 'Treasurer', 'Secretary', 'Teller']),
+    monthlyContribution: z.coerce.number().optional(),
     joinDate: z.string().min(1, { message: 'Join date is required.' }),
+    // We are not handling file uploads in this action for now
+    // profilePhoto: z.any().optional(),
+    // nationalIdCopy: z.any().optional(),
 });
 
 const EditMemberFormSchema = AddMemberFormSchema.extend({
@@ -40,16 +53,26 @@ export async function addMember(
         }
       }
       return {
-        message: 'Invalid form data.',
+        message: 'Invalid form data. Please check the fields.',
         fields,
         success: false
       };
     }
     
-    const newMember: Omit<Member, 'id' | 'savingsBalance' | 'loanBalance' | 'status' | 'avatarId'> = parsed.data;
+    // In a real app, you would handle file uploads here and get back file paths.
+    // For now, we'll just use the data.
+    // const { profilePhoto, nationalIdCopy, ...memberData } = parsed.data;
 
+    const memberData = parsed.data;
+
+    const newMember: Omit<Member, 'id' | 'memberId' | 'savingsBalance' | 'loanBalance' | 'status' | 'name' | 'avatarId'> = {
+        ...memberData,
+    };
+    
     await addMemberToDb({
       ...newMember,
+      name: `${newMember.firstName} ${newMember.lastName}`,
+      memberId: `MEM${String(Date.now()).slice(-6)}`,
       savingsBalance: 0,
       loanBalance: 0,
       status: 'Active',
@@ -91,8 +114,12 @@ export async function editMember(
         }
 
         const { id, ...updates } = parsed.data;
-        await updateMemberInDb(id, updates);
+        await updateMemberInDb(id, {
+            ...updates,
+            name: `${updates.firstName} ${updates.lastName}`
+        });
 
+        revalidatePath('/members');
         return { message: 'Member updated successfully.', success: true };
     } catch (e) {
         const error = e as Error;
@@ -103,10 +130,10 @@ export async function editMember(
 export async function deactivateMember(memberId: string): Promise<FormState> {
     try {
         await updateMemberInDb(memberId, { status: 'Inactive' });
+        revalidatePath('/members');
         return { message: 'Member has been deactivated.', success: true };
     } catch (e) {
         const error = e as Error;
         return { message: error.message || 'An unexpected error occurred.', success: false };
     }
 }
-
