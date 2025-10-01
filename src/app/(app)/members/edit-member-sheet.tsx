@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useEffect, useRef, useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useEffect, useRef } from 'react';
+import { useFormStatus, useFormState } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,7 +45,7 @@ function SubmitButton() {
 }
 
 export default function EditMemberSheet({ member, open, onOpenChange }: { member: Member, open: boolean, onOpenChange: (open: boolean) => void }) {
-  const [state, formAction] = useActionState(editMember, initialState);
+  const [state, formAction] = useFormState(editMember, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -191,8 +191,7 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                             {state.fields?.memberRole && <p className="text-sm text-destructive">{state.fields.memberRole}</p>}
                         </div>
                          <div className="grid gap-2">
-                            <Label htmlFor="monthlyContribution">Monthly Contribution (RWF)</Label>
-                            <Input id="monthlyContribution" name="monthlyContribution" type="number" defaultValue={member.monthlyContribution} />
+                            <Label htmlFor="monthlyContribution">Monthly Contribution (RWF)</Label>                            <Input id="monthlyContribution" name="monthlyContribution" type="number" defaultValue={member.monthlyContribution} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="status">Member Status *</Label>
