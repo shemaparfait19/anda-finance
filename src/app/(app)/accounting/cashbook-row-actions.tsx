@@ -64,7 +64,7 @@ export default function CashbookRowActions({ entry, type }: { entry: CashbookEnt
       </DropdownMenu>
 
       <AddEntryDialog entry={entry} open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
-        {/* This dialog is controlled by state, trigger is implicit */}
+        {/* This dialog is controlled by state, no trigger needed */}
       </AddEntryDialog>
 
       <AppConfirmationDialog

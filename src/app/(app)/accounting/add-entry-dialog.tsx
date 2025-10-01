@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useEffect, useRef, useState, useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useFormStatus, useActionState } from 'react-dom';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { addCashbookEntry, updateCashbookEntry } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import type { CashbookEntry } from '@/lib/types';
@@ -35,6 +36,26 @@ const initialState = {
   fields: {},
   success: false,
 };
+
+const incomeCategories = [
+    'Contributions',
+    'Loan Interest',
+    'Loan Repayment Principal',
+    'Fees',
+    'Investment Returns',
+    'Other Income',
+];
+
+const expenseCategories = [
+    'Office Supplies',
+    'Bank Fees',
+    'IT & Software',
+    'Transport',
+    'Utilities',
+    'Loan Disbursement',
+    'Investment Purchase',
+    'Other Expenses',
+];
 
 function SubmitButton({ isEditMode }: { isEditMode: boolean }) {
     const { pending } = useFormStatus();
@@ -49,11 +70,21 @@ function SubmitButton({ isEditMode }: { isEditMode: boolean }) {
 interface AddEntryDialogProps {
     entry?: CashbookEntry;
     children?: React.ReactNode;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
-export default function AddEntryDialog({ entry, children }: AddEntryDialogProps) {
-  const [open, setOpen] = useState(false);
+export default function AddEntryDialog({ entry, children, open: openProp, onOpenChange: onOpenChangeProp }: AddEntryDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = openProp !== undefined && onOpenChangeProp !== undefined;
+  const open = isControlled ? openProp : internalOpen;
+  const setOpen = isControlled ? onOpenChangeProp : setInternalOpen;
+  
   const isEditMode = !!entry;
+
+  const [entryType, setEntryType] = useState<'income' | 'expenses' | undefined>(isEditMode ? (entry.amount > 0 ? 'income' : 'expenses') : undefined);
+  const categories = entryType === 'income' ? incomeCategories : expenseCategories;
+
 
   const action = isEditMode ? updateCashbookEntry : addCashbookEntry;
   const [state, formAction] = useActionState(action, initialState);
@@ -77,13 +108,18 @@ export default function AddEntryDialog({ entry, children }: AddEntryDialogProps)
         });
       }
     }
-  }, [state, toast]);
+  }, [state, toast, setOpen]);
 
   useEffect(() => {
     if (!open) {
       formRef.current?.reset();
+      setEntryType(isEditMode ? (entry.amount > 0 ? 'income' : 'expenses') : undefined);
     }
-  }, [open]);
+  }, [open, isEditMode, entry]);
+
+  const handleTypeChange = (value: string) => {
+    setEntryType(value as 'income' | 'expenses');
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -100,21 +136,21 @@ export default function AddEntryDialog({ entry, children }: AddEntryDialogProps)
             </DialogTrigger>
         )}
      
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         <form ref={formRef} action={formAction}>
            {isEditMode && <input type="hidden" name="id" value={entry.id} />}
-           {isEditMode && <input type="hidden" name="entryType" value={entry.amount > 0 ? 'income' : 'expenses'} />}
           <DialogHeader>
             <DialogTitle>{isEditMode ? 'Edit' : 'Add New'} Cashbook Entry</DialogTitle>
             <DialogDescription>
               {isEditMode ? 'Update the details of this transaction.' : 'Record a new income or expense transaction.'}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-6">
+          <ScrollArea className="h-96 w-full">
+          <div className="grid gap-6 p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                     <Label htmlFor="type">Entry Type *</Label>
-                    <Select name="type" defaultValue={isEditMode ? (entry.category === 'Loan Interest' || entry.category === 'Fees' || entry.category === 'Contributions' ? 'income' : 'expenses') : undefined}>
+                    <Select name="type" defaultValue={entryType} onValueChange={handleTypeChange}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select type" />
                         </SelectTrigger>
@@ -139,7 +175,16 @@ export default function AddEntryDialog({ entry, children }: AddEntryDialogProps)
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                     <Label htmlFor="category">Category *</Label>
-                    <Input id="category" name="category" placeholder="e.g., Contributions, Office Supplies" defaultValue={entry?.category}/>
+                     <Select name="category" defaultValue={entry?.category}>
+                        <SelectTrigger disabled={!entryType}>
+                            <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {categories.map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     {state.fields?.category && <p className="text-sm text-destructive">{state.fields.category}</p>}
                 </div>
                 <div className="grid gap-2">
@@ -148,8 +193,32 @@ export default function AddEntryDialog({ entry, children }: AddEntryDialogProps)
                     {state.fields?.amount && <p className="text-sm text-destructive">{state.fields.amount}</p>}
                 </div>
             </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="paymentMethod">Payment Method</Label>
+                     <Select name="paymentMethod" defaultValue={entry?.paymentMethod}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Cash">Cash</SelectItem>
+                            <SelectItem value="Mobile Money">Mobile Money</SelectItem>
+                             <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="reference">Reference #</Label>
+                    <Input id="reference" name="reference" placeholder="e.g., INV-123, MTN-456" defaultValue={entry?.reference}/>
+                </div>
+            </div>
+            <div className="grid gap-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea id="notes" name="notes" placeholder="Add any additional details..." defaultValue={entry?.notes} />
+            </div>
           </div>
-          <DialogFooter>
+          </ScrollArea>
+          <DialogFooter className="border-t pt-4 mt-4">
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>

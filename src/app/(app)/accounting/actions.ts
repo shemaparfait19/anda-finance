@@ -11,6 +11,9 @@ const EntrySchema = z.object({
   description: z.string().min(1, { message: 'Description is required.' }),
   category: z.string().min(1, { message: 'Category is required.' }),
   amount: z.coerce.number().positive({ message: 'Amount must be positive.' }),
+  paymentMethod: z.string().optional(),
+  reference: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 const UpdateEntrySchema = EntrySchema.extend({

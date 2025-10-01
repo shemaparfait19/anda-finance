@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from "lucide-react";
 
 export type Member = {
@@ -69,6 +70,9 @@ export type CashbookEntry = {
   description: string;
   category: string;
   amount: number;
+  paymentMethod?: string;
+  reference?: string;
+  notes?: string;
 };
 
 export type NavLink = {
