@@ -107,14 +107,12 @@ export default async function DashboardPage() {
                   Recent transactions from your group.
                 </CardDescription>
               </div>
-              <Link href="#" passHref legacyBehavior>
-                <Button asChild size="sm" className="ml-auto gap-1">
-                  <a>
-                    View All
-                    <ArrowUpRight className="h-4 w-4" />
-                  </a>
-                </Button>
-              </Link>
+              <Button asChild size="sm" className="ml-auto gap-1">
+                <Link href="#">
+                  View All
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
