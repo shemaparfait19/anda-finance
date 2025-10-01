@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -20,9 +19,9 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { PlusCircle } from 'lucide-react';
-import { income, expenses } from '@/lib/data';
+import { getCashbook } from '@/lib/data-service';
 import type { CashbookEntry } from '@/lib/types';
+import AddEntryDialog from './add-entry-dialog';
 
 function CashbookTable({ data, type }: { data: CashbookEntry[], type: 'Income' | 'Expenses' }) {
   const total = data.reduce((acc, entry) => acc + entry.amount, 0);
@@ -53,8 +52,8 @@ function CashbookTable({ data, type }: { data: CashbookEntry[], type: 'Income' |
               </TableRow>
             ))}
             <TableRow className='bg-muted/50 font-bold'>
-                <TableCell colSpan={3}>Total</TableCell>
-                <TableCell className='text-right'>RWF {total.toLocaleString()}</TableCell>
+                <TableCell colSpan={3} className="text-right font-semibold">Total</TableCell>
+                <TableCell className='text-right font-semibold'>RWF {total.toLocaleString()}</TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -63,7 +62,8 @@ function CashbookTable({ data, type }: { data: CashbookEntry[], type: 'Income' |
   );
 }
 
-export default function AccountingPage() {
+export default async function AccountingPage() {
+    const { income, expenses } = await getCashbook();
     const totalIncome = income.reduce((acc, entry) => acc + entry.amount, 0);
     const totalExpenses = expenses.reduce((acc, entry) => acc + entry.amount, 0);
     const netBalance = totalIncome - totalExpenses;
@@ -98,12 +98,7 @@ export default function AccountingPage() {
             <TabsTrigger value="expenses">Expenses</TabsTrigger>
             </TabsList>
             <div className="ml-auto flex items-center gap-2">
-            <Button size="sm" className="h-8 gap-1">
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Add Entry
-                </span>
-            </Button>
+                <AddEntryDialog />
             </div>
         </div>
         <TabsContent value="income">
