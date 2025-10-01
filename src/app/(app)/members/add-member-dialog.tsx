@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState, useActionState } from 'react';
+import { useState, useEffect } from 'react';
+import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 const initialState = {
   message: '',
   fields: {},
+  success: false,
 };
 
 function SubmitButton() {
@@ -39,25 +42,26 @@ export default function AddMemberDialog() {
   const [state, formAction] = useActionState(addMember, initialState);
   const { toast } = useToast();
 
-  if (state.message) {
-    if (state.message === "Member added successfully") {
+   useEffect(() => {
+    if (state.message) {
+      if (state.success) {
         toast({
-            title: "Success",
-            description: state.message,
+          title: 'Success',
+          description: state.message,
         });
-        // This is a bit of a hack to reset the form state message
-        // so the toast doesn't re-appear on every render.
-        state.message = "";
         setOpen(false);
-    } else if (!state.fields) {
+      } else if (state.fields) {
+        // Validation errors are displayed next to fields, no toast needed.
+      } else {
+        // General error
         toast({
-            variant: "destructive",
-            title: "Error",
-            description: state.message,
+          variant: 'destructive',
+          title: 'Error',
+          description: state.message,
         });
-        state.message = "";
+      }
     }
-  }
+  }, [state, toast]);
 
 
   return (
@@ -77,37 +81,42 @@ export default function AddMemberDialog() {
             Fill in the details below to add a new member to the group.
           </DialogDescription>
         </DialogHeader>
-        <form action={formAction} className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <div className='col-span-3'>
-              <Input id="name" name="name" className="w-full" />
-              {state.fields?.name && <p className="text-sm text-destructive mt-1">{state.fields.name}</p>}
+        <form action={formAction}>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                    Name
+                    </Label>
+                    <div className='col-span-3'>
+                    <Input id="name" name="name" className="w-full" />
+                    {state.fields?.name && <p className="text-sm text-destructive mt-1">{state.fields.name}</p>}
+                    </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="memberId" className="text-right">
+                    Member ID
+                    </Label>
+                    <div className='col-span-3'>
+                    <Input id="memberId" name="memberId" className="w-full" />
+                    {state.fields?.memberId && <p className="text-sm text-destructive mt-1">{state.fields.memberId}</p>}
+                    </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="joinDate" className="text-right">
+                    Join Date
+                    </Label>
+                    <div className='col-span-3'>
+                    <Input id="joinDate" name="joinDate" type="date" className="w-full" />
+                    {state.fields?.joinDate && <p className="text-sm text-destructive mt-1">{state.fields.joinDate}</p>}
+                    </div>
+                </div>
             </div>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="memberId" className="text-right">
-              Member ID
-            </Label>
-            <div className='col-span-3'>
-              <Input id="memberId" name="memberId" className="w-full" />
-               {state.fields?.memberId && <p className="text-sm text-destructive mt-1">{state.fields.memberId}</p>}
-            </div>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="joinDate" className="text-right">
-              Join Date
-            </Label>
-            <div className='col-span-3'>
-              <Input id="joinDate" name="joinDate" type="date" className="w-full" />
-              {state.fields?.joinDate && <p className="text-sm text-destructive mt-1">{state.fields.joinDate}</p>}
-            </div>
-          </div>
-          <DialogFooter>
-            <SubmitButton />
-          </DialogFooter>
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <SubmitButton />
+            </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
