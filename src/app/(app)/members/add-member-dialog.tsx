@@ -1,8 +1,8 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { PlusCircle, Loader2, UploadCloud, File as FileIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -71,8 +71,9 @@ function FileUpload({ id, label, acceptedFileTypes, helpText }: { id: string, la
 
 export default function AddMemberDialog() {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useActionState(addMember, initialState);
+  const [state, formAction] = useFormState(addMember, initialState);
   const { toast } = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
 
    useEffect(() => {
     if (state.message) {
@@ -82,11 +83,8 @@ export default function AddMemberDialog() {
           description: state.message,
         });
         setOpen(false);
-        // Reset form state on success
-        state.message = '';
-        state.success = false;
-        state.fields = {};
-      } else if (state.fields) {
+        formRef.current?.reset();
+      } else if (state.fields && Object.keys(state.fields).length > 0) {
         // Validation errors are displayed next to fields, no toast needed.
       } else {
         // General error
@@ -102,11 +100,9 @@ export default function AddMemberDialog() {
   // Reset form action state when dialog is closed
   useEffect(() => {
       if (!open) {
-          state.message = '';
-          state.success = false;
-          state.fields = {};
+          formRef.current?.reset();
       }
-  },[open, state]);
+  },[open]);
 
 
   return (
@@ -120,7 +116,7 @@ export default function AddMemberDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
-        <form action={formAction}>
+        <form ref={formRef} action={formAction}>
             <DialogHeader>
             <DialogTitle>Add New Member</DialogTitle>
             <DialogDescription>

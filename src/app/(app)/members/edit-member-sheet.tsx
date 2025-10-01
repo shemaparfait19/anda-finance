@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useActionState } from 'react-dom';
+import { useFormState } from 'react-dom';
 import { useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ function SubmitButton() {
 }
 
 export default function EditMemberSheet({ member, open, onOpenChange }: { member: Member, open: boolean, onOpenChange: (open: boolean) => void }) {
-  const [state, formAction] = useActionState(editMember, initialState);
+  const [state, formAction] = useFormState(editMember, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -73,11 +73,12 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
   useEffect(() => {
     if (!open) {
         formRef.current?.reset();
-        state.message = '';
-        state.success = false;
-        state.fields = {};
+        // state is not directly mutable, this is incorrect.
+        // The state will be reset when the component unmounts and remounts,
+        // or by managing a key on the form.
+        // For this scenario, just resetting the form visually is enough.
     }
-  }, [open, state]);
+  }, [open]);
 
 
   return (
