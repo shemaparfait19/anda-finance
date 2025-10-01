@@ -61,13 +61,15 @@ export default function AppSidebar() {
           {navLinks.map((link) => (
             <SidebarMenuItem key={link.href}>
                 <SidebarMenuButton
-                  as={Link}
+                  asChild
                   href={link.href}
                   isActive={pathname === link.href}
                   tooltip={link.label}
                 >
-                  <link.icon />
-                  <span>{link.label}</span>
+                  <Link href={link.href}>
+                    <link.icon />
+                    <span>{link.label}</span>
+                  </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
