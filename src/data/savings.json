@@ -1,30 +1,29 @@
-
 [
-    {
-      "id": "sav1",
-      "memberId": "1",
-      "memberName": "Anathalie Mukamana",
-      "accountNumber": "SAV001",
-      "type": "Compulsory",
-      "balance": 52000,
-      "openDate": "2023-01-15"
-    },
-    {
-      "id": "sav2",
-      "memberId": "2",
-      "memberName": "Jean Bosco Nsengiyumva",
-      "accountNumber": "SAV002",
-      "type": "Voluntary",
-      "balance": 78000,
-      "openDate": "2023-02-20"
-    },
-    {
-      "id": "sav3",
-      "memberId": "3",
-      "memberName": "Clementine Uwera",
-      "accountNumber": "SAV003",
-      "type": "Compulsory",
-      "balance": 21010,
-      "openDate": "2023-03-10"
-    }
+  {
+    "id": "sav1",
+    "memberId": "1",
+    "memberName": "Anathalie Mukamana",
+    "accountNumber": "SAV001",
+    "type": "Compulsory",
+    "balance": 52000,
+    "openDate": "2023-01-15"
+  },
+  {
+    "id": "sav2",
+    "memberId": "2",
+    "memberName": "Jean Bosco Nsengiyumva",
+    "accountNumber": "SAV002",
+    "type": "Voluntary",
+    "balance": 88000,
+    "openDate": "2023-02-20"
+  },
+  {
+    "id": "sav3",
+    "memberId": "3",
+    "memberName": "Clementine Uwera",
+    "accountNumber": "SAV003",
+    "type": "Compulsory",
+    "balance": 21010,
+    "openDate": "2023-03-10"
+  }
 ]

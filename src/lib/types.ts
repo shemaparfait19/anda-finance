@@ -57,7 +57,10 @@ export type Loan = {
   interestRate: number;
   issueDate: string;
   dueDate: string;
-  status: "Active" | "Paid" | "Overdue" | "Defaulted";
+  status: "Active" | "Paid" | "Overdue" | "Defaulted" | "Pending";
+  loanTerm?: number;
+  loanPurpose?: string;
+  purposeDescription?: string;
 };
 
 export type CashbookEntry = {

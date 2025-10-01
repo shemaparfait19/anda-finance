@@ -1,8 +1,21 @@
-
 [
   {
+    "member": {
+      "name": "Jean Bosco Nsengiyumva",
+      "avatarId": "avatar2"
+    },
+    "type": "Deposit",
+    "amount": 10000,
+    "date": "2025-10-01",
+    "id": "TXN1759329659078",
+    "status": "Completed"
+  },
+  {
     "id": "txn1",
-    "member": { "name": "Anathalie Mukamana", "avatarId": "avatar1" },
+    "member": {
+      "name": "Anathalie Mukamana",
+      "avatarId": "avatar1"
+    },
     "type": "Deposit",
     "amount": 5000,
     "date": "2024-07-28",
@@ -10,7 +23,10 @@
   },
   {
     "id": "txn2",
-    "member": { "name": "Clementine Uwera", "avatarId": "avatar3" },
+    "member": {
+      "name": "Clementine Uwera",
+      "avatarId": "avatar3"
+    },
     "type": "Loan Repayment",
     "amount": 12000,
     "date": "2024-07-27",
@@ -18,7 +34,10 @@
   },
   {
     "id": "txn3",
-    "member": { "name": "Emmanuel Habimana", "avatarId": "avatar4" },
+    "member": {
+      "name": "Emmanuel Habimana",
+      "avatarId": "avatar4"
+    },
     "type": "Loan Disbursement",
     "amount": 100000,
     "date": "2024-07-26",
@@ -26,7 +45,10 @@
   },
   {
     "id": "txn4",
-    "member": { "name": "Jean Bosco Nsengiyumva", "avatarId": "avatar2" },
+    "member": {
+      "name": "Jean Bosco Nsengiyumva",
+      "avatarId": "avatar2"
+    },
     "type": "Deposit",
     "amount": 10000,
     "date": "2024-07-25",
@@ -34,7 +56,10 @@
   },
   {
     "id": "txn5",
-    "member": { "name": "Anathalie Mukamana", "avatarId": "avatar1" },
+    "member": {
+      "name": "Anathalie Mukamana",
+      "avatarId": "avatar1"
+    },
     "type": "Withdrawal",
     "amount": 2000,
     "date": "2024-07-24",

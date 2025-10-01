@@ -33,7 +33,9 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import type { Loan } from '@/lib/types';
-import { getLoans } from '@/lib/data-service';
+import { getLoans, getMembers } from '@/lib/data-service';
+import NewLoanDialog from './new-loan-dialog';
+
 
 const getStatusBadgeVariant = (status: Loan['status']) => {
   switch (status) {
@@ -41,28 +43,27 @@ const getStatusBadgeVariant = (status: Loan['status']) => {
     case 'Paid': return 'secondary';
     case 'Overdue': return 'destructive';
     case 'Defaulted': return 'destructive';
+    case 'Pending': return 'outline';
     default: return 'outline';
   }
 }
 
 export default async function LoansPage() {
     const loans = await getLoans();
+    const members = await getMembers();
+
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="pending">Pending</TabsTrigger>
           <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="overdue" className="text-destructive">Overdue</TabsTrigger>
           <TabsTrigger value="paid">Paid</TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
-          <Button size="sm" className="h-8 gap-1">
-            <PlusCircle className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              New Loan Application
-            </span>
-          </Button>
+          <NewLoanDialog members={members} />
         </div>
       </div>
       <TabsContent value="all">
@@ -125,6 +126,7 @@ export default async function LoansPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                           {loan.status === 'Pending' && <DropdownMenuItem>Approve Loan</DropdownMenuItem>}
                           <DropdownMenuItem>View Details</DropdownMenuItem>
                           <DropdownMenuItem>Record Repayment</DropdownMenuItem>
                           <DropdownMenuItem>Send Reminder</DropdownMenuItem>

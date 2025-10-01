@@ -10,7 +10,9 @@
     "interestRate": 10,
     "issueDate": "2024-03-01",
     "dueDate": "2024-08-01",
-    "status": "Active"
+    "status": "Active",
+    "loanTerm": 5,
+    "loanPurpose": "Business"
   },
   {
     "id": "loan2",
@@ -22,7 +24,9 @@
     "interestRate": 12,
     "issueDate": "2024-06-15",
     "dueDate": "2024-09-15",
-    "status": "Active"
+    "status": "Active",
+    "loanTerm": 3,
+    "loanPurpose": "Education"
   },
   {
     "id": "loan3",
@@ -34,7 +38,9 @@
     "interestRate": 8,
     "issueDate": "2024-01-20",
     "dueDate": "2024-07-20",
-    "status": "Overdue"
+    "status": "Overdue",
+    "loanTerm": 6,
+    "loanPurpose": "Home Improvement"
   },
   {
     "id": "loan4",
@@ -46,6 +52,8 @@
     "interestRate": 10,
     "issueDate": "2023-09-01",
     "dueDate": "2024-03-01",
-    "status": "Paid"
+    "status": "Paid",
+    "loanTerm": 6,
+    "loanPurpose": "Other"
   }
 ]
