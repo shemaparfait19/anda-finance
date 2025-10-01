@@ -1,9 +1,7 @@
-
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useFormState } from 'react-dom';
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
