@@ -6,9 +6,9 @@ import { PlusCircle } from 'lucide-react';
 
 const users = [
     { id: 1, name: 'Admin User', email: 'admin@anda.fi', role: 'Admin' },
-    { id: 2, name: 'Manager Mike', email: 'manager.m@anda.fi', role: 'Manager' },
-    { id: 3, name: 'Teller Tina', email: 'teller.t@anda.fi', role: 'Teller' },
-    { id: 4, name: 'Auditor Andy', email: 'auditor.a@anda.fi', role: 'Auditor' },
+    { id: 2, name: 'Marie Claire', email: 'marie.c@anda.fi', role: 'Manager' },
+    { id: 3, name: 'Thierry Mugisha', email: 'thierry.m@anda.fi', role: 'Teller' },
+    { id: 4, name: 'Aline Umutesi', email: 'aline.u@anda.fi', role: 'Auditor' },
 ]
 
 export default function UserManagementPage() {

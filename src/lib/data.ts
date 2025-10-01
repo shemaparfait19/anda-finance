@@ -3,7 +3,7 @@ import type { Member, Transaction, SavingsAccount, Loan, CashbookEntry } from ".
 export const members: Member[] = [
   {
     id: "1",
-    name: "Alice Johnson",
+    name: "Anathalie Mukamana",
     memberId: "MEM001",
     joinDate: "2023-01-15",
     savingsBalance: 5200.5,
@@ -13,7 +13,7 @@ export const members: Member[] = [
   },
   {
     id: "2",
-    name: "Bob Williams",
+    name: "Jean Bosco Nsengiyumva",
     memberId: "MEM002",
     joinDate: "2023-02-20",
     savingsBalance: 7800.0,
@@ -23,7 +23,7 @@ export const members: Member[] = [
   },
   {
     id: "3",
-    name: "Charlie Brown",
+    name: "Clementine Uwera",
     memberId: "MEM003",
     joinDate: "2023-03-10",
     savingsBalance: 2100.75,
@@ -33,7 +33,7 @@ export const members: Member[] = [
   },
   {
     id: "4",
-    name: "Diana Miller",
+    name: "Emmanuel Habimana",
     memberId: "MEM004",
     joinDate: "2023-04-05",
     savingsBalance: 10500.0,
@@ -43,7 +43,7 @@ export const members: Member[] = [
   },
   {
     id: "5",
-    name: "Ethan Davis",
+    name: "Solange Irakoze",
     memberId: "MEM005",
     joinDate: "2023-05-25",
     savingsBalance: 320.0,
@@ -56,7 +56,7 @@ export const members: Member[] = [
 export const transactions: Transaction[] = [
   {
     id: "txn1",
-    member: { name: "Alice Johnson", avatarId: "avatar1" },
+    member: { name: "Anathalie Mukamana", avatarId: "avatar1" },
     type: "Deposit",
     amount: 500.0,
     date: "2024-07-28",
@@ -64,7 +64,7 @@ export const transactions: Transaction[] = [
   },
   {
     id: "txn2",
-    member: { name: "Charlie Brown", avatarId: "avatar3" },
+    member: { name: "Clementine Uwera", avatarId: "avatar3" },
     type: "Loan Repayment",
     amount: 1200.0,
     date: "2024-07-27",
@@ -72,7 +72,7 @@ export const transactions: Transaction[] = [
   },
   {
     id: "txn3",
-    member: { name: "Diana Miller", avatarId: "avatar4" },
+    member: { name: "Emmanuel Habimana", avatarId: "avatar4" },
     type: "Loan Disbursement",
     amount: 10000.0,
     date: "2024-07-26",
@@ -80,7 +80,7 @@ export const transactions: Transaction[] = [
   },
   {
     id: "txn4",
-    member: { name: "Bob Williams", avatarId: "avatar2" },
+    member: { name: "Jean Bosco Nsengiyumva", avatarId: "avatar2" },
     type: "Deposit",
     amount: 1000.0,
     date: "2024-07-25",
@@ -88,7 +88,7 @@ export const transactions: Transaction[] = [
   },
   {
     id: "txn5",
-    member: { name: "Alice Johnson", avatarId: "avatar1" },
+    member: { name: "Anathalie Mukamana", avatarId: "avatar1" },
     type: "Withdrawal",
     amount: 200.0,
     date: "2024-07-24",
@@ -100,7 +100,7 @@ export const savingsAccounts: SavingsAccount[] = [
   {
     id: "sav1",
     memberId: "1",
-    memberName: "Alice Johnson",
+    memberName: "Anathalie Mukamana",
     accountNumber: "SAV001",
     type: "Compulsory",
     balance: 5200.5,
@@ -109,7 +109,7 @@ export const savingsAccounts: SavingsAccount[] = [
   {
     id: "sav2",
     memberId: "2",
-    memberName: "Bob Williams",
+    memberName: "Jean Bosco Nsengiyumva",
     accountNumber: "SAV002",
     type: "Voluntary",
     balance: 7800.0,
@@ -118,7 +118,7 @@ export const savingsAccounts: SavingsAccount[] = [
   {
     id: "sav3",
     memberId: "3",
-    memberName: "Charlie Brown",
+    memberName: "Clementine Uwera",
     accountNumber: "SAV003",
     type: "Compulsory",
     balance: 2100.75,
@@ -130,7 +130,7 @@ export const loans: Loan[] = [
   {
     id: "loan1",
     memberId: "1",
-    memberName: "Alice Johnson",
+    memberName: "Anathalie Mukamana",
     loanId: "LN001",
     principal: 20000.0,
     balance: 15000.0,
@@ -142,7 +142,7 @@ export const loans: Loan[] = [
   {
     id: "loan2",
     memberId: "3",
-    memberName: "Charlie Brown",
+    memberName: "Clementine Uwera",
     loanId: "LN002",
     principal: 5000.0,
     balance: 5000.0,
@@ -154,7 +154,7 @@ export const loans: Loan[] = [
   {
     id: "loan3",
     memberId: "4",
-    memberName: "Diana Miller",
+    memberName: "Emmanuel Habimana",
     loanId: "LN003",
     principal: 30000.0,
     balance: 25000.0,
@@ -166,7 +166,7 @@ export const loans: Loan[] = [
   {
     id: "loan4",
     memberId: "5",
-    memberName: "Ethan Davis",
+    memberName: "Solange Irakoze",
     loanId: "LN004",
     principal: 10000.0,
     balance: 0,
@@ -178,7 +178,7 @@ export const loans: Loan[] = [
 ];
 
 export const income: CashbookEntry[] = [
-    { id: 'inc1', date: '2024-07-01', description: 'Loan Interest - Alice Johnson', category: 'Loan Interest', amount: 150.00 },
+    { id: 'inc1', date: '2024-07-01', description: 'Loan Interest - Anathalie Mukamana', category: 'Loan Interest', amount: 150.00 },
     { id: 'inc2', date: '2024-07-05', description: 'Late Payment Fees', category: 'Fees', amount: 50.00 },
     { id: 'inc3', date: '2024-07-10', description: 'Group Contribution', category: 'Contributions', amount: 1000.00 },
 ];

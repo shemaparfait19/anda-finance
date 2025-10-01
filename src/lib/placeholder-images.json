@@ -2,31 +2,31 @@
   "placeholderImages": [
     {
       "id": "avatar1",
-      "description": "Avatar for Alice Johnson",
+      "description": "Avatar for Anathalie Mukamana",
       "imageUrl": "https://images.unsplash.com/photo-1614283233556-f35b0c801ef1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc1OTI3NTk3MHww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "woman portrait"
     },
     {
       "id": "avatar2",
-      "description": "Avatar for Bob Williams",
+      "description": "Avatar for Jean Bosco Nsengiyumva",
       "imageUrl": "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkyNjA1ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "man portrait"
     },
     {
       "id": "avatar3",
-      "description": "Avatar for Charlie Brown",
+      "description": "Avatar for Clementine Uwera",
       "imageUrl": "https://images.unsplash.com/photo-1522556189639-b150ed9c4330?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkyNjA1ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "man portrait"
     },
     {
       "id": "avatar4",
-      "description": "Avatar for Diana Miller",
+      "description": "Avatar for Emmanuel Habimana",
       "imageUrl": "https://images.unsplash.com/photo-1593351799227-75df2026356b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc1OTI3NTk3MHww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "woman portrait"
     },
     {
       "id": "avatar5",
-      "description": "Avatar for Ethan Davis",
+      "description": "Avatar for Solange Irakoze",
       "imageUrl": "https://images.unsplash.com/photo-1715029005043-e88d219a3c48?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bWFuJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzU5MjYwNTg2fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "man portrait"
     },
