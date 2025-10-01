@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, ReactNode } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useState, useEffect, useRef, ReactNode, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { ArrowUpCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,7 +47,7 @@ interface NewWithdrawalDialogProps {
 
 export default function NewWithdrawalDialog({ members, selectedMemberId, open, onOpenChange, trigger }: NewWithdrawalDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [state, formAction] = useFormState(makeWithdrawal, initialState);
+  const [state, formAction] = useActionState(makeWithdrawal, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 

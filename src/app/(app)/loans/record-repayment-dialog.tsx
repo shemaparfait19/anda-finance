@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useEffect, useRef, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,7 +42,7 @@ interface RecordRepaymentDialogProps {
 }
 
 export default function RecordRepaymentDialog({ loan, open, onOpenChange }: RecordRepaymentDialogProps) {
-  const [state, formAction] = useFormState(recordRepayment, initialState);
+  const [state, formAction] = useActionState(recordRepayment, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
