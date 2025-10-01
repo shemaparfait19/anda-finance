@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import {
   BookOpen,
   FileText,
@@ -59,16 +60,16 @@ export default function AppSidebar() {
         <SidebarMenu>
           {navLinks.map((link) => (
             <SidebarMenuItem key={link.href}>
-              <SidebarMenuButton
-                asChild
-                // @ts-ignore Next.js Link component is compatible with asChild
-                href={link.href}
-                isActive={pathname === link.href}
-                tooltip={link.label}
-              >
-                <link.icon />
-                <span>{link.label}</span>
-              </SidebarMenuButton>
+              <Link href={link.href} legacyBehavior passHref>
+                <SidebarMenuButton
+                  as="a"
+                  isActive={pathname === link.href}
+                  tooltip={link.label}
+                >
+                  <link.icon />
+                  <span>{link.label}</span>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

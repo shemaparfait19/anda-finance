@@ -26,27 +26,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import type { ChartConfig } from "@/components/ui/chart";
 
-import { members, transactions, chartData } from '@/lib/data';
+import { members, transactions } from '@/lib/data';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
-
-const chartConfig = {
-  savings: {
-    label: "Savings",
-    color: "hsl(var(--chart-1))",
-  },
-  loans: {
-    label: "Loans",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig;
+import SavingsVsLoansChart from '@/components/charts/savings-vs-loans-chart';
 
 export default function DashboardPage() {
     const totalSavings = members.reduce((acc, member) => acc + member.savingsBalance, 0);
@@ -193,24 +176,7 @@ export default function DashboardPage() {
               <CardDescription>January - July 2024</CardDescription>
             </CardHeader>
             <CardContent>
-               <ChartContainer config={chartConfig} className="h-[280px] w-full">
-                <BarChart accessibilityLayer data={chartData}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                  />
-                  <YAxis tickLine={false} axisLine={false} />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
-                  <Bar dataKey="savings" fill="var(--color-savings)" radius={4} />
-                  <Bar dataKey="loans" fill="var(--color-loans)" radius={4} />
-                </BarChart>
-              </ChartContainer>
+               <SavingsVsLoansChart />
             </CardContent>
           </Card>
         </div>
