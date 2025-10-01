@@ -78,11 +78,11 @@ export default function AppSidebar() {
         <div className="flex items-center gap-3 p-2 rounded-md bg-sidebar-accent">
             <Avatar className='h-9 w-9'>
                 <AvatarImage src={adminAvatar.imageUrl} alt={adminAvatar.description} data-ai-hint={adminAvatar.imageHint}/>
-                <AvatarFallback>AD</AvatarFallback>
+                <AvatarFallback>ZJ</AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-                <span className="text-sm font-semibold text-sidebar-accent-foreground">Admin User</span>
-                <span className="text-xs text-sidebar-accent-foreground/80">admin@anda.fi</span>
+                <span className="text-sm font-semibold text-sidebar-accent-foreground">ZIGAMA Julius</span>
+                <span className="text-xs text-sidebar-accent-foreground/80">zigamaj6@gmail.com</span>
             </div>
         </div>
       </SidebarFooter>

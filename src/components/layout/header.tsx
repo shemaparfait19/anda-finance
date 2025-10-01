@@ -62,7 +62,7 @@ export default function Header() {
           <Button variant="ghost" size="icon" className="rounded-full">
             <Avatar className='h-9 w-9'>
                 <AvatarImage src={adminAvatar.imageUrl} alt={adminAvatar.description} data-ai-hint={adminAvatar.imageHint} />
-                <AvatarFallback>AD</AvatarFallback>
+                <AvatarFallback>ZJ</AvatarFallback>
             </Avatar>
             <span className="sr-only">Toggle user menu</span>
           </Button>

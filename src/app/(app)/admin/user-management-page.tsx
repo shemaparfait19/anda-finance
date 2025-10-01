@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PlusCircle } from 'lucide-react';
 
 const users = [
-    { id: 1, name: 'Admin User', email: 'admin@anda.fi', role: 'Admin' },
+    { id: 1, name: 'ZIGAMA Julius', email: 'zigamaj6@gmail.com', role: 'Admin' },
     { id: 2, name: 'Marie Claire', email: 'marie.c@anda.fi', role: 'Manager' },
     { id: 3, name: 'Thierry Mugisha', email: 'thierry.m@anda.fi', role: 'Teller' },
     { id: 4, name: 'Aline Umutesi', email: 'aline.u@anda.fi', role: 'Auditor' },
