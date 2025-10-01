@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useState, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const initialState = {
   message: '',
+  fields: {},
 };
 
 function SubmitButton() {
@@ -35,7 +36,7 @@ function SubmitButton() {
 
 export default function AddMemberDialog() {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useFormState(addMember, initialState);
+  const [state, formAction] = useActionState(addMember, initialState);
   const { toast } = useToast();
 
   if (state.message) {
