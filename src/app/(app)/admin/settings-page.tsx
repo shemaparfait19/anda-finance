@@ -24,7 +24,7 @@ export default function SettingsPage() {
             </div>
              <div className="grid gap-2">
                 <Label htmlFor="late-penalty-fee">Late Payment Penalty Fee (RWF)</Label>
-                <Input id="late-penalty-fee" type="number" defaultValue="50" />
+                <Input id="late-penalty-fee" type="number" defaultValue="5000" />
             </div>
              <div className="grid gap-2">
                 <Label htmlFor="reminder-days">Reminder Days Before Due</Label>

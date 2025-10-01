@@ -14,11 +14,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PlusCircle, TrendingUp, DollarSign, Zap } from 'lucide-react';
-import { investments } from '@/lib/data';
-import type { Investment } from '@/lib/types';
+import { PlusCircle } from 'lucide-react';
+import { getInvestments } from '@/lib/data-service';
 
-export default function InvestmentsPage() {
+export default async function InvestmentsPage() {
+    const investments = await getInvestments();
   const totalInvested = investments.reduce(
     (acc, inv) => acc + inv.amountInvested,
     0
@@ -28,7 +28,8 @@ export default function InvestmentsPage() {
     0
   );
   const totalReturn = totalCurrentValue - totalInvested;
-  const overallReturnPercentage = (totalReturn / totalInvested) * 100;
+  const overallReturnPercentage =
+    totalInvested > 0 ? (totalReturn / totalInvested) * 100 : 0;
 
   return (
     <div className="space-y-6">

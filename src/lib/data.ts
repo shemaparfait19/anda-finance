@@ -1,18 +1,9 @@
-import type { Member, Transaction, SavingsAccount, Loan, CashbookEntry, Investment, AuditLog, User } from "./types";
-import membersData from '@/data/members.json';
-import transactionsData from '@/data/transactions.json';
-import savingsAccountsData from '@/data/savings.json';
-import loansData from '@/data/loans.json';
+import type { CashbookEntry } from "./types";
 import cashbookData from '@/data/cashbook.json';
-import investmentsData from '@/data/investments.json';
-import auditLogsData from '@/data/audit.json';
-import usersData from '@/data/users.json';
 
+// This file is now only used for data that is truly static
+// and not meant to be modified by the application's CRUD operations.
 
-export const members: Member[] = membersData;
-export const transactions: Transaction[] = transactionsData;
-export const savingsAccounts: SavingsAccount[] = savingsAccountsData;
-export const loans: Loan[] = loansData;
 export const income: CashbookEntry[] = cashbookData.income;
 export const expenses: CashbookEntry[] = cashbookData.expenses;
 export const chartData = [
@@ -24,6 +15,3 @@ export const chartData = [
   { month: "Jun", savings: 23900, loans: 38000 },
   { month: "Jul", savings: 34900, loans: 43000 },
 ];
-export const investments: Investment[] = investmentsData;
-export const auditLogs: AuditLog[] = auditLogsData;
-export const users: User[] = usersData;

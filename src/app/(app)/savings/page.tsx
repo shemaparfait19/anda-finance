@@ -1,8 +1,4 @@
 import {
-  File,
-  ListFilter,
-  MoreHorizontal,
-  PlusCircle,
   ArrowDownCircle,
   ArrowUpCircle
 } from 'lucide-react';
@@ -18,15 +14,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Table,
   TableBody,
   TableCell,
@@ -41,9 +28,10 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 
-import { savingsAccounts } from '@/lib/data';
+import { getSavingsAccounts } from '@/lib/data-service';
 
-export default function SavingsPage() {
+export default async function SavingsPage() {
+    const savingsAccounts = await getSavingsAccounts();
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
@@ -108,24 +96,7 @@ export default function SavingsPage() {
                       RWF {account.balance.toLocaleString()}
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-haspopup="true"
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>View Statement</DropdownMenuItem>
-                          <DropdownMenuItem>Make Deposit</DropdownMenuItem>
-                          <DropdownMenuItem>Make Withdrawal</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {/* Actions Dropdown Here */}
                     </TableCell>
                   </TableRow>
                 ))}

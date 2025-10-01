@@ -1,4 +1,3 @@
-
 [
   {
     "id": "1",
@@ -49,5 +48,15 @@
     "loanBalance": 0,
     "status": "Inactive",
     "avatarId": "avatar5"
+  },
+  {
+    "name": "shema",
+    "memberId": "MEM005",
+    "joinDate": "2025-10-01",
+    "savingsBalance": 0,
+    "loanBalance": 0,
+    "status": "Active",
+    "avatarId": "avatar4",
+    "id": "MEM1759327314229"
   }
 ]

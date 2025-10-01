@@ -1,9 +1,4 @@
-import {
-  File,
-  ListFilter,
-  MoreHorizontal,
-  PlusCircle,
-} from 'lucide-react';
+import { MoreHorizontal, PlusCircle } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +12,6 @@ import {
 } from '@/components/ui/card';
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -38,8 +32,8 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
-import { loans } from '@/lib/data';
+import type { Loan } from '@/lib/types';
+import { getLoans } from '@/lib/data-service';
 
 const getStatusBadgeVariant = (status: Loan['status']) => {
   switch (status) {
@@ -51,7 +45,8 @@ const getStatusBadgeVariant = (status: Loan['status']) => {
   }
 }
 
-export default function LoansPage() {
+export default async function LoansPage() {
+    const loans = await getLoans();
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">

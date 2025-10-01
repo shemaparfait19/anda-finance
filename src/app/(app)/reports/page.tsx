@@ -17,9 +17,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Download } from 'lucide-react';
-import { members } from '@/lib/data';
+import { getMembers } from '@/lib/data-service';
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+    const members = await getMembers();
   const reportTypes = [
     { id: 'member_statement', name: 'Member Statement' },
     { id: 'group_summary', name: 'Group Summary' },
