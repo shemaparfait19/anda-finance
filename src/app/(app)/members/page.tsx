@@ -1,10 +1,10 @@
 
+
 import {
   File,
   ListFilter,
-  MoreHorizontal,
 } from 'lucide-react';
-import Image from 'next/image';
+
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -41,11 +40,50 @@ import {
 } from '@/components/ui/tabs';
 
 import { getMembers } from '@/lib/data-service';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import AddMemberDialog from './add-member-dialog';
+import MemberActions from './member-actions';
+import type { Member } from '@/lib/types';
+
 
 export default async function MembersPage() {
     const members = await getMembers();
+    const activeMembers = members.filter(m => m.status === 'Active');
+    const inactiveMembers = members.filter(m => m.status === 'Inactive');
+
+    const MemberTable = ({ members }: { members: Member[] }) => (
+       <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="hidden w-[100px] sm:table-cell">
+                    <span className="sr-only">Image</span>
+                  </TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Member ID</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Savings
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Loan Balance
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Joined At
+                  </TableHead>
+                  <TableHead>
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {members.map((member) => (
+                  <TableRow key={member.id}>
+                    <MemberActions member={member} />
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+    )
+
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
@@ -91,92 +129,47 @@ export default async function MembersPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="hidden w-[100px] sm:table-cell">
-                    <span className="sr-only">Image</span>
-                  </TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Member ID</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Savings
-                  </TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Loan Balance
-                  </TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Joined At
-                  </TableHead>
-                  <TableHead>
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.map((member) => {
-                  const image = getPlaceholderImage(member.avatarId);
-                  return (
-                  <TableRow key={member.id}>
-                    <TableCell className="hidden sm:table-cell">
-                      <Image
-                        alt={`Avatar of ${member.name}`}
-                        className="aspect-square rounded-full object-cover"
-                        height="40"
-                        src={image.imageUrl}
-                        width="40"
-                        data-ai-hint={image.imageHint}
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">{member.name}</TableCell>
-                    <TableCell>{member.memberId}</TableCell>
-                    <TableCell>
-                      <Badge variant={member.status === 'Active' ? 'default' : 'secondary'}>
-                        {member.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      RWF {member.savingsBalance.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      RWF {member.loanBalance.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {member.joinDate}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-haspopup="true"
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>View Profile</DropdownMenuItem>
-                          <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem>Make Deposit</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
-                            Deactivate
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )})}
-              </TableBody>
-            </Table>
+            <MemberTable members={members} />
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
               Showing <strong>1-{members.length}</strong> of <strong>{members.length}</strong> members
+            </div>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+      <TabsContent value="active">
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Members</CardTitle>
+            <CardDescription>
+              Members who are currently active in the group.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MemberTable members={activeMembers} />
+          </CardContent>
+          <CardFooter>
+            <div className="text-xs text-muted-foreground">
+              Showing <strong>1-{activeMembers.length}</strong> of <strong>{activeMembers.length}</strong> active members
+            </div>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+       <TabsContent value="inactive">
+        <Card>
+          <CardHeader>
+            <CardTitle>Inactive Members</CardTitle>
+            <CardDescription>
+              Members who are no longer active in the group.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MemberTable members={inactiveMembers} />
+          </CardContent>
+          <CardFooter>
+            <div className="text-xs text-muted-foreground">
+              Showing <strong>1-{inactiveMembers.length}</strong> of <strong>{inactiveMembers.length}</strong> inactive members
             </div>
           </CardFooter>
         </Card>

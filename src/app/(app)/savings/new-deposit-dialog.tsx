@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect, useActionState, useRef } from 'react';
+import { useState, useEffect, useActionState, useRef, ReactNode } from 'react';
 import { useFormStatus } from 'react-dom';
 import { ArrowDownCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,11 +38,24 @@ function SubmitButton() {
     )
 }
 
-export default function NewDepositDialog({ members }: { members: Member[] }) {
-  const [open, setOpen] = useState(false);
+interface NewDepositDialogProps {
+    members: Member[];
+    selectedMemberId?: string;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    trigger?: ReactNode;
+}
+
+export default function NewDepositDialog({ members, selectedMemberId, open, onOpenChange, trigger }: NewDepositDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [state, formAction] = useActionState(makeDeposit, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+
+  const isControlled = open !== undefined && onOpenChange !== undefined;
+  const currentOpen = isControlled ? open : internalOpen;
+  const setCurrentOpen = isControlled ? onOpenChange : setInternalOpen;
+
 
    useEffect(() => {
     if (state.message) {
@@ -50,9 +64,9 @@ export default function NewDepositDialog({ members }: { members: Member[] }) {
           title: 'Success',
           description: state.message,
         });
-        setOpen(false);
+        setCurrentOpen(false);
         formRef.current?.reset();
-      } else if (!state.fields) {
+      } else if (!state.fields || Object.keys(state.fields).length === 0) {
         toast({
           variant: 'destructive',
           title: 'Error',
@@ -60,28 +74,24 @@ export default function NewDepositDialog({ members }: { members: Member[] }) {
         });
       }
     }
-   }, [state, toast]);
+   }, [state, toast, setCurrentOpen]);
    
    useEffect(() => {
-    if (!open) {
+    if (!currentOpen) {
       formRef.current?.reset();
-      state.message = '';
-      state.fields = {};
-      state.success = false;
+      // Reset useActionState
+       if (state.message || state.success || state.fields) {
+            state.message = '';
+            state.success = false;
+            state.fields = {};
+       }
     }
-   }, [open, state]);
+   }, [currentOpen, state]);
 
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-8 gap-1">
-            <ArrowDownCircle className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              New Deposit
-            </span>
-          </Button>
-      </DialogTrigger>
+    <Dialog open={currentOpen} onOpenChange={setCurrentOpen}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-[425px]">
         <form ref={formRef} action={formAction}>
             <DialogHeader>
@@ -96,8 +106,8 @@ export default function NewDepositDialog({ members }: { members: Member[] }) {
                     Member
                     </Label>
                     <div className='col-span-3'>
-                        <Select name="memberId">
-                             <SelectTrigger>
+                        <Select name="memberId" defaultValue={selectedMemberId}>
+                             <SelectTrigger disabled={!!selectedMemberId}>
                                 <SelectValue placeholder="Select a member" />
                             </SelectTrigger>
                             <SelectContent>

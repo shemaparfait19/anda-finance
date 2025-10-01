@@ -1,4 +1,3 @@
-
 [
   {
     "id": "loan1",
@@ -55,5 +54,20 @@
     "status": "Paid",
     "loanTerm": 6,
     "loanPurpose": "Other"
+  },
+  {
+    "memberId": "2",
+    "memberName": "Jean Bosco Nsengiyumva",
+    "loanId": "LN857897",
+    "principal": 5000,
+    "balance": 5000,
+    "interestRate": 10,
+    "issueDate": "2025-10-01",
+    "dueDate": "2026-01-01",
+    "status": "Pending",
+    "loanTerm": 3,
+    "loanPurpose": "Education",
+    "purposeDescription": "dajdshkahsdkjashdkjhas",
+    "id": "LN1759329857907"
   }
 ]

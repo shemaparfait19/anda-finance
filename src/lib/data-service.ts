@@ -1,3 +1,4 @@
+
 'use server';
 
 import fs from 'fs/promises';
@@ -67,6 +68,14 @@ export async function getTransactions(): Promise<Transaction[]> {
   return readData<Transaction[]>('transactions.json');
 }
 
+export async function getTransactionsByMemberId(memberId: string): Promise<Transaction[]> {
+    const allTransactions = await getTransactions();
+    const member = await getMemberById(memberId);
+    if (!member) return [];
+    return allTransactions.filter(tx => tx.member.name === member.name);
+}
+
+
 export async function addTransaction(transaction: Omit<Transaction, 'id' | 'status'>): Promise<Transaction> {
     const transactions = await getTransactions();
     const newTransaction: Transaction = { ...transaction, id: `TXN${Date.now()}`, status: 'Completed' };
@@ -74,6 +83,7 @@ export async function addTransaction(transaction: Omit<Transaction, 'id' | 'stat
     await writeData('transactions.json', transactions.slice(0, 50)); // Keep the list size manageable
     revalidatePath('/');
     revalidatePath('/transactions');
+    revalidatePath('/savings'); // For statement dialog
     return newTransaction;
 }
 
@@ -121,15 +131,32 @@ export async function getLoans(): Promise<Loan[]> {
     return readData<Loan[]>('loans.json');
 }
 
+export async function getLoanById(id: string): Promise<Loan | undefined> {
+    const loans = await getLoans();
+    return loans.find(l => l.id === id);
+}
+
 export async function addLoan(loan: Omit<Loan, 'id'>): Promise<Loan> {
     const loans = await getLoans();
     const newLoan: Loan = { ...loan, id: `LN${Date.now()}` };
     loans.push(newLoan);
     await writeData('loans.json', loans);
     revalidatePath('/loans');
-    revalidatePath('/'); // For dashboard stats
     return newLoan;
 }
+
+export async function updateLoanInDb(id: string, updates: Partial<Omit<Loan, 'id'>>): Promise<Loan> {
+    const loans = await getLoans();
+    const loanIndex = loans.findIndex(l => l.id === id);
+    if (loanIndex === -1) throw new Error('Loan not found');
+    
+    const updatedLoan = { ...loans[loanIndex], ...updates };
+    loans[loanIndex] = updatedLoan;
+    await writeData('loans.json', loans);
+    revalidatePath('/loans');
+    return updatedLoan;
+}
+
 
 // Cashbook
 export async function getCashbook() {

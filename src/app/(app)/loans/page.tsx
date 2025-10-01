@@ -1,66 +1,41 @@
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import type { Loan } from '@/lib/types';
 import { getLoans, getMembers } from '@/lib/data-service';
 import NewLoanDialog from './new-loan-dialog';
+import LoansTable from './loans-table';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import type { Loan } from '@/lib/types';
 
-
-const getStatusBadgeVariant = (status: Loan['status']) => {
-  switch (status) {
-    case 'Active': return 'default';
-    case 'Paid': return 'secondary';
-    case 'Overdue': return 'destructive';
-    case 'Defaulted': return 'destructive';
-    case 'Pending': return 'outline';
-    default: return 'outline';
-  }
-}
 
 export default async function LoansPage() {
     const loans = await getLoans();
     const members = await getMembers();
 
+    const tabs: {value: Loan['status'] | 'all', label: string, isDestructive?: boolean}[] = [
+        { value: 'all', label: 'All' },
+        { value: 'Pending', label: 'Pending' },
+        { value: 'Active', label: 'Active' },
+        { value: 'Overdue', label: 'Overdue', isDestructive: true },
+        { value: 'Paid', label: 'Paid' },
+    ];
+    
+    const getLoansByStatus = (status: Loan['status']) => loans.filter(loan => loan.status === status);
+
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
         <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="overdue" className="text-destructive">Overdue</TabsTrigger>
-          <TabsTrigger value="paid">Paid</TabsTrigger>
+          {tabs.map(tab => (
+            <TabsTrigger key={tab.value} value={tab.value} className={tab.isDestructive ? 'text-destructive' : ''}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
           <NewLoanDialog members={members} />
@@ -69,82 +44,32 @@ export default async function LoansPage() {
       <TabsContent value="all">
         <Card>
           <CardHeader>
-            <CardTitle>Loans</CardTitle>
+            <CardTitle>All Loans</CardTitle>
             <CardDescription>
               Manage loan applications, approvals, disbursements, and repayments.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Member Name</TableHead>
-                  <TableHead>Loan ID</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Due Date
-                  </TableHead>
-                  <TableHead className="hidden md:table-cell text-right">
-                    Principal
-                  </TableHead>
-                  <TableHead className="text-right">Balance</TableHead>
-                  <TableHead>
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loans.map((loan) => (
-                  <TableRow key={loan.id}>
-                    <TableCell className="font-medium">{loan.memberName}</TableCell>
-                    <TableCell>{loan.loanId}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(loan.status)}>
-                        {loan.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {loan.dueDate}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell text-right">
-                      RWF {loan.principal.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      RWF {loan.balance.toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-haspopup="true"
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                           {loan.status === 'Pending' && <DropdownMenuItem>Approve Loan</DropdownMenuItem>}
-                          <DropdownMenuItem>View Details</DropdownMenuItem>
-                          <DropdownMenuItem>Record Repayment</DropdownMenuItem>
-                          <DropdownMenuItem>Send Reminder</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <LoansTable loans={loans} />
           </CardContent>
-          <CardFooter>
-            <div className="text-xs text-muted-foreground">
-              Showing <strong>1-{loans.length}</strong> of <strong>{loans.length}</strong> loans
-            </div>
-          </CardFooter>
         </Card>
       </TabsContent>
+
+      {tabs.filter(t => t.value !== 'all').map(tab => (
+         <TabsContent key={tab.value} value={tab.value}>
+            <Card>
+            <CardHeader>
+                <CardTitle>{tab.label} Loans</CardTitle>
+                <CardDescription>
+                A list of all loans with '{tab.label}' status.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <LoansTable loans={getLoansByStatus(tab.value as Loan['status'])} />
+            </CardContent>
+            </Card>
+        </TabsContent>
+      ))}
     </Tabs>
   );
 }

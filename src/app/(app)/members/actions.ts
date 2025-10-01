@@ -29,7 +29,7 @@ const AddMemberFormSchema = z.object({
 const EditMemberFormSchema = AddMemberFormSchema.extend({
     id: z.string(),
     status: z.enum(['Active', 'Inactive'])
-})
+});
 
 type FormState = {
     message: string;
@@ -120,6 +120,7 @@ export async function editMember(
         });
 
         revalidatePath('/members');
+        revalidatePath(`/members/${id}`);
         return { message: 'Member updated successfully.', success: true };
     } catch (e) {
         const error = e as Error;

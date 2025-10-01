@@ -25,7 +25,7 @@
     "memberId": "MEM002",
     "joinDate": "2023-02-20",
     "savingsBalance": 88000,
-    "loanBalance": 0,
+    "loanBalance": 5000,
     "status": "Active",
     "avatarId": "avatar2"
   },
