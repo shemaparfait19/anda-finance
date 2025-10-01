@@ -1,7 +1,6 @@
 import {
   Activity,
   ArrowUpRight,
-  CreditCard,
   Landmark,
   Users,
   Wallet,
@@ -26,12 +25,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { getMembers, getTransactions } from '@/lib/data-service';
 
-import { members, transactions } from '@/lib/data';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import SavingsVsLoansChart from '@/components/charts/savings-vs-loans-chart';
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+    const members = await getMembers();
+    const transactions = await getTransactions();
     const totalSavings = members.reduce((acc, member) => acc + member.savingsBalance, 0);
     const totalLoans = members.reduce((acc, member) => acc + member.loanBalance, 0);
     const activeMembers = members.filter(m => m.status === 'Active').length;

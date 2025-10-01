@@ -25,10 +25,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ListFilter, Search } from 'lucide-react';
-import { auditLogs } from '@/lib/data';
+import { getAuditLogs } from '@/lib/data-service';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 
-export default function AuditPage() {
+export default async function AuditPage() {
+  const auditLogs = await getAuditLogs();
   return (
     <Card>
       <CardHeader>

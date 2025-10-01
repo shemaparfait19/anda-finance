@@ -2,6 +2,10 @@
 'use server';
 
 import { z } from 'zod';
+import { addMember as addMemberToDb } from '@/lib/data-service';
+import { revalidatePath } from 'next/cache';
+import type { Member } from '@/lib/types';
+
 
 const AddMemberFormSchema = z.object({
     name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -12,6 +16,7 @@ const AddMemberFormSchema = z.object({
 type FormState = {
     message: string;
     fields?: Record<string, string>;
+    success?: boolean;
 }
 
 export async function addMember(
@@ -31,25 +36,33 @@ export async function addMember(
       }
       return {
         message: 'Invalid form data.',
-        fields
+        fields,
+        success: false
       };
     }
     
-    // Here you would typically save the data to your database.
-    // For this demo, we'll just log it to the console.
-    console.log('New member added (simulated):', parsed.data);
+    const newMember: Omit<Member, 'id' | 'savingsBalance' | 'loanBalance' | 'status' | 'avatarId'> = parsed.data;
 
-    // Revalidate path if you were fetching data, to refetch and show the new member.
-    // revalidatePath('/members');
+    await addMemberToDb({
+      ...newMember,
+      savingsBalance: 0,
+      loanBalance: 0,
+      status: 'Active',
+      avatarId: `avatar${Math.floor(Math.random() * 5) + 1}`
+    });
+
+    revalidatePath('/members');
 
     return {
         message: "Member added successfully",
+        success: true,
     }
 
   } catch (e) {
     const error = e as Error;
     return {
         message: error.message || 'An unexpected error occurred.',
+        success: false,
     }
   }
 }

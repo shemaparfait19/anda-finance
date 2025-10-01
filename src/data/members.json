@@ -1,0 +1,53 @@
+
+[
+  {
+    "id": "1",
+    "name": "Anathalie Mukamana",
+    "memberId": "MEM001",
+    "joinDate": "2023-01-15",
+    "savingsBalance": 52000,
+    "loanBalance": 150000,
+    "status": "Active",
+    "avatarId": "avatar1"
+  },
+  {
+    "id": "2",
+    "name": "Jean Bosco Nsengiyumva",
+    "memberId": "MEM002",
+    "joinDate": "2023-02-20",
+    "savingsBalance": 78000,
+    "loanBalance": 0,
+    "status": "Active",
+    "avatarId": "avatar2"
+  },
+  {
+    "id": "3",
+    "name": "Clementine Uwera",
+    "memberId": "MEM003",
+    "joinDate": "2023-03-10",
+    "savingsBalance": 21010,
+    "loanBalance": 50000,
+    "status": "Active",
+    "avatarId": "avatar3"
+  },
+  {
+    "id": "4",
+    "name": "Emmanuel Habimana",
+    "memberId": "MEM004",
+    "joinDate": "2023-04-05",
+    "savingsBalance": 105000,
+    "loanBalance": 250000,
+    "status": "Active",
+    "avatarId": "avatar4"
+  },
+  {
+    "id": "5",
+    "name": "Solange Irakoze",
+    "memberId": "MEM005",
+    "joinDate": "2023-05-25",
+    "savingsBalance": 3200,
+    "loanBalance": 0,
+    "status": "Inactive",
+    "avatarId": "avatar5"
+  }
+]

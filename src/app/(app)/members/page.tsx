@@ -3,9 +3,7 @@ import {
   File,
   ListFilter,
   MoreHorizontal,
-  PlusCircle,
 } from 'lucide-react';
-import Link from 'next/link';
 import Image from 'next/image';
 
 import { Badge } from '@/components/ui/badge';
@@ -42,11 +40,12 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 
-import { members } from '@/lib/data';
+import { getMembers } from '@/lib/data-service';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import AddMemberDialog from './add-member-dialog';
 
-export default function MembersPage() {
+export default async function MembersPage() {
+    const members = await getMembers();
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
@@ -177,7 +176,7 @@ export default function MembersPage() {
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
-              Showing <strong>1-10</strong> of <strong>{members.length}</strong> members
+              Showing <strong>1-{members.length}</strong> of <strong>{members.length}</strong> members
             </div>
           </CardFooter>
         </Card>

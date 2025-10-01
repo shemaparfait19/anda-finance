@@ -1,0 +1,51 @@
+
+[
+  {
+    "id": "loan1",
+    "memberId": "1",
+    "memberName": "Anathalie Mukamana",
+    "loanId": "LN001",
+    "principal": 200000,
+    "balance": 150000,
+    "interestRate": 10,
+    "issueDate": "2024-03-01",
+    "dueDate": "2024-08-01",
+    "status": "Active"
+  },
+  {
+    "id": "loan2",
+    "memberId": "3",
+    "memberName": "Clementine Uwera",
+    "loanId": "LN002",
+    "principal": 50000,
+    "balance": 50000,
+    "interestRate": 12,
+    "issueDate": "2024-06-15",
+    "dueDate": "2024-09-15",
+    "status": "Active"
+  },
+  {
+    "id": "loan3",
+    "memberId": "4",
+    "memberName": "Emmanuel Habimana",
+    "loanId": "LN003",
+    "principal": 300000,
+    "balance": 250000,
+    "interestRate": 8,
+    "issueDate": "2024-01-20",
+    "dueDate": "2024-07-20",
+    "status": "Overdue"
+  },
+  {
+    "id": "loan4",
+    "memberId": "5",
+    "memberName": "Solange Irakoze",
+    "loanId": "LN004",
+    "principal": 100000,
+    "balance": 0,
+    "interestRate": 10,
+    "issueDate": "2023-09-01",
+    "dueDate": "2024-03-01",
+    "status": "Paid"
+  }
+]

@@ -3,15 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PlusCircle } from 'lucide-react';
+import { getUsers } from '@/lib/data-service';
 
-const users = [
-    { id: 1, name: 'ZIGAMA Julius', email: 'zigamaj6@gmail.com', role: 'Admin' },
-    { id: 2, name: 'Marie Claire', email: 'marie.c@anda.fi', role: 'Manager' },
-    { id: 3, name: 'Thierry Mugisha', email: 'thierry.m@anda.fi', role: 'Teller' },
-    { id: 4, name: 'Aline Umutesi', email: 'aline.u@anda.fi', role: 'Auditor' },
-]
-
-export default function UserManagementPage() {
+export default async function UserManagementPage() {
+  const users = await getUsers();
   return (
      <Card>
       <CardHeader>

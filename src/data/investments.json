@@ -1,0 +1,7 @@
+
+[
+  { "id": "inv1", "name": "Gahaya Links", "type": "Agribusiness", "amountInvested": 500000, "currentValue": 550000, "purchaseDate": "2023-01-20", "returnOnInvestment": 10 },
+  { "id": "inv2", "name": "Vision City", "type": "Real Estate", "amountInvested": 2000000, "currentValue": 2400000, "purchaseDate": "2022-11-10", "returnOnInvestment": 20 },
+  { "id": "inv3", "name": "GoKigali", "type": "Stock", "amountInvested": 300000, "currentValue": 315000, "purchaseDate": "2023-05-15", "returnOnInvestment": 5 },
+  { "id": "inv4", "name": "Government Treasury Bond", "type": "Bond", "amountInvested": 1000000, "currentValue": 1080000, "purchaseDate": "2023-03-01", "returnOnInvestment": 8 }
+]
