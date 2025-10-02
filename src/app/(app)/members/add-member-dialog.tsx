@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useFormStatus, useFormState } from 'react-dom';
+import { useState, useEffect, useRef, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { PlusCircle, Loader2, UploadCloud, File as FileIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -71,7 +71,7 @@ function FileUpload({ id, label, acceptedFileTypes, helpText }: { id: string, la
 
 export default function AddMemberDialog() {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useFormState(addMember, initialState);
+  const [state, formAction] = useActionState(addMember, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 

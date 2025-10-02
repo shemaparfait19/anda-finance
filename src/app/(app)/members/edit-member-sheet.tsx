@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useFormStatus, useFormState } from 'react-dom';
+import { useEffect, useRef, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,7 +45,7 @@ function SubmitButton() {
 }
 
 export default function EditMemberSheet({ member, open, onOpenChange }: { member: Member, open: boolean, onOpenChange: (open: boolean) => void }) {
-  const [state, formAction] = useFormState(editMember, initialState);
+  const [state, formAction] = useActionState(editMember, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 

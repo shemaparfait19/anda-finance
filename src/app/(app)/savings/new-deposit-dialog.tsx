@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useEffect, useRef, ReactNode } from 'react';
-import { useFormStatus, useFormState } from 'react-dom';
+import { useState, useEffect, useRef, ReactNode, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { ArrowDownCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -48,7 +48,7 @@ interface NewDepositDialogProps {
 
 export default function NewDepositDialog({ members, selectedMemberId, open, onOpenChange, trigger }: NewDepositDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [state, formAction] = useFormState(makeDeposit, initialState);
+  const [state, formAction] = useActionState(makeDeposit, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
