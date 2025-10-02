@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useEffect, useRef, useState, useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,7 +45,7 @@ function SubmitButton() {
 
 export default function AddInvestmentDialog() {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useActionState(addInvestment, initialState);
+  const [state, formAction] = useFormState(addInvestment, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 

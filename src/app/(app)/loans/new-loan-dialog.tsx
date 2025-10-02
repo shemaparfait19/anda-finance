@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,7 +43,7 @@ function SubmitButton() {
 
 export default function NewLoanDialog({ members }: { members: Member[] }) {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useActionState(applyForLoan, initialState);
+  const [state, formAction] = useFormState(applyForLoan, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
