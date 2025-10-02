@@ -103,54 +103,65 @@ export async function updateMember(
   try {
     await ensureInitialized();
 
-    // Build dynamic update query
-    const updateFields: string[] = [];
-    const values: any[] = [];
+    // Build update sets dynamically
+    const updateSets: string[] = [];
 
     if (updates.name) {
-      updateFields.push(`name = $${values.length + 1}`);
-      values.push(updates.name);
+      updateSets.push(`name = '${updates.name.replace(/'/g, "''")}'`);
     }
     if (updates.firstName) {
-      updateFields.push(`first_name = $${values.length + 1}`);
-      values.push(updates.firstName);
+      updateSets.push(
+        `first_name = '${updates.firstName.replace(/'/g, "''")}'`
+      );
     }
     if (updates.lastName) {
-      updateFields.push(`last_name = $${values.length + 1}`);
-      values.push(updates.lastName);
+      updateSets.push(`last_name = '${updates.lastName.replace(/'/g, "''")}'`);
     }
     if (updates.phoneNumber) {
-      updateFields.push(`phone_number = $${values.length + 1}`);
-      values.push(updates.phoneNumber);
+      updateSets.push(
+        `phone_number = '${updates.phoneNumber.replace(/'/g, "''")}'`
+      );
     }
     if (updates.savingsGroup) {
-      updateFields.push(`savings_group = $${values.length + 1}`);
-      values.push(updates.savingsGroup);
+      updateSets.push(
+        `savings_group = '${updates.savingsGroup.replace(/'/g, "''")}'`
+      );
     }
     if (updates.memberRole) {
-      updateFields.push(`member_role = $${values.length + 1}`);
-      values.push(updates.memberRole);
+      updateSets.push(
+        `member_role = '${updates.memberRole.replace(/'/g, "''")}'`
+      );
     }
     if (updates.status) {
-      updateFields.push(`status = $${values.length + 1}`);
-      values.push(updates.status);
+      updateSets.push(`status = '${updates.status.replace(/'/g, "''")}'`);
     }
     if (updates.savingsBalance !== undefined) {
-      updateFields.push(`savings_balance = $${values.length + 1}`);
-      values.push(updates.savingsBalance);
+      updateSets.push(`savings_balance = ${updates.savingsBalance}`);
     }
     if (updates.loanBalance !== undefined) {
-      updateFields.push(`loan_balance = $${values.length + 1}`);
-      values.push(updates.loanBalance);
+      updateSets.push(`loan_balance = ${updates.loanBalance}`);
     }
 
-    updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
-    values.push(id);
+    updateSets.push(`updated_at = CURRENT_TIMESTAMP`);
 
-    const query = `UPDATE members SET ${updateFields.join(", ")} WHERE id = $${
-      values.length
-    } RETURNING *`;
-    const result = await sql.unsafe(query, values);
+    if (updateSets.length === 1) {
+      // Only updated_at, no actual changes
+      const member = await getMemberById(id);
+      if (!member) throw new Error("Member not found");
+      return member;
+    }
+
+    const result = await sql`
+      UPDATE members 
+      SET ${sql.unsafe(updateSets.join(", "))}
+      WHERE id = ${id}
+      RETURNING 
+        id, name, first_name as "firstName", last_name as "lastName", 
+        phone_number as "phoneNumber", savings_group as "savingsGroup",
+        member_role as "memberRole", member_id as "memberId", 
+        join_date as "joinDate", savings_balance as "savingsBalance",
+        loan_balance as "loanBalance", status, avatar_id as "avatarId"
+    `;
 
     revalidatePath("/members");
     revalidatePath(`/members/${id}`);
