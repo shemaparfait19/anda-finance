@@ -50,7 +50,6 @@ type FormState = {
   message: string;
   fields?: Record<string, string>;
   success?: boolean;
-  persisted?: boolean;
 };
 
 export async function addMember(
@@ -94,7 +93,7 @@ export async function addMember(
       ...memberData,
     };
 
-    const result = await addMemberToDb({
+    await addMemberToDb({
       ...newMember,
       name: `${newMember.firstName} ${newMember.lastName}`,
       memberId: `MEM${String(Date.now()).slice(-6)}`,
@@ -106,14 +105,9 @@ export async function addMember(
 
     revalidatePath("/members");
 
-    const message = result.persisted
-      ? "Member added successfully and saved to database."
-      : "Member added successfully, but changes may not persist in production environment. Consider using a database for permanent storage.";
-
     return {
-      message,
+      message: "Member added successfully.",
       success: true,
-      persisted: result.persisted,
     };
   } catch (e) {
     const error = e as Error;
