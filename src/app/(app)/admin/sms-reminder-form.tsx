@@ -1,22 +1,28 @@
+"use client";
 
-'use client';
+import { useEffect, useRef } from "react";
+import { useFormState, useFormStatus } from "react-dom";
+import { CheckCircle, AlertTriangle, Info, Loader2 } from "lucide-react";
 
-import { useEffect, useRef } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
-import { CheckCircle, AlertTriangle, Info, Loader2 } from 'lucide-react';
+import { runSmsPaymentReminder } from "./actions";
+import type { SMSPaymentReminderOutput } from "@/ai/flows/sms-payment-reminder";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
-import { runSmsPaymentReminder } from './actions';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from "@/hooks/use-toast"
+type FormState = {
+  message: string;
+  fields?: Record<string, string>;
+  result?: SMSPaymentReminderOutput;
+};
 
-const initialState = {
-  message: '',
+const initialState: FormState = {
+  message: "",
 };
 
 function SubmitButton() {
@@ -34,8 +40,12 @@ export default function SmsReminderForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
-   useEffect(() => {
-    if (state.message && state.message !== "Analysis complete." && !state.fields) {
+  useEffect(() => {
+    if (
+      state.message &&
+      state.message !== "Analysis complete." &&
+      !state.fields
+    ) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -43,10 +53,9 @@ export default function SmsReminderForm() {
       });
     }
     if (state.message === "Analysis complete.") {
-        formRef.current?.reset();
+      formRef.current?.reset();
     }
   }, [state, toast]);
-
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -54,17 +63,23 @@ export default function SmsReminderForm() {
         <div className="grid gap-2">
           <Label htmlFor="memberId">Member ID</Label>
           <Input id="memberId" name="memberId" placeholder="e.g., MEM001" />
-          {state.fields?.memberId && <p className="text-sm text-destructive">{state.fields.memberId}</p>}
+          {state.fields?.memberId && (
+            <p className="text-sm text-destructive">{state.fields.memberId}</p>
+          )}
         </div>
         <div className="grid gap-2">
           <Label htmlFor="loanId">Loan ID</Label>
           <Input id="loanId" name="loanId" placeholder="e.g., LN001" />
-          {state.fields?.loanId && <p className="text-sm text-destructive">{state.fields.loanId}</p>}
+          {state.fields?.loanId && (
+            <p className="text-sm text-destructive">{state.fields.loanId}</p>
+          )}
         </div>
         <div className="grid gap-2">
           <Label htmlFor="dueDate">Due Date</Label>
           <Input id="dueDate" name="dueDate" type="date" />
-          {state.fields?.dueDate && <p className="text-sm text-destructive">{state.fields.dueDate}</p>}
+          {state.fields?.dueDate && (
+            <p className="text-sm text-destructive">{state.fields.dueDate}</p>
+          )}
         </div>
         <div className="grid gap-2">
           <Label htmlFor="repaymentHistory">Repayment History</Label>
@@ -74,7 +89,11 @@ export default function SmsReminderForm() {
             placeholder="e.g., 10 on-time payments, 2 late payments, 0 defaults."
             className="min-h-[100px]"
           />
-           {state.fields?.repaymentHistory && <p className="text-sm text-destructive">{state.fields.repaymentHistory}</p>}
+          {state.fields?.repaymentHistory && (
+            <p className="text-sm text-destructive">
+              {state.fields.repaymentHistory}
+            </p>
+          )}
         </div>
         <div className="grid gap-2">
           <Label htmlFor="configuredReminderSettings">Reminder Settings</Label>
@@ -82,44 +101,75 @@ export default function SmsReminderForm() {
             id="configuredReminderSettings"
             name="configuredReminderSettings"
             placeholder="e.g., Send reminders 3 days before due date."
-             className="min-h-[100px]"
+            className="min-h-[100px]"
           />
-           {state.fields?.configuredReminderSettings && <p className="text-sm text-destructive">{state.fields.configuredReminderSettings}</p>}
+          {state.fields?.configuredReminderSettings && (
+            <p className="text-sm text-destructive">
+              {state.fields.configuredReminderSettings}
+            </p>
+          )}
         </div>
         <div className="grid gap-2">
           <Label htmlFor="outstandingBalance">Outstanding Balance (RWF)</Label>
-          <Input id="outstandingBalance" name="outstandingBalance" type="number" step="1" placeholder="e.g., 15000" />
-          {state.fields?.outstandingBalance && <p className="text-sm text-destructive">{state.fields.outstandingBalance}</p>}
+          <Input
+            id="outstandingBalance"
+            name="outstandingBalance"
+            type="number"
+            step="1"
+            placeholder="e.g., 15000"
+          />
+          {state.fields?.outstandingBalance && (
+            <p className="text-sm text-destructive">
+              {state.fields.outstandingBalance}
+            </p>
+          )}
         </div>
         <SubmitButton />
       </form>
-      
+
       <div className="space-y-4">
         <Card className="bg-muted/30">
-            <CardHeader>
-                <CardTitle>AI Analysis Result</CardTitle>
-            </CardHeader>
-            <CardContent>
-                {state.result ? (
-                    <Alert variant={state.result.shouldSendReminder ? 'default' : 'destructive'} className='bg-background'>
-                        {state.result.shouldSendReminder ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-                        <AlertTitle className="flex items-center gap-2">
-                            Decision:
-                            <Badge variant={state.result.shouldSendReminder ? 'default' : 'destructive'}>
-                                {state.result.shouldSendReminder ? 'Send Reminder' : "Don't Send"}
-                            </Badge>
-                        </AlertTitle>
-                        <AlertDescription>
-                            <strong>Reason:</strong> {state.result.reason}
-                        </AlertDescription>
-                    </Alert>
+          <CardHeader>
+            <CardTitle>AI Analysis Result</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {state.result ? (
+              <Alert
+                variant={
+                  state.result.shouldSendReminder ? "default" : "destructive"
+                }
+                className="bg-background"
+              >
+                {state.result.shouldSendReminder ? (
+                  <CheckCircle className="h-4 w-4" />
                 ) : (
-                     <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8">
-                        <Info className="h-8 w-8 mb-2" />
-                        <p>Results will be displayed here after analysis.</p>
-                     </div>
+                  <AlertTriangle className="h-4 w-4" />
                 )}
-            </CardContent>
+                <AlertTitle className="flex items-center gap-2">
+                  Decision:
+                  <Badge
+                    variant={
+                      state.result.shouldSendReminder
+                        ? "default"
+                        : "destructive"
+                    }
+                  >
+                    {state.result.shouldSendReminder
+                      ? "Send Reminder"
+                      : "Don't Send"}
+                  </Badge>
+                </AlertTitle>
+                <AlertDescription>
+                  <strong>Reason:</strong> {state.result.reason}
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8">
+                <Info className="h-8 w-8 mb-2" />
+                <p>Results will be displayed here after analysis.</p>
+              </div>
+            )}
+          </CardContent>
         </Card>
       </div>
     </div>
