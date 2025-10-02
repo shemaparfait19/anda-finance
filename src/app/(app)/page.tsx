@@ -1,22 +1,16 @@
-import {
-  Activity,
-  ArrowUpRight,
-  Landmark,
-  Users,
-  Wallet,
-} from 'lucide-react';
-import Link from 'next/link';
+import { Activity, ArrowUpRight, Landmark, Users, Wallet } from "lucide-react";
+import Link from "next/link";
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -24,18 +18,24 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { getMembers, getTransactions } from '@/lib/data-service';
+} from "@/components/ui/table";
+import { getMembers, getTransactions } from "@/lib/data-service";
 
-import { getPlaceholderImage } from '@/lib/placeholder-images';
-import SavingsVsLoansChart from '@/components/charts/savings-vs-loans-chart';
+import { getPlaceholderImage } from "@/lib/placeholder-images";
+import SavingsVsLoansChart from "@/components/charts/savings-vs-loans-chart";
 
 export default async function DashboardPage() {
-    const members = await getMembers();
-    const transactions = await getTransactions();
-    const totalSavings = members.reduce((acc, member) => acc + member.savingsBalance, 0);
-    const totalLoans = members.reduce((acc, member) => acc + member.loanBalance, 0);
-    const activeMembers = members.filter(m => m.status === 'Active').length;
+  const members = await getMembers();
+  const transactions = await getTransactions();
+  const totalSavings = members.reduce(
+    (acc, member) => acc + member.savingsBalance,
+    0
+  );
+  const totalLoans = members.reduce(
+    (acc, member) => acc + member.loanBalance,
+    0
+  );
+  const activeMembers = members.filter((m) => m.status === "Active").length;
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -75,11 +75,15 @@ export default async function DashboardPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium font-body">Active Members</CardTitle>
+              <CardTitle className="text-sm font-medium font-body">
+                Active Members
+              </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-headline">+{activeMembers}</div>
+              <div className="text-2xl font-bold font-headline">
+                +{activeMembers}
+              </div>
               <p className="text-xs text-muted-foreground">
                 +19% from last month
               </p>
@@ -87,7 +91,9 @@ export default async function DashboardPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium font-body">Portfolio at Risk</CardTitle>
+              <CardTitle className="text-sm font-medium font-body">
+                Portfolio at Risk
+              </CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -125,48 +131,51 @@ export default async function DashboardPage() {
                     <TableHead className="hidden xl:table-column">
                       Status
                     </TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Date
-                    </TableHead>
+                    <TableHead className="hidden md:table-cell">Date</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {transactions.map((transaction) => {
-                    const image = getPlaceholderImage(transaction.member.avatarId);
+                    const image = getPlaceholderImage(
+                      transaction.member.avatarId
+                    );
                     return (
-                    <TableRow key={transaction.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="hidden h-9 w-9 sm:flex">
-                            <AvatarImage
-                              src={image.imageUrl}
-                              alt={`Avatar of ${transaction.member.name}`}
-                              data-ai-hint={image.imageHint}
-                            />
-                            <AvatarFallback>
-                              {transaction.member.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="font-medium">{transaction.member.name}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden xl:table-column">
-                        {transaction.type}
-                      </TableCell>
-                      <TableCell className="hidden xl:table-column">
-                        <Badge className="text-xs" variant="outline">
-                          {transaction.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {transaction.date}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        RWF {transaction.amount.toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                  )})}
+                      <TableRow key={transaction.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="hidden h-9 w-9 sm:flex">
+                              <AvatarImage
+                                src={image.imageUrl}
+                                alt={`Avatar of ${transaction.member.name}`}
+                                data-ai-hint={image.imageHint}
+                              />
+                              <AvatarFallback>
+                                {transaction.member.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="font-medium">
+                              {transaction.member.name}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden xl:table-column">
+                          {transaction.type}
+                        </TableCell>
+                        <TableCell className="hidden xl:table-column">
+                          <Badge className="text-xs" variant="outline">
+                            {transaction.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {new Date(transaction.date).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          RWF {transaction.amount.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardContent>
@@ -177,7 +186,7 @@ export default async function DashboardPage() {
               <CardDescription>January - July 2024</CardDescription>
             </CardHeader>
             <CardContent>
-               <SavingsVsLoansChart />
+              <SavingsVsLoansChart />
             </CardContent>
           </Card>
         </div>

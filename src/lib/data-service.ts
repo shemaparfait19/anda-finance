@@ -192,7 +192,10 @@ export async function getTransactions(): Promise<Transaction[]> {
       member: { name: row.member_name, avatarId: row.memberAvatarId },
       type: row.type,
       amount: Number(row.amount),
-      date: row.date,
+      date:
+        row.date instanceof Date
+          ? row.date.toISOString().split("T")[0]
+          : row.date,
       status: row.status,
     })) as Transaction[];
   } catch (error) {
@@ -370,7 +373,10 @@ export async function getCashbook() {
       .filter((row) => row.type === "income")
       .map((row) => ({
         id: row.id,
-        date: row.date,
+        date:
+          row.date instanceof Date
+            ? row.date.toISOString().split("T")[0]
+            : row.date,
         description: row.description,
         category: row.category,
         amount: Number(row.amount),
@@ -380,7 +386,10 @@ export async function getCashbook() {
       .filter((row) => row.type === "expense")
       .map((row) => ({
         id: row.id,
-        date: row.date,
+        date:
+          row.date instanceof Date
+            ? row.date.toISOString().split("T")[0]
+            : row.date,
         description: row.description,
         category: row.category,
         amount: Number(row.amount),
