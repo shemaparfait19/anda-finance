@@ -20,17 +20,101 @@ import { revalidatePath } from "next/cache";
 
 const dataPath = path.join(process.cwd(), "src", "data");
 
+// In-memory storage for production environments
+const inMemoryStorage: Record<string, any> = {};
+let isReadOnlyEnvironment = false;
+
+// Check if we're in a read-only environment
+async function checkEnvironment() {
+  try {
+    const testPath = path.join(dataPath, ".test");
+    await fs.writeFile(testPath, "test", "utf-8");
+    await fs.unlink(testPath);
+    isReadOnlyEnvironment = false;
+    console.log("🔧 Development environment - using file system storage");
+  } catch (error) {
+    isReadOnlyEnvironment = true;
+    console.log("🚀 Production environment - using in-memory storage");
+    // Initialize with default data if needed
+    await initializeInMemoryStorage();
+  }
+}
+
+// Initialize in-memory storage with data from files (for production)
+async function initializeInMemoryStorage() {
+  const dataFiles = [
+    "members.json",
+    "transactions.json",
+    "savings.json",
+    "loans.json",
+    "cashbook.json",
+    "investments.json",
+    "audit.json",
+    "users.json",
+    "reports.json",
+    "payments.json",
+    "accounting.json",
+  ];
+
+  for (const filename of dataFiles) {
+    try {
+      // Try to read existing data from bundled files
+      const filePath = path.join(dataPath, filename);
+      const fileContent = await fs.readFile(filePath, "utf-8");
+      inMemoryStorage[filename] = JSON.parse(fileContent);
+      console.log(`📦 Loaded ${filename} into memory`);
+    } catch (error) {
+      // If file doesn't exist, use default empty data
+      const defaultValue =
+        filename === "cashbook.json"
+          ? { income: [], expenses: [] }
+          : filename === "accounting.json"
+          ? { accounts: [], journalEntries: [] }
+          : [];
+
+      inMemoryStorage[filename] = defaultValue;
+      console.log(`🔄 Initialized ${filename} with empty data`);
+    }
+  }
+}
+
 async function readData<T>(filename: string): Promise<T> {
+  // Check environment on first read
+  if (isReadOnlyEnvironment === false && !inMemoryStorage._environmentChecked) {
+    await checkEnvironment();
+    inMemoryStorage._environmentChecked = true;
+  }
+
+  // If in read-only environment and data exists in memory, use it
+  if (isReadOnlyEnvironment && inMemoryStorage[filename]) {
+    return inMemoryStorage[filename];
+  }
+
   const filePath = path.join(dataPath, filename);
   try {
     const fileContent = await fs.readFile(filePath, "utf-8");
-    return JSON.parse(fileContent);
+    const data = JSON.parse(fileContent);
+
+    // Store in memory for future reads in read-only environments
+    if (isReadOnlyEnvironment) {
+      inMemoryStorage[filename] = data;
+    }
+
+    return data;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       // This is a safe fallback for initial runs.
-      if (filename === "cashbook.json")
-        return { income: [], expenses: [] } as T;
-      return [] as T;
+      const fallbackData =
+        filename === "cashbook.json"
+          ? ({ income: [], expenses: [] } as T)
+          : ([] as T);
+
+      // Store fallback in memory for read-only environments
+      if (isReadOnlyEnvironment) {
+        inMemoryStorage[filename] = fallbackData;
+      }
+
+      return fallbackData;
     }
     console.error(`Error reading ${filename}:`, error);
     throw error;
@@ -38,15 +122,30 @@ async function readData<T>(filename: string): Promise<T> {
 }
 
 async function writeData<T>(filename: string, data: T): Promise<void> {
+  // Check environment if not already done
+  if (!inMemoryStorage._environmentChecked) {
+    await checkEnvironment();
+    inMemoryStorage._environmentChecked = true;
+  }
+
+  if (isReadOnlyEnvironment) {
+    // Store in memory for read-only environments
+    inMemoryStorage[filename] = data;
+    console.log(`💾 Saved ${filename} to memory (read-only environment)`);
+    return;
+  }
+
+  // Write to file system in development
   const filePath = path.join(dataPath, filename);
   try {
-    // Ensure the directory exists
     await fs.mkdir(dataPath, { recursive: true });
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
-    console.log(`✅ Successfully saved ${filename}`);
+    console.log(`✅ Saved ${filename} to file system`);
   } catch (error) {
-    console.error(`❌ Error writing to ${filename}:`, error);
-    throw error;
+    // Fallback to in-memory if file write fails
+    console.warn(`⚠️ File write failed, using memory: ${error}`);
+    inMemoryStorage[filename] = data;
+    isReadOnlyEnvironment = true;
   }
 }
 
