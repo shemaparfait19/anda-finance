@@ -99,7 +99,7 @@ export default async function InvestmentsPage() {
                   </TableCell>
                   <TableCell>{investment.type}</TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {investment.purchaseDate}
+                    {new Date(investment.purchaseDate).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
                     RWF {investment.amountInvested.toLocaleString()}

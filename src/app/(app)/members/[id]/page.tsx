@@ -206,7 +206,9 @@ export default async function MemberProfilePage({
                           </span>
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Issued: {loan.issueDate} | Due: {loan.dueDate}
+                          Issued:{" "}
+                          {new Date(loan.issueDate).toLocaleDateString()} | Due:{" "}
+                          {new Date(loan.dueDate).toLocaleDateString()}
                         </p>
                       </div>
                       <Badge

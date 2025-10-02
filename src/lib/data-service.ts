@@ -43,7 +43,15 @@ export async function getMembers(): Promise<Member[]> {
       FROM members 
       ORDER BY created_at DESC
     `;
-    return result as Member[];
+    return result.map((row) => ({
+      ...row,
+      savingsBalance: Number(row.savingsBalance),
+      loanBalance: Number(row.loanBalance),
+      joinDate:
+        row.joinDate instanceof Date
+          ? row.joinDate.toISOString().split("T")[0]
+          : row.joinDate,
+    })) as Member[];
   } catch (error) {
     handleDatabaseError(error, "getMembers");
     return [];
@@ -244,6 +252,10 @@ export async function getSavingsAccounts(): Promise<SavingsAccount[]> {
     return result.map((row) => ({
       ...row,
       balance: Number(row.balance),
+      openDate:
+        row.openDate instanceof Date
+          ? row.openDate.toISOString().split("T")[0]
+          : row.openDate,
     })) as SavingsAccount[];
   } catch (error) {
     handleDatabaseError(error, "getSavingsAccounts");
@@ -327,6 +339,14 @@ export async function getLoans(): Promise<Loan[]> {
       balance: Number(row.balance),
       interestRate: Number(row.interestRate),
       loanTerm: Number(row.loanTerm),
+      issueDate:
+        row.issueDate instanceof Date
+          ? row.issueDate.toISOString().split("T")[0]
+          : row.issueDate,
+      dueDate:
+        row.dueDate instanceof Date
+          ? row.dueDate.toISOString().split("T")[0]
+          : row.dueDate,
     })) as Loan[];
   } catch (error) {
     handleDatabaseError(error, "getLoans");
@@ -510,6 +530,10 @@ export async function getInvestments(): Promise<Investment[]> {
       amountInvested: Number(row.amountInvested),
       currentValue: Number(row.currentValue),
       returnOnInvestment: Number(row.returnOnInvestment),
+      purchaseDate:
+        row.purchaseDate instanceof Date
+          ? row.purchaseDate.toISOString().split("T")[0]
+          : row.purchaseDate,
     })) as Investment[];
   } catch (error) {
     handleDatabaseError(error, "getInvestments");
