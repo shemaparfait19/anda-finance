@@ -1,0 +1,5 @@
+[33m52ca03d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Update package dependencies to latest versions, including @genkit-ai/next, next, react, and react-dom for improved compatibility and features.
+[33m60eacdb[m 13:34:15.877 Running build in Washington, D.C., USA (East) – iad1 13:34:
+[33m6611d31[m send
+[33m4dfeea6[m Try fixing this error: `Unhandled Runtime Error: Error: Invalid src prop
+[33m28189c8[m The app isn't starting. Please investigate what could be wrong based on
