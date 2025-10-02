@@ -37,11 +37,12 @@ async function readData<T>(filename: string): Promise<T> {
   }
 }
 
-async function writeData<T>(filename: string, data: T): Promise<void> {
+async function writeData<T>(filename: string, data: T): Promise<boolean> {
   const filePath = path.join(dataPath, filename);
   try {
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
     console.log(`✅ Successfully saved data to ${filename}`);
+    return true;
   } catch (error) {
     const err = error as NodeJS.ErrnoException;
     if (err.code === "EROFS" || err.code === "EACCES") {
@@ -53,7 +54,7 @@ async function writeData<T>(filename: string, data: T): Promise<void> {
         "💡 In production, consider using a database or external storage service."
       );
       // In a real application, you would save to a database or external storage here
-      return;
+      return false;
     }
     console.error(`❌ Error writing to ${filename}:`, err.message);
     throw error;
@@ -70,30 +71,32 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
   return members.find((m) => m.id === id);
 }
 
-export async function addMember(member: Omit<Member, "id">): Promise<Member> {
+export async function addMember(
+  member: Omit<Member, "id">
+): Promise<Member & { persisted?: boolean }> {
   const members = await getMembers();
   const newMember: Member = { ...member, id: `MEM${Date.now()}` };
   members.push(newMember);
-  await writeData("members.json", members);
+  const persisted = await writeData("members.json", members);
   revalidatePath("/members");
-  return newMember;
+  return { ...newMember, persisted };
 }
 
 export async function updateMember(
   id: string,
   updates: Partial<Omit<Member, "id">>
-): Promise<Member> {
+): Promise<Member & { persisted?: boolean }> {
   const members = await getMembers();
   const memberIndex = members.findIndex((m) => m.id === id);
   if (memberIndex === -1) throw new Error("Member not found");
 
   const updatedMember = { ...members[memberIndex], ...updates };
   members[memberIndex] = updatedMember;
-  await writeData("members.json", members);
+  const persisted = await writeData("members.json", members);
   revalidatePath("/members");
   revalidatePath(`/members/${id}`);
   revalidatePath("/"); // For dashboard stats
-  return updatedMember;
+  return { ...updatedMember, persisted };
 }
 
 // Transactions

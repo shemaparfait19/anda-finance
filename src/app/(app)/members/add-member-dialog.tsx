@@ -36,6 +36,7 @@ const initialState = {
   message: "",
   fields: {},
   success: false,
+  persisted: undefined,
 };
 
 function SubmitButton() {
@@ -101,9 +102,13 @@ export default function AddMemberDialog() {
   useEffect(() => {
     if (state.message) {
       if (state.success) {
+        const title =
+          state.persisted === false ? "⚠️ Partial Success" : "✅ Success";
+
         toast({
-          title: "Success",
+          title,
           description: state.message,
+          duration: state.persisted === false ? 8000 : 4000, // Longer duration for warnings
         });
         setOpen(false);
         formRef.current?.reset();
