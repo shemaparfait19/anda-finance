@@ -1,35 +1,33 @@
+import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 
-import {
-  ArrowDownCircle,
-  ArrowUpCircle,
-} from 'lucide-react';
-
-import { getSavingsAccounts, getMembers } from '@/lib/data-service';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import { getSavingsAccounts, getMembers } from "@/lib/data-service";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import SavingsAccountsTable from './savings-accounts-table';
-import type { SavingsAccount } from '@/lib/types';
-import NewDepositDialog from './new-deposit-dialog';
-import NewWithdrawalDialog from './new-withdrawal-dialog';
+} from "@/components/ui/card";
+import SavingsAccountsTable from "./savings-accounts-table";
+import type { SavingsAccount } from "@/lib/types";
+import NewDepositDialog from "./new-deposit-dialog";
+import NewWithdrawalDialog from "./new-withdrawal-dialog";
+
+// Force dynamic rendering to access environment variables
+export const dynamic = "force-dynamic";
 
 export default async function SavingsPage() {
-    const savingsAccounts = await getSavingsAccounts();
-    const members = await getMembers();
+  const savingsAccounts = await getSavingsAccounts();
+  const members = await getMembers();
 
-    const compulsoryAccounts = savingsAccounts.filter(a => a.type === 'Compulsory');
-    const voluntaryAccounts = savingsAccounts.filter(a => a.type === 'Voluntary');
+  const compulsoryAccounts = savingsAccounts.filter(
+    (a) => a.type === "Compulsory"
+  );
+  const voluntaryAccounts = savingsAccounts.filter(
+    (a) => a.type === "Voluntary"
+  );
 
   return (
     <Tabs defaultValue="all">
@@ -40,22 +38,28 @@ export default async function SavingsPage() {
           <TabsTrigger value="voluntary">Voluntary</TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
-            <NewWithdrawalDialog members={members} trigger={
-                 <Button size="sm" variant="outline" className="h-8 gap-1">
-                    <ArrowUpCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    New Withdrawal
-                    </span>
-                </Button>
-            } />
-            <NewDepositDialog members={members} trigger={
-                 <Button size="sm" className="h-8 gap-1">
-                    <ArrowDownCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    New Deposit
-                    </span>
-                </Button>
-            } />
+          <NewWithdrawalDialog
+            members={members}
+            trigger={
+              <Button size="sm" variant="outline" className="h-8 gap-1">
+                <ArrowUpCircle className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                  New Withdrawal
+                </span>
+              </Button>
+            }
+          />
+          <NewDepositDialog
+            members={members}
+            trigger={
+              <Button size="sm" className="h-8 gap-1">
+                <ArrowDownCircle className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                  New Deposit
+                </span>
+              </Button>
+            }
+          />
         </div>
       </div>
       <TabsContent value="all">
@@ -67,33 +71,42 @@ export default async function SavingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <SavingsAccountsTable accounts={savingsAccounts} members={members} />
+            <SavingsAccountsTable
+              accounts={savingsAccounts}
+              members={members}
+            />
           </CardContent>
         </Card>
       </TabsContent>
-       <TabsContent value="compulsory">
+      <TabsContent value="compulsory">
         <Card>
           <CardHeader>
             <CardTitle>Compulsory Savings Accounts</CardTitle>
             <CardDescription>
-             Accounts for regular, required member contributions.
+              Accounts for regular, required member contributions.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <SavingsAccountsTable accounts={compulsoryAccounts} members={members} />
+            <SavingsAccountsTable
+              accounts={compulsoryAccounts}
+              members={members}
+            />
           </CardContent>
         </Card>
       </TabsContent>
-       <TabsContent value="voluntary">
+      <TabsContent value="voluntary">
         <Card>
           <CardHeader>
             <CardTitle>Voluntary Savings Accounts</CardTitle>
             <CardDescription>
-             Additional, flexible savings accounts for members.
+              Additional, flexible savings accounts for members.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <SavingsAccountsTable accounts={voluntaryAccounts} members={members} />
+            <SavingsAccountsTable
+              accounts={voluntaryAccounts}
+              members={members}
+            />
           </CardContent>
         </Card>
       </TabsContent>

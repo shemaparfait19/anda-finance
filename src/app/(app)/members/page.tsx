@@ -33,6 +33,9 @@ import AddMemberDialog from "./add-member-dialog";
 import MemberActions from "./member-actions";
 import type { Member } from "@/lib/types";
 
+// Force dynamic rendering to access environment variables
+export const dynamic = "force-dynamic";
+
 export default async function MembersPage() {
   const members = await getMembers();
   const activeMembers = members.filter((m) => m.status === "Active");

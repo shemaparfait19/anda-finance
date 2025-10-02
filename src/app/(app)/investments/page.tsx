@@ -1,11 +1,11 @@
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -13,12 +13,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { getInvestments } from '@/lib/data-service';
-import AddInvestmentDialog from './add-investment-dialog';
+} from "@/components/ui/table";
+import { getInvestments } from "@/lib/data-service";
+import AddInvestmentDialog from "./add-investment-dialog";
+
+// Force dynamic rendering to access environment variables
+export const dynamic = "force-dynamic";
 
 export default async function InvestmentsPage() {
-    const investments = await getInvestments();
+  const investments = await getInvestments();
   const totalInvested = investments.reduce(
     (acc, inv) => acc + inv.amountInvested,
     0
@@ -55,7 +58,7 @@ export default async function InvestmentsPage() {
             <CardDescription>Overall Return</CardDescription>
             <CardTitle
               className={`text-4xl font-headline ${
-                totalReturn >= 0 ? 'text-green-600' : 'text-red-600'
+                totalReturn >= 0 ? "text-green-600" : "text-red-600"
               }`}
             >
               RWF {totalReturn.toLocaleString()} (+
@@ -66,13 +69,13 @@ export default async function InvestmentsPage() {
       </div>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle>Investment Portfolio</CardTitle>
-                <CardDescription>
-                    Track the performance of your group's investments.
-                </CardDescription>
-            </div>
-            <AddInvestmentDialog />
+          <div>
+            <CardTitle>Investment Portfolio</CardTitle>
+            <CardDescription>
+              Track the performance of your group's investments.
+            </CardDescription>
+          </div>
+          <AddInvestmentDialog />
         </CardHeader>
         <CardContent>
           <Table>
@@ -107,8 +110,8 @@ export default async function InvestmentsPage() {
                   <TableCell
                     className={`text-right font-semibold ${
                       investment.returnOnInvestment >= 0
-                        ? 'text-green-600'
-                        : 'text-red-600'
+                        ? "text-green-600"
+                        : "text-red-600"
                     }`}
                   >
                     {investment.returnOnInvestment.toFixed(2)}%

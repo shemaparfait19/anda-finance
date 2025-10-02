@@ -24,6 +24,9 @@ import { getMembers, getTransactions } from "@/lib/data-service";
 import { getPlaceholderImage } from "@/lib/placeholder-images";
 import SavingsVsLoansChart from "@/components/charts/savings-vs-loans-chart";
 
+// Force dynamic rendering to access environment variables
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const members = await getMembers();
   const transactions = await getTransactions();
