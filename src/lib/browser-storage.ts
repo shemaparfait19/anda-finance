@@ -189,7 +189,7 @@ const memoryStorage: Record<string, any> = {};
 let isInitialized = false;
 
 // Initialize storage with demo data
-export function initializeStorage() {
+export async function initializeStorage() {
   if (!isInitialized) {
     Object.assign(memoryStorage, INITIAL_DATA);
     isInitialized = true;
@@ -199,7 +199,7 @@ export function initializeStorage() {
 
 // Read data from memory storage
 export async function readStorageData<T>(filename: string): Promise<T> {
-  initializeStorage();
+  await initializeStorage();
 
   if (memoryStorage[filename]) {
     return memoryStorage[filename];
@@ -221,13 +221,13 @@ export async function writeStorageData<T>(
   filename: string,
   data: T
 ): Promise<void> {
-  initializeStorage();
+  await initializeStorage();
   memoryStorage[filename] = data;
   console.log(`💾 Saved ${filename} to browser storage`);
 }
 
 // Get all stored data (for debugging)
-export function getAllStorageData() {
-  initializeStorage();
+export async function getAllStorageData() {
+  await initializeStorage();
   return memoryStorage;
 }
