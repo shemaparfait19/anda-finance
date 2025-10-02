@@ -1,4 +1,3 @@
-
 import type { LucideIcon } from "lucide-react";
 
 export type Member = {
@@ -7,14 +6,14 @@ export type Member = {
   firstName: string;
   lastName: string;
   dateOfBirth?: string;
-  gender?: 'Male' | 'Female' | 'Other';
+  gender?: "Male" | "Female" | "Other";
   nationalId?: string;
   phoneNumber: string;
   email?: string;
   alternativePhone?: string;
   address?: string;
   savingsGroup: string;
-  memberRole: 'Member' | 'Chairperson' | 'Treasurer' | 'Secretary' | 'Teller';
+  memberRole: "Member" | "Chairperson" | "Treasurer" | "Secretary" | "Teller";
   monthlyContribution?: number;
   profilePhotoPath?: string;
   nationalIdCopyPath?: string;
@@ -84,7 +83,7 @@ export type NavLink = {
 export type Investment = {
   id: string;
   name: string;
-  type: 'Stock' | 'Real Estate' | 'Bond' | 'Agribusiness';
+  type: "Stock" | "Real Estate" | "Bond" | "Agribusiness";
   amountInvested: number;
   currentValue: number;
   purchaseDate: string;
@@ -103,8 +102,57 @@ export type AuditLog = {
 };
 
 export type User = {
-    id: number;
-    name: string;
-    email: string;
-    role: 'Admin' | 'Manager' | 'Teller' | 'Auditor';
-}
+  id: number;
+  name: string;
+  email: string;
+  role: "Admin" | "Manager" | "Teller" | "Auditor";
+};
+
+export type Report = {
+  id: string;
+  title: string;
+  type: "financial" | "member" | "loan" | "savings" | "audit";
+  period: string;
+  generatedDate: string;
+  data: Record<string, any>;
+  status: "draft" | "completed" | "archived";
+};
+
+export type Payment = {
+  id: string;
+  memberId: string;
+  memberName: string;
+  type: "loan_repayment" | "savings_deposit" | "fee_payment" | "withdrawal";
+  amount: number;
+  paymentDate: string;
+  paymentMethod: "cash" | "mobile_money" | "bank_transfer" | "check";
+  reference: string;
+  status: "pending" | "completed" | "failed" | "cancelled";
+  description?: string;
+};
+
+export type Account = {
+  id: string;
+  code: string;
+  name: string;
+  type: "asset" | "liability" | "equity" | "income" | "expense";
+  balance: number;
+  lastUpdated: string;
+};
+
+export type JournalEntry = {
+  id: string;
+  date: string;
+  description: string;
+  reference: string;
+  entries: {
+    accountId: string;
+    debit: number;
+    credit: number;
+  }[];
+};
+
+export type AccountingData = {
+  accounts: Account[];
+  journalEntries: JournalEntry[];
+};

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "PAY001",
+    "memberId": "1",
+    "memberName": "Anathalie Mukamana",
+    "type": "loan_repayment",
+    "amount": 50000,
+    "paymentDate": "2024-01-15",
+    "paymentMethod": "cash",
+    "reference": "LN001-REP-001",
+    "status": "completed",
+    "description": "Monthly loan repayment"
+  },
+  {
+    "id": "PAY002",
+    "memberId": "2",
+    "memberName": "Jean Baptiste Nzeyimana",
+    "type": "savings_deposit",
+    "amount": 25000,
+    "paymentDate": "2024-01-20",
+    "paymentMethod": "mobile_money",
+    "reference": "SAV002-DEP-001",
+    "status": "completed",
+    "description": "Monthly savings contribution"
+  }
+]

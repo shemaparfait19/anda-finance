@@ -1,0 +1,56 @@
+{
+  "accounts": [
+    {
+      "id": "ACC001",
+      "code": "1000",
+      "name": "Cash at Hand",
+      "type": "asset",
+      "balance": 500000,
+      "lastUpdated": "2024-01-31"
+    },
+    {
+      "id": "ACC002",
+      "code": "1100",
+      "name": "Bank Account - Equity Bank",
+      "type": "asset",
+      "balance": 2000000,
+      "lastUpdated": "2024-01-31"
+    },
+    {
+      "id": "ACC003",
+      "code": "2000",
+      "name": "Member Savings",
+      "type": "liability",
+      "balance": 1800000,
+      "lastUpdated": "2024-01-31"
+    },
+    {
+      "id": "ACC004",
+      "code": "3000",
+      "name": "Share Capital",
+      "type": "equity",
+      "balance": 700000,
+      "lastUpdated": "2024-01-31"
+    }
+  ],
+  "journalEntries": [
+    {
+      "id": "JE001",
+      "date": "2024-01-15",
+      "description": "Member savings deposit",
+      "reference": "SAV001",
+      "entries": [
+        {
+          "accountId": "ACC001",
+          "debit": 25000,
+          "credit": 0
+        },
+        {
+          "accountId": "ACC003",
+          "debit": 0,
+          "credit": 25000
+        }
+      ]
+    }
+  ]
+}

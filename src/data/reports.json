@@ -1,0 +1,16 @@
+[
+  {
+    "id": "RPT001",
+    "title": "Monthly Financial Summary",
+    "type": "financial",
+    "period": "2024-01",
+    "generatedDate": "2024-01-31",
+    "data": {
+      "totalSavings": 2500000,
+      "totalLoans": 1800000,
+      "totalInvestments": 500000,
+      "netPosition": 1200000
+    },
+    "status": "completed"
+  }
+]
