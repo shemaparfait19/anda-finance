@@ -358,14 +358,20 @@ export async function getCashbook() {
     const income = result
       .filter((row) => row.type === "income")
       .map((row) => ({
-        ...row,
+        id: row.id,
+        date: row.date,
+        description: row.description,
+        category: row.category,
         amount: Number(row.amount),
       }));
 
     const expenses = result
       .filter((row) => row.type === "expense")
       .map((row) => ({
-        ...row,
+        id: row.id,
+        date: row.date,
+        description: row.description,
+        category: row.category,
         amount: Number(row.amount),
       }));
 
