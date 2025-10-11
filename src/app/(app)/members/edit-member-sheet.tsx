@@ -202,6 +202,8 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                                 <SelectContent>
                                     <SelectItem value="Active">Active</SelectItem>
                                     <SelectItem value="Inactive">Inactive</SelectItem>
+                                    <SelectItem value="Dormant">Dormant</SelectItem>
+                                    <SelectItem value="Closed">Closed</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

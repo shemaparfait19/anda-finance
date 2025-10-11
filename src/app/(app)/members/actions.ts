@@ -43,7 +43,7 @@ const AddMemberFormSchema = z.object({
 
 const EditMemberFormSchema = AddMemberFormSchema.extend({
     id: z.string(),
-  status: z.enum(["Active", "Inactive"]),
+  status: z.enum(["Active", "Inactive", "Dormant", "Closed"]),
 });
 
 type FormState = {
@@ -159,6 +159,20 @@ export async function deactivateMember(memberId: string): Promise<FormState> {
     await updateMemberInDb(memberId, { status: "Inactive" });
     revalidatePath("/members");
     return { message: "Member has been deactivated.", success: true };
+    } catch (e) {
+        const error = e as Error;
+    return {
+      message: error.message || "An unexpected error occurred.",
+      success: false,
+    };
+    }
+}
+
+export async function reactivateMember(memberId: string): Promise<FormState> {
+    try {
+    await updateMemberInDb(memberId, { status: "Active" });
+    revalidatePath("/members");
+    return { message: "Member has been reactivated.", success: true };
     } catch (e) {
         const error = e as Error;
     return {

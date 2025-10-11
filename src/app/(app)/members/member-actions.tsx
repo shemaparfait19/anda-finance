@@ -18,18 +18,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getPlaceholderImage } from "@/lib/placeholder-images";
 import type { Member } from "@/lib/types";
-import { deactivateMember } from "./actions";
+import { deactivateMember, reactivateMember } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { AppConfirmationDialog } from "@/components/ui/app-confirmation-dialog";
 import EditMemberSheet from "./edit-member-sheet";
-import NewDepositDialog from "../savings/new-deposit-dialog";
 
 export default function MemberActions({ member }: { member: Member }) {
   const { toast } = useToast();
   const [isDeactivating, startDeactivationTransition] = useTransition();
+  const [isReactivating, startReactivationTransition] = useTransition();
   const [isDeactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
+  const [isReactivateDialogOpen, setReactivateDialogOpen] = useState(false);
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
-  const [isDepositOpen, setDepositOpen] = useState(false);
 
   const image = getPlaceholderImage(member.avatarId);
 
@@ -52,6 +52,25 @@ export default function MemberActions({ member }: { member: Member }) {
     });
   };
 
+  const handleReactivate = async () => {
+    startReactivationTransition(async () => {
+      const result = await reactivateMember(member.id);
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: result.message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.message,
+        });
+      }
+      setReactivateDialogOpen(false);
+    });
+  };
+
   return (
     <>
       <TableCell className="hidden sm:table-cell">
@@ -67,7 +86,12 @@ export default function MemberActions({ member }: { member: Member }) {
       <TableCell className="font-medium">{member.name}</TableCell>
       <TableCell>{member.memberId}</TableCell>
       <TableCell>
-        <Badge variant={member.status === "Active" ? "default" : "secondary"}>
+        <Badge variant={
+          member.status === "Active" ? "default" :
+          member.status === "Inactive" ? "secondary" :
+          member.status === "Dormant" ? "outline" :
+          "destructive" // for Closed
+        }>
           {member.status}
         </Badge>
       </TableCell>
@@ -96,9 +120,6 @@ export default function MemberActions({ member }: { member: Member }) {
             <DropdownMenuItem onSelect={() => setEditDialogOpen(true)}>
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setDepositOpen(true)}>
-              Make Deposit
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive"
@@ -106,6 +127,12 @@ export default function MemberActions({ member }: { member: Member }) {
               disabled={member.status === "Inactive"}
             >
               Deactivate
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => setReactivateDialogOpen(true)}
+              disabled={member.status === "Active"}
+            >
+              Reactive
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -118,14 +145,6 @@ export default function MemberActions({ member }: { member: Member }) {
         onOpenChange={setEditDialogOpen}
       />
 
-      <NewDepositDialog
-        members={[member]}
-        selectedMemberId={member.id}
-        open={isDepositOpen}
-        onOpenChange={setDepositOpen}
-        trigger={null}
-      />
-
       <AppConfirmationDialog
         open={isDeactivateDialogOpen}
         onOpenChange={setDeactivateDialogOpen}
@@ -133,6 +152,15 @@ export default function MemberActions({ member }: { member: Member }) {
         description={`Are you sure you want to deactivate ${member.name}? This action cannot be undone.`}
         onConfirm={handleDeactivate}
         isPending={isDeactivating}
+      />
+
+      <AppConfirmationDialog
+        open={isReactivateDialogOpen}
+        onOpenChange={setReactivateDialogOpen}
+        title="Reactivate Member"
+        description={`Are you sure you want to reactivate ${member.name}?`}
+        onConfirm={handleReactivate}
+        isPending={isReactivating}
       />
     </>
   );

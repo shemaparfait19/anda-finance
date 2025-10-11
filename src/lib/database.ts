@@ -80,7 +80,7 @@ export async function initializeDatabase() {
         interest_rate DECIMAL(5,2) NOT NULL,
         issue_date DATE NOT NULL,
         due_date DATE NOT NULL,
-        status VARCHAR(20) DEFAULT 'Active',
+        status VARCHAR(20) DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive', 'Dormant', 'Closed')),
         loan_term INTEGER NOT NULL,
         loan_purpose TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

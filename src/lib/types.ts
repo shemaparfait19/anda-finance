@@ -21,7 +21,7 @@ export type Member = {
   joinDate: string;
   savingsBalance: number;
   loanBalance: number;
-  status: "Active" | "Inactive";
+  status: "Active" | "Inactive" | "Dormant" | "Closed";
   avatarId: string;
 };
 
