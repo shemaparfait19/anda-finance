@@ -224,9 +224,9 @@ async function insertInitialData() {
       // Insert demo members
       await sql`
         INSERT INTO members (id, name, first_name, last_name, phone_number, savings_group, member_role, member_id, join_date, savings_balance, loan_balance, status, avatar_id)
-        VALUES 
-        ('1', 'Anathalie Mukamana', 'Anathalie', 'Mukamana', '0788888881', 'Group-A', 'Member', 'MEM001', '2024-01-15', 250000, 0, 'Active', 'avatar1'),
-        ('2', 'Jean Baptiste Nzeyimana', 'Jean Baptiste', 'Nzeyimana', '0788888882', 'Group-A', 'Treasurer', 'MEM002', '2024-01-10', 180000, 100000, 'Active', 'avatar2')
+        VALUES
+        ('1', 'Anathalie Mukamana', 'Anathalie', 'Mukamana', '0788888881', 'Group-A', 'Member', 'BIF001', '2024-01-15', 250000, 0, 'Active', 'avatar1'),
+        ('2', 'Jean Baptiste Nzeyimana', 'Jean Baptiste', 'Nzeyimana', '0788888882', 'Group-A', 'Treasurer', 'BIF002', '2024-01-10', 180000, 100000, 'Active', 'avatar2')
       `;
 
       // Insert demo transactions
@@ -238,7 +238,7 @@ async function insertInitialData() {
       // Insert demo savings accounts
       await sql`
         INSERT INTO savings_accounts (id, member_id, member_name, account_number, type, balance, open_date)
-        VALUES ('SAV001', '1', 'Anathalie Mukamana', 'SAV001', 'Voluntary', 250000, '2024-01-15')
+        VALUES ('SAV001', '1', 'Anathalie Mukamana', 'BIF00101', 'Voluntary', 250000, '2024-01-15')
       `;
 
       // Insert demo loans

@@ -52,6 +52,22 @@ type FormState = {
     success?: boolean;
 };
 
+// Helper function to generate sequential member ID
+async function generateMemberId(): Promise<string> {
+    // Get the count of existing members to determine the next sequential number
+    const { neon } = await import("@neondatabase/serverless");
+    const sql = neon(process.env.DATABASE_URL!);
+
+    try {
+        const result = await sql`SELECT COUNT(*) as count FROM members`;
+        const count = parseInt(result[0].count) + 1; // Next sequential number
+        return `BIF${count.toString().padStart(3, '0')}`;
+    } catch (error) {
+        // Fallback in case of error
+        return `BIF${Date.now().toString().slice(-3)}`;
+    }
+}
+
 export async function addMember(
   prevState: FormState,
   formData: FormData
@@ -80,10 +96,12 @@ export async function addMember(
 
     const memberData = parsed.data;
 
+    // Generate sequential member ID
+    const memberId = await generateMemberId();
+
     const newMember: Omit<
       Member,
       | "id"
-      | "memberId"
       | "savingsBalance"
       | "loanBalance"
       | "status"
@@ -91,12 +109,12 @@ export async function addMember(
       | "avatarId"
     > = {
         ...memberData,
+        memberId,
     };
-    
+
     await addMemberToDb({
       ...newMember,
       name: `${newMember.firstName} ${newMember.lastName}`,
-      memberId: `MEM${String(Date.now()).slice(-6)}`,
       savingsBalance: 0,
       loanBalance: 0,
       status: "Active",

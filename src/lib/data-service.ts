@@ -270,22 +270,23 @@ export async function updateSavingsAccount(
   try {
     await ensureInitialized();
 
-    // Check if account exists
-    const existing = await sql`
-      SELECT * FROM savings_accounts WHERE member_id = ${memberId}
+    // Get member details
+    const member = await getMemberById(memberId);
+    if (!member) throw new Error("Member not found");
+
+    // Check existing accounts for this member
+    const existingAccounts = await sql`
+      SELECT * FROM savings_accounts WHERE member_id = ${memberId} ORDER BY account_number ASC
     `;
 
-    if (existing.length === 0) {
-      // Create new account
-      const member = await getMemberById(memberId);
-      if (!member) throw new Error("Member not found");
-
+    if (existingAccounts.length === 0) {
+      // Create first account for this member
       const newId = `SAV${Date.now()}`;
+      const accountNumber = `${member.memberId}01`; // First account: MemberID + 01
+
       await sql`
         INSERT INTO savings_accounts (id, member_id, member_name, account_number, type, balance, open_date)
-        VALUES (${newId}, ${memberId}, ${
-        member.name
-      }, ${`SAV${member.memberId}`}, 'Voluntary', ${amount}, CURRENT_DATE)
+        VALUES (${newId}, ${memberId}, ${member.name}, ${accountNumber}, 'Voluntary', ${amount}, CURRENT_DATE)
       `;
 
       revalidatePath("/savings");
@@ -293,23 +294,26 @@ export async function updateSavingsAccount(
         id: newId,
         memberId,
         memberName: member.name,
-        accountNumber: `SAV${member.memberId}`,
+        accountNumber,
         type: "Voluntary",
         balance: amount,
         openDate: new Date().toISOString().split("T")[0],
       };
     } else {
-      // Update existing account
-      const newBalance = Number(existing[0].balance) + amount;
+      // For now, update the first account (existing behavior)
+      // TODO: In future, we might want to specify which account to update
+      const accountToUpdate = existingAccounts[0];
+      const newBalance = Number(accountToUpdate.balance) + amount;
+
       await sql`
-        UPDATE savings_accounts 
+        UPDATE savings_accounts
         SET balance = ${newBalance}, updated_at = CURRENT_TIMESTAMP
-        WHERE member_id = ${memberId}
+        WHERE id = ${accountToUpdate.id}
       `;
 
       revalidatePath("/savings");
       return {
-        ...existing[0],
+        ...accountToUpdate,
         balance: newBalance,
       } as SavingsAccount;
     }
