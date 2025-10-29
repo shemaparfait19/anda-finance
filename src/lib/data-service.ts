@@ -69,9 +69,17 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
         join_date as "joinDate", savings_balance as "savingsBalance",
         loan_balance as "loanBalance", status, avatar_id as "avatarId"
       FROM members 
-      WHERE id = ${id}
-    `;
-    return result[0] as Member;
+    if (!result || result.length === 0) return undefined;
+    const row = result[0];
+    return {
+      ...row,
+      savingsBalance: Number(row.savingsBalance),
+      loanBalance: Number(row.loanBalance),
+      joinDate:
+        row.joinDate instanceof Date
+          ? row.joinDate.toISOString().split("T")[0]
+          : row.joinDate,
+    } as Member;
   } catch (error) {
     handleDatabaseError(error, "getMemberById");
     return undefined;
