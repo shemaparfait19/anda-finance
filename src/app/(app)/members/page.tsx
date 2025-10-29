@@ -55,7 +55,7 @@ export default async function MembersPage() {
           <TableHead>Status</TableHead>
           <TableHead className="hidden md:table-cell">Savings</TableHead>
           <TableHead className="hidden md:table-cell">Loan Balance</TableHead>
-          <TableHead className="hidden md:table-cell">Joined At</TableHead>
+
           <TableHead>
             <span className="sr-only">Actions</span>
           </TableHead>
