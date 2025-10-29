@@ -113,12 +113,12 @@ export async function addMember(member: Omit<Member, "id">): Promise<Member> {
 
     await sql`
       INSERT INTO members (
-        id, name, first_name, last_name, phone_number, member_id, join_date,
+        id, name, first_name, last_name, phone_number, member_id,
         savings_balance, loan_balance, status, avatar_id, contribution_date,
         collection_means, other_collection_means, account_number
       ) VALUES (
         ${newId}, ${member.name}, ${member.firstName}, ${member.lastName},
-        ${member.phoneNumber}, ${member.memberId}, ${member.joinDate},
+        ${member.phoneNumber}, ${member.memberId},
         ${member.savingsBalance || 0}, ${member.loanBalance || 0}, ${member.status},
         ${member.avatarId}, ${member.contributionDate}, ${member.collectionMeans},
         ${member.otherCollectionMeans}, ${member.accountNumber}
