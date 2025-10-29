@@ -121,6 +121,7 @@ export async function addMember(
     > = {
         ...memberData,
         memberId,
+        joinDate: new Date().toISOString().split("T")[0], // Explicitly set joinDate for type compatibility
     };
 
     await addMemberToDb({

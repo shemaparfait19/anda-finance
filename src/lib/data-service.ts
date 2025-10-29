@@ -44,27 +44,23 @@ export async function getMembers(): Promise<Member[]> {
       FROM members 
       ORDER BY created_at DESC
     `;
-    console.log("Raw result from DB:", result);
-    return result.map((row) => {
-      console.log("Mapping row:", row);
-      return {
-        id: row.id,
-        name: row.name,
-        firstName: row.firstName,
-        lastName: row.lastName,
-        phoneNumber: row.phoneNumber,
-        memberId: row.memberId,
-        joinDate: row.joinDate,
-        savingsBalance: Number(row.savingsBalance),
-        loanBalance: Number(row.loanBalance),
-        status: row.status,
-        avatarId: row.avatarId,
-        contributionDate: row.contributionDate,
-        collectionMeans: row.collectionMeans,
-        otherCollectionMeans: row.otherCollectionMeans,
-        accountNumber: row.accountNumber,
-      };
-    }) as Member[];
+    return result.map((row) => ({
+      id: row.id,
+      name: row.name,
+      firstName: row.firstName,
+      lastName: row.lastName,
+      phoneNumber: row.phoneNumber,
+      memberId: row.memberId,
+      joinDate: row.joinDate,
+      savingsBalance: Number(row.savingsBalance),
+      loanBalance: Number(row.loanBalance),
+      status: row.status,
+      avatarId: row.avatarId,
+      contributionDate: row.contributionDate,
+      collectionMeans: row.collectionMeans,
+      otherCollectionMeans: row.otherCollectionMeans,
+      accountNumber: row.accountNumber,
+    })) as Member[];
   } catch (error) {
     handleDatabaseError(error, "getMembers");
     return [];
