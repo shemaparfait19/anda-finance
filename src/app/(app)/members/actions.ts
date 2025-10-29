@@ -33,8 +33,27 @@ const AddMemberFormSchema = z.object({
     // nationalIdCopy: z.any().optional(),
 });
 
-const EditMemberFormSchema = AddMemberFormSchema.extend({
-    id: z.string(),
+const EditMemberFormSchema = z.object({
+  id: z.string(),
+  firstName: z
+    .string()
+    .min(2, { message: "First name must be at least 2 characters." }),
+  lastName: z
+    .string()
+    .min(2, { message: "Last name must be at least 2 characters." }),
+  dateOfBirth: z.string().optional(),
+  gender: z.enum(["Male", "Female", "Other"]).optional(),
+  nationalId: z.string().optional(),
+  phoneNumber: z.string().min(10, { message: "Phone number is required." }),
+  email:
+    z.string().email({ message: "Invalid email address." }).optional().or(z.literal("")),
+  alternativePhone: z.string().optional(),
+  address: z.string().optional(),
+  monthlyContribution: z.coerce.number().optional(),
+  contributionDate: z.string().optional(),
+  collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "OTHER"]).optional(),
+  otherCollectionMeans: z.string().optional(),
+  accountNumber: z.string().optional(),
   status: z.enum(["Active", "Inactive", "Dormant", "Closed"]),
 });
 

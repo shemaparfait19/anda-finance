@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,7 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
   const [state, formAction] = useFormState(editMember, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  const [collectionMeans, setCollectionMeans] = useState(member.collectionMeans || '');
 
    useEffect(() => {
     if (state.message) {
@@ -93,7 +94,7 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
             <ScrollArea className="h-[calc(100vh-150px)] w-full">
             <div className="space-y-6 p-4">
                 <input type="hidden" name="id" value={member.id} />
-                <input type="hidden" name="joinDate" value={member.joinDate} />
+
 
                 {/* Personal Information */}
                 <div className='space-y-4'>
@@ -161,37 +162,38 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                  <div className='space-y-4'>
                     <h3 className="text-lg font-medium">Group & Role Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
                         <div className="grid gap-2">
-                            <Label htmlFor="savingsGroup">Savings Group *</Label>
-                            <Select name="savingsGroup" defaultValue={member.savingsGroup}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select group" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Group-A">Group A</SelectItem>
-                                    <SelectItem value="Group-B">Group B</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {state.fields?.savingsGroup && <p className="text-sm text-destructive">{state.fields.savingsGroup}</p>}
-                        </div>
-                         <div className="grid gap-2">
-                            <Label htmlFor="memberRole">Member Role *</Label>
-                            <Select name="memberRole" defaultValue={member.memberRole}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Member">Member</SelectItem>
-                                    <SelectItem value="Chairperson">Chairperson</SelectItem>
-                                    <SelectItem value="Treasurer">Treasurer</SelectItem>
-                                    <SelectItem value="Secretary">Secretary</SelectItem>
-                                    <SelectItem value="Teller">Teller</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {state.fields?.memberRole && <p className="text-sm text-destructive">{state.fields.memberRole}</p>}
-                        </div>
-                         <div className="grid gap-2">
                             <Label htmlFor="monthlyContribution">Monthly Contribution (RWF)</Label>                            <Input id="monthlyContribution" name="monthlyContribution" type="number" defaultValue={member.monthlyContribution} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="contributionDate">Date of Contribution Collection</Label>
+                            <Input id="contributionDate" name="contributionDate" type="date" defaultValue={member.contributionDate} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="collectionMeans">Means of Collection</Label>
+                            <Select name="collectionMeans" defaultValue={member.collectionMeans} onValueChange={(value) => setCollectionMeans(value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select means of collection" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="MOMO">MOMO</SelectItem>
+                                    <SelectItem value="AIRTEL MONEY">AIRTEL MONEY</SelectItem>
+                                    <SelectItem value="BANKS IN RWANDA">BANKS IN RWANDA</SelectItem>
+                                    <SelectItem value="OTHER">OTHER</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {collectionMeans === "OTHER" && (
+                            <div className="grid gap-2">
+                                <Label htmlFor="otherCollectionMeans">Other Means of Collection</Label>
+                                <Input id="otherCollectionMeans" name="otherCollectionMeans" defaultValue={member.otherCollectionMeans} />
+                            </div>
+                        )}
+                        <div className="grid gap-2">
+                            <Label htmlFor="accountNumber">Wallet number/Bank account Number</Label>
+                            <Input id="accountNumber" name="accountNumber" defaultValue={member.accountNumber} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="status">Member Status *</Label>
