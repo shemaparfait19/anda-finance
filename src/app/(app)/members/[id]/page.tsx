@@ -138,11 +138,7 @@ export default async function MemberProfilePage({
             </CardHeader>
             <CardContent className="space-y-4">
               <Separator />
-              <InfoField
-                icon={Briefcase}
-                label="Role"
-                value={member.memberRole}
-              />
+
               <InfoField
                 icon={Calendar}
                 label="Joined Date"
