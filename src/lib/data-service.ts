@@ -36,10 +36,11 @@ export async function getMembers(): Promise<Member[]> {
     const result = await sql`
       SELECT 
         id, name, first_name as "firstName", last_name as "lastName", 
-        phone_number as "phoneNumber", savings_group as "savingsGroup",
-        member_role as "memberRole", member_id as "memberId", 
+        phone_number as "phoneNumber", member_id as "memberId", 
         join_date as "joinDate", savings_balance as "savingsBalance",
-        loan_balance as "loanBalance", status, avatar_id as "avatarId"
+        loan_balance as "loanBalance", status, avatar_id as "avatarId",
+        contribution_date as "contributionDate", collection_means as "collectionMeans",
+        other_collection_means as "otherCollectionMeans", account_number as "accountNumber"
       FROM members 
       ORDER BY created_at DESC
     `;
@@ -64,10 +65,11 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
     const result = await sql`
       SELECT
         id, name, first_name as "firstName", last_name as "lastName",
-        phone_number as "phoneNumber", savings_group as "savingsGroup",
-        member_role as "memberRole", member_id as "memberId",
+        phone_number as "phoneNumber", member_id as "memberId",
         join_date as "joinDate", savings_balance as "savingsBalance",
-        loan_balance as "loanBalance", status, avatar_id as "avatarId"
+        loan_balance as "loanBalance", status, avatar_id as "avatarId",
+        contribution_date as "contributionDate", collection_means as "collectionMeans",
+        other_collection_means as "otherCollectionMeans", account_number as "accountNumber"
       FROM members
       WHERE id = ${id}
     `;
@@ -95,14 +97,15 @@ export async function addMember(member: Omit<Member, "id">): Promise<Member> {
 
     await sql`
       INSERT INTO members (
-        id, name, first_name, last_name, phone_number, savings_group,
-        member_role, member_id, join_date, savings_balance, loan_balance,
-        status, avatar_id
+        id, name, first_name, last_name, phone_number, member_id, join_date,
+        savings_balance, loan_balance, status, avatar_id, contribution_date,
+        collection_means, other_collection_means, account_number
       ) VALUES (
         ${newId}, ${member.name}, ${member.firstName}, ${member.lastName},
-        ${member.phoneNumber}, ${member.savingsGroup}, ${member.memberRole},
-        ${member.memberId}, ${member.joinDate}, ${member.savingsBalance || 0},
-        ${member.loanBalance || 0}, ${member.status}, ${member.avatarId}
+        ${member.phoneNumber}, ${member.memberId}, ${member.joinDate},
+        ${member.savingsBalance || 0}, ${member.loanBalance || 0}, ${member.status},
+        ${member.avatarId}, ${member.contributionDate}, ${member.collectionMeans},
+        ${member.otherCollectionMeans}, ${member.accountNumber}
       )
     `;
 
@@ -140,14 +143,24 @@ export async function updateMember(
         `phone_number = '${updates.phoneNumber.replace(/'/g, "''")}'`
       );
     }
-    if (updates.savingsGroup) {
+    if (updates.contributionDate) {
       updateSets.push(
-        `savings_group = '${updates.savingsGroup.replace(/'/g, "''")}'`
+        `contribution_date = '${updates.contributionDate.replace(/'/g, "''")}'`
       );
     }
-    if (updates.memberRole) {
+    if (updates.collectionMeans) {
       updateSets.push(
-        `member_role = '${updates.memberRole.replace(/'/g, "''")}'`
+        `collection_means = '${updates.collectionMeans.replace(/'/g, "''")}'`
+      );
+    }
+    if (updates.otherCollectionMeans) {
+      updateSets.push(
+        `other_collection_means = '${updates.otherCollectionMeans.replace(/'/g, "''")}'`
+      );
+    }
+    if (updates.accountNumber) {
+      updateSets.push(
+        `account_number = '${updates.accountNumber.replace(/'/g, "''")}'`
       );
     }
     if (updates.status) {
@@ -175,10 +188,11 @@ export async function updateMember(
       WHERE id = ${id}
       RETURNING 
         id, name, first_name as "firstName", last_name as "lastName", 
-        phone_number as "phoneNumber", savings_group as "savingsGroup",
-        member_role as "memberRole", member_id as "memberId", 
+        phone_number as "phoneNumber", member_id as "memberId", 
         join_date as "joinDate", savings_balance as "savingsBalance",
-        loan_balance as "loanBalance", status, avatar_id as "avatarId"
+        loan_balance as "loanBalance", status, avatar_id as "avatarId",
+        contribution_date as "contributionDate", collection_means as "collectionMeans",
+        other_collection_means as "otherCollectionMeans", account_number as "accountNumber"
     `;
 
     revalidatePath("/members");

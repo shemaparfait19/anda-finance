@@ -19,23 +19,15 @@ const AddMemberFormSchema = z.object({
   gender: z.enum(["Male", "Female", "Other"]).optional(),
     nationalId: z.string().optional(),
   phoneNumber: z.string().min(10, { message: "Phone number is required." }),
-  email: z
-    .string()
-    .email({ message: "Invalid email address." })
-    .optional()
-    .or(z.literal("")),
-    alternativePhone: z.string().optional(),
-    address: z.string().optional(),
-  savingsGroup: z.string().min(1, { message: "Savings group is required." }),
-  memberRole: z.enum([
-    "Member",
-    "Chairperson",
-    "Treasurer",
-    "Secretary",
-    "Teller",
-  ]),
-    monthlyContribution: z.coerce.number().optional(),
-  joinDate: z.string().min(1, { message: "Join date is required." }),
+  email:
+    z.string().email({ message: "Invalid email address." }).optional().or(z.literal("")),
+  alternativePhone: z.string().optional(),
+  address: z.string().optional(),
+  monthlyContribution: z.coerce.number().optional(),
+  contributionDate: z.string().optional(),
+  collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "OTHER"]).optional(),
+  otherCollectionMeans: z.string().optional(),
+  accountNumber: z.string().optional(),
     // We are not handling file uploads in this action for now
     // profilePhoto: z.any().optional(),
     // nationalIdCopy: z.any().optional(),
@@ -110,6 +102,9 @@ export async function addMember(
     > = {
         ...memberData,
         memberId,
+        joinDate: new Date().toISOString().split("T")[0], // Auto-populate joinDate
+        memberRole: "Member", // Hardcode memberRole
+        savingsGroup: "Default", // Default savingsGroup
     };
 
     await addMemberToDb({

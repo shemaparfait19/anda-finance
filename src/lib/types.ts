@@ -12,13 +12,14 @@ export type Member = {
   email?: string;
   alternativePhone?: string;
   address?: string;
-  savingsGroup: string;
-  memberRole: "Member" | "Chairperson" | "Treasurer" | "Secretary" | "Teller";
   monthlyContribution?: number;
   profilePhotoPath?: string;
   nationalIdCopyPath?: string;
   memberId: string;
-  joinDate: string;
+  contributionDate?: string;
+  collectionMeans?: "MOMO" | "AIRTEL MONEY" | "BANKS IN RWANDA" | "OTHER";
+  otherCollectionMeans?: string;
+  accountNumber?: string;
   savingsBalance: number;
   loanBalance: number;
   status: "Active" | "Inactive" | "Dormant" | "Closed";

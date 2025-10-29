@@ -94,6 +94,7 @@ function FileUpload({
 
 export default function AddMemberDialog() {
   const [open, setOpen] = useState(false);
+  const [collectionMeans, setCollectionMeans] = useState('');
   const [state, formAction] = useFormState(addMember, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -227,61 +228,36 @@ export default function AddMemberDialog() {
                   Group & Role Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
+
                   <div className="grid gap-2">
-                    <Label htmlFor="joinDate">Join Date *</Label>
-                    <Input id="joinDate" name="joinDate" type="date" />
-                    {state.fields?.joinDate && (
-                      <p className="text-sm text-destructive">
-                        {state.fields.joinDate}
-                      </p>
-                    )}
+                    <Label htmlFor="contributionDate">Date of Contribution Collection</Label>
+                    <Input id="contributionDate" name="contributionDate" type="date" />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="savingsGroup">Savings Group *</Label>
-                    <Select name="savingsGroup">
+                    <Label htmlFor="collectionMeans">Means of Collection</Label>
+                    <Select name="collectionMeans" onValueChange={(value) => setCollectionMeans(value)}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select group" />
+                        <SelectValue placeholder="Select means of collection" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Group-A">Group A</SelectItem>
-                        <SelectItem value="Group-B">Group B</SelectItem>
+                        <SelectItem value="MOMO">MOMO</SelectItem>
+                        <SelectItem value="AIRTEL MONEY">AIRTEL MONEY</SelectItem>
+                        <SelectItem value="BANKS IN RWANDA">BANKS IN RWANDA</SelectItem>
+                        <SelectItem value="OTHER">OTHER</SelectItem>
                       </SelectContent>
                     </Select>
-                    {state.fields?.savingsGroup && (
-                      <p className="text-sm text-destructive">
-                        {state.fields.savingsGroup}
-                      </p>
-                    )}
                   </div>
+                  {collectionMeans === "OTHER" && (
+                    <div className="grid gap-2">
+                      <Label htmlFor="otherCollectionMeans">Other Means of Collection</Label>
+                      <Input id="otherCollectionMeans" name="otherCollectionMeans" />
+                    </div>
+                  )}
                   <div className="grid gap-2">
-                    <Label htmlFor="memberRole">Member Role *</Label>
-                    <Select name="memberRole">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Member">Member</SelectItem>
-                        <SelectItem value="Chairperson">Chairperson</SelectItem>
-                        <SelectItem value="Treasurer">Treasurer</SelectItem>
-                        <SelectItem value="Secretary">Secretary</SelectItem>
-                        <SelectItem value="Teller">Teller</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {state.fields?.memberRole && (
-                      <p className="text-sm text-destructive">
-                        {state.fields.memberRole}
-                      </p>
-                    )}
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="monthlyContribution">
-                      Monthly Contribution (RWF)
-                    </Label>
-                    <Input
-                      id="monthlyContribution"
-                      name="monthlyContribution"
-                      type="number"
-                    />
+                    <Label htmlFor="accountNumber">Wallet number/Bank account Number</Label>
+                    <Input id="accountNumber" name="accountNumber" />
                   </div>
                 </div>
               </div>

@@ -28,14 +28,16 @@ export async function initializeDatabase() {
         first_name VARCHAR(255) NOT NULL,
         last_name VARCHAR(255) NOT NULL,
         phone_number VARCHAR(20) NOT NULL,
-        savings_group VARCHAR(100),
-        member_role VARCHAR(50) DEFAULT 'Member',
         member_id VARCHAR(50) UNIQUE NOT NULL,
-        join_date DATE NOT NULL,
+        join_date DATE NOT NULL DEFAULT CURRENT_DATE,
         savings_balance DECIMAL(15,2) DEFAULT 0,
         loan_balance DECIMAL(15,2) DEFAULT 0,
         status VARCHAR(20) DEFAULT 'Active',
         avatar_id VARCHAR(50),
+        contribution_date DATE,
+        collection_means VARCHAR(50),
+        other_collection_means TEXT,
+        account_number VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -223,10 +225,10 @@ async function insertInitialData() {
     if (memberCount[0].count === "0") {
       // Insert demo members
       await sql`
-        INSERT INTO members (id, name, first_name, last_name, phone_number, savings_group, member_role, member_id, join_date, savings_balance, loan_balance, status, avatar_id)
+        INSERT INTO members (id, name, first_name, last_name, phone_number, member_id, join_date, savings_balance, loan_balance, status, avatar_id, contribution_date, collection_means, other_collection_means, account_number)
         VALUES
-        ('1', 'Anathalie Mukamana', 'Anathalie', 'Mukamana', '0788888881', 'Group-A', 'Member', 'BIF001', '2024-01-15', 250000, 0, 'Active', 'avatar1'),
-        ('2', 'Jean Baptiste Nzeyimana', 'Jean Baptiste', 'Nzeyimana', '0788888882', 'Group-A', 'Treasurer', 'BIF002', '2024-01-10', 180000, 100000, 'Active', 'avatar2')
+        ('1', 'Anathalie Mukamana', 'Anathalie', 'Mukamana', '0788888881', 'BIF001', '2024-01-15', 250000, 0, 'Active', 'avatar1', '2024-01-15', 'MOMO', NULL, '0788888881'),
+        ('2', 'Jean Baptiste Nzeyimana', 'Jean Baptiste', 'Nzeyimana', '0788888882', 'BIF002', '2024-01-10', 180000, 100000, 'Active', 'avatar2', '2024-01-10', 'BANKS IN RWANDA', NULL, '1234567890')
       `;
 
       // Insert demo transactions
