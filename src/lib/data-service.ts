@@ -45,10 +45,17 @@ export async function getMembers(): Promise<Member[]> {
       ORDER BY created_at DESC
     `;
     return result.map((row) => ({
-      ...row,
+      id: row.id,
+      name: row.name,
+      firstName: row.firstName,
+      lastName: row.lastName,
+      phoneNumber: row.phoneNumber,
+      memberId: row.memberId,
+      joinDate: row.joinDate,
       savingsBalance: Number(row.savingsBalance),
       loanBalance: Number(row.loanBalance),
-      joinDate: row.joinDate, // joinDate is already a string from the SELECT statement
+      status: row.status,
+      avatarId: row.avatarId,
       contributionDate: row.contributionDate,
       collectionMeans: row.collectionMeans,
       otherCollectionMeans: row.otherCollectionMeans,
@@ -77,10 +84,17 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
     if (!result || result.length === 0) return undefined;
     const row = result[0];
     return {
-      ...row,
+      id: row.id,
+      name: row.name,
+      firstName: row.firstName,
+      lastName: row.lastName,
+      phoneNumber: row.phoneNumber,
+      memberId: row.memberId,
+      joinDate: row.joinDate,
       savingsBalance: Number(row.savingsBalance),
       loanBalance: Number(row.loanBalance),
-      joinDate: row.joinDate, // joinDate is already a string from the SELECT statement
+      status: row.status,
+      avatarId: row.avatarId,
       contributionDate: row.contributionDate,
       collectionMeans: row.collectionMeans,
       otherCollectionMeans: row.otherCollectionMeans,
