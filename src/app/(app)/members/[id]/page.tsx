@@ -139,11 +139,7 @@ export default async function MemberProfilePage({
             <CardContent className="space-y-4">
               <Separator />
 
-              <InfoField
-                icon={Calendar}
-                label="Joined Date"
-                value={member.joinDate}
-              />
+
               <InfoField
                 icon={UserCheck}
                 label="Member ID"
