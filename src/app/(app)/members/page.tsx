@@ -64,7 +64,7 @@ export default async function MembersPage() {
       <TableBody>
         {members.map((member) => (
           <TableRow key={member.id}>
-            <MemberActions member={member} />
+            <TableCell>{member.name}</TableCell>
           </TableRow>
         ))}
       </TableBody>
