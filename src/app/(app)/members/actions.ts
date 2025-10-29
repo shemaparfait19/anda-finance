@@ -102,9 +102,6 @@ export async function addMember(
     > = {
         ...memberData,
         memberId,
-        joinDate: new Date().toISOString().split("T")[0], // Auto-populate joinDate
-        memberRole: "Member", // Hardcode memberRole
-        savingsGroup: "Default", // Default savingsGroup
     };
 
     await addMemberToDb({
