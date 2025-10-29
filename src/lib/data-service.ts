@@ -48,10 +48,11 @@ export async function getMembers(): Promise<Member[]> {
       ...row,
       savingsBalance: Number(row.savingsBalance),
       loanBalance: Number(row.loanBalance),
-      joinDate:
-        row.joinDate instanceof Date
-          ? row.joinDate.toISOString().split("T")[0]
-          : row.joinDate,
+      joinDate: row.joinDate, // joinDate is already a string from the SELECT statement
+      contributionDate: row.contributionDate,
+      collectionMeans: row.collectionMeans,
+      otherCollectionMeans: row.otherCollectionMeans,
+      accountNumber: row.accountNumber,
     })) as Member[];
   } catch (error) {
     handleDatabaseError(error, "getMembers");
@@ -79,10 +80,11 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
       ...row,
       savingsBalance: Number(row.savingsBalance),
       loanBalance: Number(row.loanBalance),
-      joinDate:
-        row.joinDate instanceof Date
-          ? row.joinDate.toISOString().split("T")[0]
-          : row.joinDate,
+      joinDate: row.joinDate, // joinDate is already a string from the SELECT statement
+      contributionDate: row.contributionDate,
+      collectionMeans: row.collectionMeans,
+      otherCollectionMeans: row.otherCollectionMeans,
+      accountNumber: row.accountNumber,
     } as Member;
   } catch (error) {
     handleDatabaseError(error, "getMemberById");
