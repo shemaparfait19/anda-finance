@@ -101,9 +101,7 @@ export default function MemberActions({ member }: { member: Member }) {
       <TableCell className="hidden md:table-cell">
         RWF {member.loanBalance.toLocaleString()}
       </TableCell>
-      <TableCell className="hidden md:table-cell">
-        {new Date(member.joinDate).toLocaleDateString()}
-      </TableCell>
+
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
