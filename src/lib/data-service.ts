@@ -62,13 +62,15 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
   try {
     await ensureInitialized();
     const result = await sql`
-      SELECT 
-        id, name, first_name as "firstName", last_name as "lastName", 
+      SELECT
+        id, name, first_name as "firstName", last_name as "lastName",
         phone_number as "phoneNumber", savings_group as "savingsGroup",
-        member_role as "memberRole", member_id as "memberId", 
+        member_role as "memberRole", member_id as "memberId",
         join_date as "joinDate", savings_balance as "savingsBalance",
         loan_balance as "loanBalance", status, avatar_id as "avatarId"
-      FROM members 
+      FROM members
+      WHERE id = ${id}
+    `;
     if (!result || result.length === 0) return undefined;
     const row = result[0];
     return {
