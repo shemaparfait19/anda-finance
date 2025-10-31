@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useState, useEffect, useRef } from "react";
+import { useFormStatus } from "react-dom";
 import {
   PlusCircle,
   Loader2,
@@ -95,7 +95,7 @@ function FileUpload({
 export default function AddMemberDialog() {
   const [open, setOpen] = useState(false);
   const [collectionMeans, setCollectionMeans] = useState('');
-  const [state, formAction] = useFormState(addMember, initialState);
+  const [state, formAction] = useActionState(addMember, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 

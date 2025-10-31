@@ -40,6 +40,9 @@ export default async function MembersPage() {
   const members = await getMembers();
   const activeMembers = members.filter((m) => m.status === "Active");
   const inactiveMembers = members.filter((m) => m.status === "Inactive");
+  const temporaryInactiveMembers = members.filter(
+    (m) => m.status === "Temporary Inactive"
+  );
   const dormantMembers = members.filter((m) => m.status === "Dormant");
   const closedMembers = members.filter((m) => m.status === "Closed");
 
@@ -78,6 +81,7 @@ export default async function MembersPage() {
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="inactive">Inactive</TabsTrigger>
+          <TabsTrigger value="temporary-inactive">Temporary Inactive</TabsTrigger>
           <TabsTrigger value="dormant">Dormant</TabsTrigger>
           <TabsTrigger value="closed">Closed</TabsTrigger>
         </TabsList>
@@ -143,6 +147,25 @@ export default async function MembersPage() {
             <div className="text-xs text-muted-foreground">
               Showing <strong>1-{activeMembers.length}</strong> of{" "}
               <strong>{activeMembers.length}</strong> active members
+            </div>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+      <TabsContent value="temporary-inactive">
+        <Card>
+          <CardHeader>
+            <CardTitle>Temporary Inactive Members</CardTitle>
+            <CardDescription>
+              Members who have been manually set to temporarily inactive.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MemberTable members={temporaryInactiveMembers} />
+          </CardContent>
+          <CardFooter>
+            <div className="text-xs text-muted-foreground">
+              Showing <strong>1-{temporaryInactiveMembers.length}</strong> of{" "}
+              <strong>{temporaryInactiveMembers.length}</strong> temporary inactive members
             </div>
           </CardFooter>
         </Card>

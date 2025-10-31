@@ -16,13 +16,14 @@ export type Member = {
   profilePhotoPath?: string;
   nationalIdCopyPath?: string;
   memberId: string;
+  joinDate: string;
   contributionDate?: string;
   collectionMeans?: "MOMO" | "AIRTEL MONEY" | "BANKS IN RWANDA" | "OTHER";
   otherCollectionMeans?: string;
   accountNumber?: string;
   savingsBalance: number;
   loanBalance: number;
-  status: "Active" | "Inactive" | "Dormant" | "Closed";
+  status: "Active" | "Inactive" | "Temporary Inactive" | "Dormant" | "Closed";
   avatarId: string;
 };
 

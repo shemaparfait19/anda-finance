@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getPlaceholderImage } from "@/lib/placeholder-images";
 import type { Member } from "@/lib/types";
-import { deactivateMember, reactivateMember } from "./actions";
+import { deactivateMember, reactivateMember, closeMembership } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { AppConfirmationDialog } from "@/components/ui/app-confirmation-dialog";
 import EditMemberSheet from "./edit-member-sheet";
@@ -27,8 +27,10 @@ export default function MemberActions({ member }: { member: Member }) {
   const { toast } = useToast();
   const [isDeactivating, startDeactivationTransition] = useTransition();
   const [isReactivating, startReactivationTransition] = useTransition();
+  const [isClosingMembership, startCloseMembershipTransition] = useTransition();
   const [isDeactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
   const [isReactivateDialogOpen, setReactivateDialogOpen] = useState(false);
+  const [isCloseMembershipDialogOpen, setCloseMembershipDialogOpen] = useState(false);
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
 
   const image = getPlaceholderImage(member.avatarId);
@@ -71,6 +73,25 @@ export default function MemberActions({ member }: { member: Member }) {
     });
   };
 
+  const handleCloseMembership = async () => {
+    startCloseMembershipTransition(async () => {
+      const result = await closeMembership(member.id);
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: result.message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.message,
+        });
+      }
+      setCloseMembershipDialogOpen(false);
+    });
+  };
+
   return (
     <>
       <TableCell className="hidden sm:table-cell">
@@ -89,6 +110,7 @@ export default function MemberActions({ member }: { member: Member }) {
         <Badge variant={
           member.status === "Active" ? "default" :
           member.status === "Inactive" ? "secondary" :
+          member.status === "Temporary Inactive" ? "outline" :
           member.status === "Dormant" ? "outline" :
           "destructive" // for Closed
         }>
@@ -132,6 +154,13 @@ export default function MemberActions({ member }: { member: Member }) {
             >
               Reactive
             </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive"
+              onSelect={() => setCloseMembershipDialogOpen(true)}
+              disabled={member.status === "Closed"}
+            >
+              Close Membership
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
@@ -159,6 +188,15 @@ export default function MemberActions({ member }: { member: Member }) {
         description={`Are you sure you want to reactivate ${member.name}?`}
         onConfirm={handleReactivate}
         isPending={isReactivating}
+      />
+
+      <AppConfirmationDialog
+        open={isCloseMembershipDialogOpen}
+        onOpenChange={setCloseMembershipDialogOpen}
+        title="Close Membership"
+        description={`Are you sure you want to close ${member.name}'s membership? This action cannot be undone.`}
+        onConfirm={handleCloseMembership}
+        isPending={isClosingMembership}
       />
     </>
   );

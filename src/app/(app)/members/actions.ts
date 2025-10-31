@@ -54,7 +54,7 @@ const EditMemberFormSchema = z.object({
   collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "OTHER"]).optional(),
   otherCollectionMeans: z.string().optional(),
   accountNumber: z.string().optional(),
-  status: z.enum(["Active", "Inactive", "Dormant", "Closed"]),
+  status: z.enum(["Active", "Inactive", "Temporary Inactive", "Dormant", "Closed"]),
 });
 
 type FormState = {
@@ -198,6 +198,8 @@ export async function deactivateMember(memberId: string): Promise<FormState> {
     }
 }
 
+
+
 export async function reactivateMember(memberId: string): Promise<FormState> {
     try {
     await updateMemberInDb(memberId, { status: "Active" });
@@ -209,5 +211,19 @@ export async function reactivateMember(memberId: string): Promise<FormState> {
       message: error.message || "An unexpected error occurred.",
       success: false,
     };
+    }
+}
+
+export async function closeMembership(memberId: string): Promise<FormState> {
+    try {
+        await updateMemberInDb(memberId, { status: "Closed" });
+        revalidatePath("/members");
+        return { message: "Membership has been closed.", success: true };
+    } catch (e) {
+        const error = e as Error;
+        return {
+            message: error.message || "An unexpected error occurred.",
+            success: false,
+        };
     }
 }

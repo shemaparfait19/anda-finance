@@ -34,6 +34,13 @@ export async function initializeDatabase() {
         loan_balance DECIMAL(15,2) DEFAULT 0,
         status VARCHAR(20) DEFAULT 'Active',
         avatar_id VARCHAR(50),
+        date_of_birth DATE,
+        gender VARCHAR(10),
+        national_id VARCHAR(50),
+        email VARCHAR(255),
+        alternative_phone VARCHAR(20),
+        address TEXT,
+        monthly_contribution DECIMAL(15,2),
         contribution_date DATE,
         collection_means VARCHAR(50),
         other_collection_means TEXT,
@@ -206,6 +213,21 @@ export async function initializeDatabase() {
       )
     `;
 
+    await sql`
+      ALTER TABLE members
+      ADD COLUMN IF NOT EXISTS date_of_birth DATE,
+      ADD COLUMN IF NOT EXISTS gender VARCHAR(10),
+      ADD COLUMN IF NOT EXISTS national_id VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS email VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS alternative_phone VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS address TEXT,
+      ADD COLUMN IF NOT EXISTS monthly_contribution DECIMAL(15,2),
+      ADD COLUMN IF NOT EXISTS contribution_date DATE,
+      ADD COLUMN IF NOT EXISTS collection_means VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS other_collection_means TEXT,
+      ADD COLUMN IF NOT EXISTS account_number VARCHAR(100)
+    `;
+
     console.log("✅ Database tables created successfully");
 
     // Insert initial demo data if tables are empty
@@ -287,5 +309,6 @@ async function insertInitialData() {
 // Helper function to handle database errors
 export function handleDatabaseError(error: any, operation: string) {
   console.error(`❌ Database error during ${operation}:`, error);
-  throw new Error(`Database operation failed: ${operation}`);
+  const errorMessage = error?.message || error?.toString() || 'Unknown error';
+  throw new Error(`Database operation failed: ${operation} - ${errorMessage}`);
 }
