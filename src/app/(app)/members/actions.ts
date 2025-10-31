@@ -184,11 +184,11 @@ export async function editMember(
     }
 }
 
-export async function deactivateMember(memberId: string): Promise<FormState> {
+export async function deactivateMember(memberId: string, reason: string): Promise<FormState> {
     try {
-    await updateMemberInDb(memberId, { status: "Inactive" });
+    await updateMemberInDb(memberId, { status: "Temporary Inactive", deactivationReason: reason });
     revalidatePath("/members");
-    return { message: "Member has been deactivated.", success: true };
+    return { message: "Member has been temporarily deactivated.", success: true };
     } catch (e) {
         const error = e as Error;
     return {

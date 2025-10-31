@@ -24,6 +24,7 @@ export type Member = {
   savingsBalance: number;
   loanBalance: number;
   status: "Active" | "Inactive" | "Temporary Inactive" | "Dormant" | "Closed";
+  deactivationReason?: string;
   avatarId: string;
 };
 

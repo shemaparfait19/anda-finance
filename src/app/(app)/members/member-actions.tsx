@@ -21,6 +21,7 @@ import type { Member } from "@/lib/types";
 import { deactivateMember, reactivateMember, closeMembership } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { AppConfirmationDialog } from "@/components/ui/app-confirmation-dialog";
+import { DeactivationDialog } from "@/components/ui/deactivation-dialog";
 import EditMemberSheet from "./edit-member-sheet";
 
 export default function MemberActions({ member }: { member: Member }) {
@@ -35,9 +36,9 @@ export default function MemberActions({ member }: { member: Member }) {
 
   const image = getPlaceholderImage(member.avatarId);
 
-  const handleDeactivate = async () => {
+  const handleDeactivate = async (reason: string) => {
     startDeactivationTransition(async () => {
-      const result = await deactivateMember(member.id);
+      const result = await deactivateMember(member.id, reason);
       if (result.success) {
         toast({
           title: "Success",
@@ -144,9 +145,9 @@ export default function MemberActions({ member }: { member: Member }) {
             <DropdownMenuItem
               className="text-destructive"
               onSelect={() => setDeactivateDialogOpen(true)}
-              disabled={member.status === "Inactive"}
+              disabled={member.status === "Temporary Inactive" || member.status === "Inactive"}
             >
-              Deactivate
+              Temporary Deactivate
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => setReactivateDialogOpen(true)}
@@ -172,11 +173,11 @@ export default function MemberActions({ member }: { member: Member }) {
         onOpenChange={setEditDialogOpen}
       />
 
-      <AppConfirmationDialog
+      <DeactivationDialog
         open={isDeactivateDialogOpen}
         onOpenChange={setDeactivateDialogOpen}
-        title="Deactivate Member"
-        description={`Are you sure you want to deactivate ${member.name}? This action cannot be undone.`}
+        title="Temporary Deactivate Member"
+        description={`Please provide a reason for temporarily deactivating ${member.name}.`}
         onConfirm={handleDeactivate}
         isPending={isDeactivating}
       />

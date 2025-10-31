@@ -158,14 +158,13 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                     </div>
                 </div>
 
-                {/* Group & Role Information */}
+                {/* Contribution Information */}
                  <div className='space-y-4'>
-                    <h3 className="text-lg font-medium">Group & Role Information</h3>
+                    <h3 className="text-lg font-medium">Contribution Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-
                         <div className="grid gap-2">
-                            <Label htmlFor="monthlyContribution">Monthly Contribution (RWF)</Label>                            <Input id="monthlyContribution" name="monthlyContribution" type="number" defaultValue={member.monthlyContribution} />
+                            <Label htmlFor="monthlyContribution">Monthly Contribution (RWF)</Label>
+                            <Input id="monthlyContribution" name="monthlyContribution" type="number" defaultValue={member.monthlyContribution} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="contributionDate">Date of Contribution Collection</Label>

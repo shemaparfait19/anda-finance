@@ -225,7 +225,8 @@ export async function initializeDatabase() {
       ADD COLUMN IF NOT EXISTS contribution_date DATE,
       ADD COLUMN IF NOT EXISTS collection_means VARCHAR(50),
       ADD COLUMN IF NOT EXISTS other_collection_means TEXT,
-      ADD COLUMN IF NOT EXISTS account_number VARCHAR(100)
+      ADD COLUMN IF NOT EXISTS account_number VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS deactivation_reason TEXT
     `;
 
     console.log("✅ Database tables created successfully");

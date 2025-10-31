@@ -39,7 +39,7 @@ export async function getMembers(): Promise<Member[]> {
         phone_number as "phoneNumber", member_id as "memberId", 
         join_date as "joinDate", savings_balance as "savingsBalance",
         loan_balance as "loanBalance", status, avatar_id as "avatarId",
-        date_of_birth as "dateOfBirth", gender, national_id as "nationalId", email, alternative_phone as "alternativePhone", address, monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber"
+        date_of_birth as "dateOfBirth", gender, national_id as "nationalId", email, alternative_phone as "alternativePhone", address, monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber", deactivation_reason as "deactivationReason"
       FROM members 
       ORDER BY created_at DESC
     `;
@@ -66,6 +66,7 @@ export async function getMembers(): Promise<Member[]> {
       collectionMeans: row.collectionMeans,
       otherCollectionMeans: row.otherCollectionMeans,
       accountNumber: row.accountNumber,
+      deactivationReason: row.deactivationReason,
     })) as Member[];
   } catch (error) {
     handleDatabaseError(error, "getMembers");
@@ -82,7 +83,7 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
         phone_number as "phoneNumber", member_id as "memberId",
         join_date as "joinDate", savings_balance as "savingsBalance",
         loan_balance as "loanBalance", status, avatar_id as "avatarId",
-        date_of_birth as "dateOfBirth", gender, national_id as "nationalId", email, alternative_phone as "alternativePhone", address, monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber"
+        date_of_birth as "dateOfBirth", gender, national_id as "nationalId", email, alternative_phone as "alternativePhone", address, monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber", deactivation_reason as "deactivationReason"
       FROM members
       WHERE id = ${id}
     `;
@@ -111,6 +112,7 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
       collectionMeans: row.collectionMeans,
       otherCollectionMeans: row.otherCollectionMeans,
       accountNumber: row.accountNumber,
+      deactivationReason: row.deactivationReason,
     } as Member;
   } catch (error) {
     handleDatabaseError(error, "getMemberById");
@@ -175,6 +177,9 @@ export async function updateMember(
     }
     if (updates.status !== undefined) {
       updateSets.push(`status = '${updates.status.replace(/'/g, "''")}'`);
+    }
+    if (updates.deactivationReason !== undefined) {
+      updateSets.push(`deactivation_reason = '${updates.deactivationReason.replace(/'/g, "''")}'`);
     }
     if (updates.savingsBalance !== undefined) {
       updateSets.push(`savings_balance = ${updates.savingsBalance}`);
