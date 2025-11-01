@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useRef, useState, useCallback } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,6 +15,7 @@ import {
 } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { editMember } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { RwandaLocationSelector } from '@/components/ui/rwanda-location-selector';
 import type { Member } from '@/lib/types';
 
 const initialState = {
@@ -49,6 +50,14 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [collectionMeans, setCollectionMeans] = useState(member.collectionMeans || '');
+  const [shareAmount, setShareAmount] = useState(member.shareAmount || 0);
+  const [numberOfShares, setNumberOfShares] = useState(member.numberOfShares || 0);
+
+  const handleShareAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const amount = parseFloat(e.target.value) || 0;
+    setShareAmount(amount);
+    setNumberOfShares(Math.floor(amount / 15000));
+  }, []);
 
    useEffect(() => {
     if (state.message) {
@@ -73,10 +82,6 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
   useEffect(() => {
     if (!open) {
         formRef.current?.reset();
-        // state is not directly mutable, this is incorrect.
-        // The state will be reset when the component unmounts and remounts,
-        // or by managing a key on the form.
-        // For this scenario, just resetting the form visually is enough.
     }
   }, [open]);
 
@@ -106,13 +111,18 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                             {state.fields?.firstName && <p className="text-sm text-destructive">{state.fields.firstName}</p>}
                         </div>
                         <div className="grid gap-2">
+                            <Label htmlFor="middleName">Middle Name</Label>
+                            <Input id="middleName" name="middleName" defaultValue={member.middleName} />
+                        </div>
+                        <div className="grid gap-2">
                             <Label htmlFor="lastName">Last Name *</Label>
                             <Input id="lastName" name="lastName" defaultValue={member.lastName} />
                             {state.fields?.lastName && <p className="text-sm text-destructive">{state.fields.lastName}</p>}
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                            <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={member.dateOfBirth} />
+                            <Label htmlFor="dateOfBirth">Date of Birth (Must be 18+)</Label>
+                            <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={member.dateOfBirth} max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]} />
+                            {state.fields?.dateOfBirth && <p className="text-sm text-destructive">{state.fields.dateOfBirth}</p>}
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="gender">Gender</Label>
@@ -139,9 +149,9 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                     </div>
                 </div>
 
-                {/* Contact Information */}
+                {/* Contact & Location Information */}
                  <div className='space-y-4'>
-                    <h3 className="text-lg font-medium">Contact Information</h3>
+                    <h3 className="text-lg font-medium">Contact & Location Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
@@ -151,9 +161,69 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                             <Label htmlFor="alternativePhone">Alternative Phone</Label>
                             <Input id="alternativePhone" name="alternativePhone" defaultValue={member.alternativePhone} />
                         </div>
+                    </div>
+                    <RwandaLocationSelector 
+                      defaultProvince={member.province}
+                      defaultDistrict={member.district}
+                      defaultSector={member.sector}
+                      defaultCell={member.cell}
+                      defaultVillage={member.village}
+                    />
+                    <div className="grid gap-2">
+                        <Label htmlFor="address">Additional Address Details</Label>
+                        <Textarea id="address" name="address" defaultValue={member.address} placeholder="Street, house number, landmarks, etc." />
+                    </div>
+                </div>
+
+                {/* Next of Kin */}
+                <div className='space-y-4'>
+                    <h3 className="text-lg font-medium">Next of Kin *</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="nextOfKinName">Full Name *</Label>
+                            <Input id="nextOfKinName" name="nextOfKinName" defaultValue={member.nextOfKinName} />
+                            {state.fields?.nextOfKinName && <p className="text-sm text-destructive">{state.fields.nextOfKinName}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="nextOfKinPhone">Phone Number *</Label>
+                            <Input id="nextOfKinPhone" name="nextOfKinPhone" defaultValue={member.nextOfKinPhone} />
+                            {state.fields?.nextOfKinPhone && <p className="text-sm text-destructive">{state.fields.nextOfKinPhone}</p>}
+                        </div>
                         <div className="grid gap-2 md:col-span-2">
-                            <Label htmlFor="address">Address</Label>
-                            <Input id="address" name="address" defaultValue={member.address} />
+                            <Label htmlFor="nextOfKinRelationship">Relationship *</Label>
+                            <Input id="nextOfKinRelationship" name="nextOfKinRelationship" defaultValue={member.nextOfKinRelationship} placeholder="e.g., Spouse, Parent, Sibling" />
+                            {state.fields?.nextOfKinRelationship && <p className="text-sm text-destructive">{state.fields.nextOfKinRelationship}</p>}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Shares */}
+                <div className='space-y-4'>
+                    <h3 className="text-lg font-medium">Shares *</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="shareAmount">Share Amount (RWF) *</Label>
+                            <Input 
+                              id="shareAmount" 
+                              name="shareAmount" 
+                              type="number" 
+                              min="15000" 
+                              step="15000"
+                              defaultValue={member.shareAmount}
+                              onChange={handleShareAmountChange}
+                              placeholder="Minimum 15,000 RWF"
+                            />
+                            {state.fields?.shareAmount && <p className="text-sm text-destructive">{state.fields.shareAmount}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="numberOfShares">Number of Shares</Label>
+                            <Input 
+                              id="numberOfShares" 
+                              value={numberOfShares} 
+                              readOnly 
+                              className="bg-muted"
+                            />
+                            <p className="text-xs text-muted-foreground">Auto-calculated (1 share = 15,000 RWF)</p>
                         </div>
                     </div>
                 </div>
@@ -168,7 +238,8 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="contributionDate">Date of Contribution Collection</Label>
-                            <Input id="contributionDate" name="contributionDate" type="date" defaultValue={member.contributionDate} />
+                            <Input id="contributionDate" name="contributionDate" type="date" defaultValue={member.contributionDate} min={new Date().toISOString().split('T')[0]} />
+                            {state.fields?.contributionDate && <p className="text-sm text-destructive">{state.fields.contributionDate}</p>}
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="collectionMeans">Means of Collection</Label>

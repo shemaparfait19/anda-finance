@@ -12,25 +12,46 @@ const AddMemberFormSchema = z.object({
   firstName: z
     .string()
     .min(2, { message: "First name must be at least 2 characters." }),
+  middleName: z.string().optional(),
   lastName: z
     .string()
     .min(2, { message: "Last name must be at least 2 characters." }),
-    dateOfBirth: z.string().optional(),
+  dateOfBirth: z.string().refine((date) => {
+    if (!date) return true;
+    const birthDate = new Date(date);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    return age >= 18 && age <= 100;
+  }, { message: "Member must be between 18 and 100 years old." }).optional(),
   gender: z.enum(["Male", "Female", "Other"]).optional(),
-    nationalId: z.string().optional(),
+  nationalId: z.string().optional(),
   phoneNumber: z.string().min(10, { message: "Phone number is required." }),
   email:
     z.string().email({ message: "Invalid email address." }).optional().or(z.literal("")),
   alternativePhone: z.string().optional(),
+  // Location
+  province: z.string().optional(),
+  district: z.string().optional(),
+  sector: z.string().optional(),
+  cell: z.string().optional(),
+  village: z.string().optional(),
   address: z.string().optional(),
+  // Next of Kin
+  nextOfKinName: z.string().min(2, { message: "Next of kin name is required." }),
+  nextOfKinPhone: z.string().min(10, { message: "Next of kin phone is required." }),
+  nextOfKinRelationship: z.string().min(2, { message: "Relationship is required." }),
+  // Shares
+  shareAmount: z.coerce.number().min(15000, { message: "Share amount must be at least 15,000 RWF." }),
   monthlyContribution: z.coerce.number().optional(),
-  contributionDate: z.string().optional(),
+  contributionDate: z.string().refine((date) => {
+    if (!date) return true;
+    const contributionDate = new Date(date);
+    const today = new Date();
+    return contributionDate >= today;
+  }, { message: "Contribution date must be today or in the future." }).optional(),
   collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "OTHER"]).optional(),
   otherCollectionMeans: z.string().optional(),
   accountNumber: z.string().optional(),
-    // We are not handling file uploads in this action for now
-    // profilePhoto: z.any().optional(),
-    // nationalIdCopy: z.any().optional(),
 });
 
 const EditMemberFormSchema = z.object({
@@ -38,19 +59,43 @@ const EditMemberFormSchema = z.object({
   firstName: z
     .string()
     .min(2, { message: "First name must be at least 2 characters." }),
+  middleName: z.string().optional(),
   lastName: z
     .string()
     .min(2, { message: "Last name must be at least 2 characters." }),
-  dateOfBirth: z.string().optional(),
+  dateOfBirth: z.string().refine((date) => {
+    if (!date) return true;
+    const birthDate = new Date(date);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    return age >= 18 && age <= 100;
+  }, { message: "Member must be between 18 and 100 years old." }).optional(),
   gender: z.enum(["Male", "Female", "Other"]).optional(),
   nationalId: z.string().optional(),
   phoneNumber: z.string().min(10, { message: "Phone number is required." }),
   email:
     z.string().email({ message: "Invalid email address." }).optional().or(z.literal("")),
   alternativePhone: z.string().optional(),
+  // Location
+  province: z.string().optional(),
+  district: z.string().optional(),
+  sector: z.string().optional(),
+  cell: z.string().optional(),
+  village: z.string().optional(),
   address: z.string().optional(),
+  // Next of Kin
+  nextOfKinName: z.string().min(2, { message: "Next of kin name is required." }),
+  nextOfKinPhone: z.string().min(10, { message: "Next of kin phone is required." }),
+  nextOfKinRelationship: z.string().min(2, { message: "Relationship is required." }),
+  // Shares
+  shareAmount: z.coerce.number().min(15000, { message: "Share amount must be at least 15,000 RWF." }),
   monthlyContribution: z.coerce.number().optional(),
-  contributionDate: z.string().optional(),
+  contributionDate: z.string().refine((date) => {
+    if (!date) return true;
+    const contributionDate = new Date(date);
+    const today = new Date();
+    return contributionDate >= today;
+  }, { message: "Contribution date must be today or in the future." }).optional(),
   collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "OTHER"]).optional(),
   otherCollectionMeans: z.string().optional(),
   accountNumber: z.string().optional(),
@@ -110,6 +155,14 @@ export async function addMember(
     // Generate sequential member ID
     const memberId = await generateMemberId();
 
+    // Calculate number of shares (each share = 15000 RWF)
+    const numberOfShares = Math.floor(memberData.shareAmount / 15000);
+
+    // Build full name with middle name if provided
+    const fullName = memberData.middleName 
+      ? `${memberData.firstName} ${memberData.middleName} ${memberData.lastName}`
+      : `${memberData.firstName} ${memberData.lastName}`;
+
     const newMember: Omit<
       Member,
       | "id"
@@ -121,12 +174,13 @@ export async function addMember(
     > = {
         ...memberData,
         memberId,
+        numberOfShares,
         joinDate: new Date().toISOString().split("T")[0], // Explicitly set joinDate for type compatibility
     };
 
     await addMemberToDb({
       ...newMember,
-      name: `${newMember.firstName} ${newMember.lastName}`,
+      name: fullName,
       savingsBalance: 0,
       loanBalance: 0,
       status: "Active",
@@ -167,9 +221,19 @@ export async function editMember(
         }
 
         const { id, ...updates } = parsed.data;
+        
+        // Calculate number of shares if share amount is provided
+        const numberOfShares = updates.shareAmount ? Math.floor(updates.shareAmount / 15000) : undefined;
+        
+        // Build full name with middle name if provided
+        const fullName = updates.middleName 
+          ? `${updates.firstName} ${updates.middleName} ${updates.lastName}`
+          : `${updates.firstName} ${updates.lastName}`;
+        
         await updateMemberInDb(id, {
             ...updates,
-      name: `${updates.firstName} ${updates.lastName}`,
+            numberOfShares,
+            name: fullName,
         });
 
     revalidatePath("/members");

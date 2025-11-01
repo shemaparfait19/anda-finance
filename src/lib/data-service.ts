@@ -35,11 +35,15 @@ export async function getMembers(): Promise<Member[]> {
     await ensureInitialized();
     const result = await sql`
       SELECT 
-        id, name, first_name as "firstName", last_name as "lastName", 
+        id, name, first_name as "firstName", middle_name as "middleName", last_name as "lastName", 
         phone_number as "phoneNumber", member_id as "memberId", 
         join_date as "joinDate", savings_balance as "savingsBalance",
         loan_balance as "loanBalance", status, avatar_id as "avatarId",
-        date_of_birth as "dateOfBirth", gender, national_id as "nationalId", email, alternative_phone as "alternativePhone", address, monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber", deactivation_reason as "deactivationReason"
+        date_of_birth as "dateOfBirth", gender, national_id as "nationalId", email, alternative_phone as "alternativePhone", 
+        province, district, sector, cell, village, address,
+        next_of_kin_name as "nextOfKinName", next_of_kin_phone as "nextOfKinPhone", next_of_kin_relationship as "nextOfKinRelationship",
+        share_amount as "shareAmount", number_of_shares as "numberOfShares",
+        monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber", deactivation_reason as "deactivationReason"
       FROM members 
       ORDER BY created_at DESC
     `;
@@ -47,6 +51,7 @@ export async function getMembers(): Promise<Member[]> {
       id: row.id,
       name: row.name,
       firstName: row.firstName,
+      middleName: row.middleName,
       lastName: row.lastName,
       phoneNumber: row.phoneNumber,
       memberId: row.memberId,
@@ -60,8 +65,18 @@ export async function getMembers(): Promise<Member[]> {
       nationalId: row.nationalId,
       email: row.email,
       alternativePhone: row.alternativePhone,
+      province: row.province,
+      district: row.district,
+      sector: row.sector,
+      cell: row.cell,
+      village: row.village,
       address: row.address,
-      monthlyContribution: Number(row.monthlyContribution),
+      nextOfKinName: row.nextOfKinName,
+      nextOfKinPhone: row.nextOfKinPhone,
+      nextOfKinRelationship: row.nextOfKinRelationship,
+      shareAmount: row.shareAmount ? Number(row.shareAmount) : undefined,
+      numberOfShares: row.numberOfShares ? Number(row.numberOfShares) : undefined,
+      monthlyContribution: row.monthlyContribution ? Number(row.monthlyContribution) : undefined,
       contributionDate: row.contributionDate,
       collectionMeans: row.collectionMeans,
       otherCollectionMeans: row.otherCollectionMeans,
@@ -79,11 +94,15 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
     await ensureInitialized();
     const result = await sql`
       SELECT
-        id, name, first_name as "firstName", last_name as "lastName",
+        id, name, first_name as "firstName", middle_name as "middleName", last_name as "lastName",
         phone_number as "phoneNumber", member_id as "memberId",
         join_date as "joinDate", savings_balance as "savingsBalance",
         loan_balance as "loanBalance", status, avatar_id as "avatarId",
-        date_of_birth as "dateOfBirth", gender, national_id as "nationalId", email, alternative_phone as "alternativePhone", address, monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber", deactivation_reason as "deactivationReason"
+        date_of_birth as "dateOfBirth", gender, national_id as "nationalId", email, alternative_phone as "alternativePhone",
+        province, district, sector, cell, village, address,
+        next_of_kin_name as "nextOfKinName", next_of_kin_phone as "nextOfKinPhone", next_of_kin_relationship as "nextOfKinRelationship",
+        share_amount as "shareAmount", number_of_shares as "numberOfShares",
+        monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber", deactivation_reason as "deactivationReason"
       FROM members
       WHERE id = ${id}
     `;
@@ -93,6 +112,7 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
       id: row.id,
       name: row.name,
       firstName: row.firstName,
+      middleName: row.middleName,
       lastName: row.lastName,
       phoneNumber: row.phoneNumber,
       memberId: row.memberId,
@@ -106,8 +126,18 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
       nationalId: row.nationalId,
       email: row.email,
       alternativePhone: row.alternativePhone,
+      province: row.province,
+      district: row.district,
+      sector: row.sector,
+      cell: row.cell,
+      village: row.village,
       address: row.address,
-      monthlyContribution: Number(row.monthlyContribution),
+      nextOfKinName: row.nextOfKinName,
+      nextOfKinPhone: row.nextOfKinPhone,
+      nextOfKinRelationship: row.nextOfKinRelationship,
+      shareAmount: row.shareAmount ? Number(row.shareAmount) : undefined,
+      numberOfShares: row.numberOfShares ? Number(row.numberOfShares) : undefined,
+      monthlyContribution: row.monthlyContribution ? Number(row.monthlyContribution) : undefined,
       contributionDate: row.contributionDate,
       collectionMeans: row.collectionMeans,
       otherCollectionMeans: row.otherCollectionMeans,
@@ -127,17 +157,23 @@ export async function addMember(member: Omit<Member, "id">): Promise<Member> {
 
     await sql`
       INSERT INTO members (
-        id, name, first_name, last_name, phone_number, member_id, join_date,
-        savings_balance, loan_balance, status, avatar_id, date_of_birth, gender, national_id, email, alternative_phone, address, monthly_contribution, contribution_date, collection_means, other_collection_means, account_number
+        id, name, first_name, middle_name, last_name, phone_number, member_id, join_date,
+        savings_balance, loan_balance, status, avatar_id, 
+        date_of_birth, gender, national_id, email, alternative_phone, 
+        province, district, sector, cell, village, address,
+        next_of_kin_name, next_of_kin_phone, next_of_kin_relationship,
+        share_amount, number_of_shares,
+        monthly_contribution, contribution_date, collection_means, other_collection_means, account_number
       ) VALUES (
-        ${newId}, ${member.name}, ${member.firstName || null}, ${
-      member.lastName || null
-    },
+        ${newId}, ${member.name}, ${member.firstName || null}, ${member.middleName || null}, ${member.lastName || null},
         ${member.phoneNumber || null}, ${member.memberId}, ${member.joinDate},
-        ${member.savingsBalance || 0}, ${member.loanBalance || 0}, ${
-      member.status
-    },
-        ${member.avatarId || null}, ${member.dateOfBirth || null}, ${member.gender || null}, ${member.nationalId || null}, ${member.email || null}, ${member.alternativePhone || null}, ${member.address || null}, ${member.monthlyContribution || null}, ${member.contributionDate || null}, ${member.collectionMeans || null}, ${member.otherCollectionMeans || null}, ${member.accountNumber || null}
+        ${member.savingsBalance || 0}, ${member.loanBalance || 0}, ${member.status},
+        ${member.avatarId || null}, 
+        ${member.dateOfBirth || null}, ${member.gender || null}, ${member.nationalId || null}, ${member.email || null}, ${member.alternativePhone || null},
+        ${member.province || null}, ${member.district || null}, ${member.sector || null}, ${member.cell || null}, ${member.village || null}, ${member.address || null},
+        ${member.nextOfKinName || null}, ${member.nextOfKinPhone || null}, ${member.nextOfKinRelationship || null},
+        ${member.shareAmount || null}, ${member.numberOfShares || null},
+        ${member.monthlyContribution || null}, ${member.contributionDate || null}, ${member.collectionMeans || null}, ${member.otherCollectionMeans || null}, ${member.accountNumber || null}
       )
     `;
 

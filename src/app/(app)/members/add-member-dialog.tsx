@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useEffect, useRef } from "react";
+import { useActionState, useState, useEffect, useRef, useCallback } from "react";
 import { useFormStatus } from "react-dom";
 import {
   PlusCircle,
@@ -24,6 +24,8 @@ import { Label } from "@/components/ui/label";
 import { addMember } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { RwandaLocationSelector } from "@/components/ui/rwanda-location-selector";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -95,9 +97,17 @@ function FileUpload({
 export default function AddMemberDialog() {
   const [open, setOpen] = useState(false);
   const [collectionMeans, setCollectionMeans] = useState('');
+  const [shareAmount, setShareAmount] = useState(0);
+  const [numberOfShares, setNumberOfShares] = useState(0);
   const [state, formAction] = useActionState(addMember, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+
+  const handleShareAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const amount = parseFloat(e.target.value) || 0;
+    setShareAmount(amount);
+    setNumberOfShares(Math.floor(amount / 15000));
+  }, []);
 
   useEffect(() => {
     if (state.message) {
@@ -162,6 +172,10 @@ export default function AddMemberDialog() {
                     )}
                   </div>
                   <div className="grid gap-2">
+                    <Label htmlFor="middleName">Middle Name</Label>
+                    <Input id="middleName" name="middleName" />
+                  </div>
+                  <div className="grid gap-2">
                     <Label htmlFor="lastName">Last Name *</Label>
                     <Input id="lastName" name="lastName" />
                     {state.fields?.lastName && (
@@ -171,8 +185,13 @@ export default function AddMemberDialog() {
                     )}
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                    <Input id="dateOfBirth" name="dateOfBirth" type="date" />
+                    <Label htmlFor="dateOfBirth">Date of Birth (Must be 18+)</Label>
+                    <Input id="dateOfBirth" name="dateOfBirth" type="date" max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]} />
+                    {state.fields?.dateOfBirth && (
+                      <p className="text-sm text-destructive">
+                        {state.fields.dateOfBirth}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="gender">Gender</Label>
@@ -203,9 +222,9 @@ export default function AddMemberDialog() {
                 </div>
               </div>
 
-              {/* Contact Information */}
+              {/* Contact & Location Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Contact Information</h3>
+                <h3 className="text-lg font-medium">Contact & Location Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
@@ -215,9 +234,78 @@ export default function AddMemberDialog() {
                     <Label htmlFor="alternativePhone">Alternative Phone</Label>
                     <Input id="alternativePhone" name="alternativePhone" />
                   </div>
+                </div>
+                <RwandaLocationSelector />
+                <div className="grid gap-2">
+                  <Label htmlFor="address">Additional Address Details</Label>
+                  <Textarea id="address" name="address" placeholder="Street, house number, landmarks, etc." />
+                </div>
+              </div>
+
+              {/* Next of Kin */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Next of Kin *</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="nextOfKinName">Full Name *</Label>
+                    <Input id="nextOfKinName" name="nextOfKinName" />
+                    {state.fields?.nextOfKinName && (
+                      <p className="text-sm text-destructive">
+                        {state.fields.nextOfKinName}
+                      </p>
+                    )}
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="nextOfKinPhone">Phone Number *</Label>
+                    <Input id="nextOfKinPhone" name="nextOfKinPhone" />
+                    {state.fields?.nextOfKinPhone && (
+                      <p className="text-sm text-destructive">
+                        {state.fields.nextOfKinPhone}
+                      </p>
+                    )}
+                  </div>
                   <div className="grid gap-2 md:col-span-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input id="address" name="address" />
+                    <Label htmlFor="nextOfKinRelationship">Relationship *</Label>
+                    <Input id="nextOfKinRelationship" name="nextOfKinRelationship" placeholder="e.g., Spouse, Parent, Sibling" />
+                    {state.fields?.nextOfKinRelationship && (
+                      <p className="text-sm text-destructive">
+                        {state.fields.nextOfKinRelationship}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Shares */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Shares *</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="shareAmount">Share Amount (RWF) *</Label>
+                    <Input 
+                      id="shareAmount" 
+                      name="shareAmount" 
+                      type="number" 
+                      min="15000" 
+                      step="15000"
+                      onChange={handleShareAmountChange}
+                      placeholder="Minimum 15,000 RWF"
+                    />
+                    {state.fields?.shareAmount && (
+                      <p className="text-sm text-destructive">
+                        {state.fields.shareAmount}
+                      </p>
+                    )}
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="numberOfShares">Number of Shares</Label>
+                    <Input 
+                      id="numberOfShares" 
+                      value={numberOfShares} 
+                      readOnly 
+                      className="bg-muted"
+                    />
+                    <p className="text-xs text-muted-foreground">Auto-calculated (1 share = 15,000 RWF)</p>
                   </div>
                 </div>
               </div>

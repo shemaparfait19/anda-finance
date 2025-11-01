@@ -2,8 +2,9 @@ import type { LucideIcon } from "lucide-react";
 
 export type Member = {
   id: string;
-  name: string; // This will now be a concatenation of firstName and lastName
+  name: string; // This will now be a concatenation of firstName, middleName and lastName
   firstName: string;
+  middleName?: string;
   lastName: string;
   dateOfBirth?: string;
   gender?: "Male" | "Female" | "Other";
@@ -11,7 +12,20 @@ export type Member = {
   phoneNumber: string;
   email?: string;
   alternativePhone?: string;
+  // Location fields
+  province?: string;
+  district?: string;
+  sector?: string;
+  cell?: string;
+  village?: string;
   address?: string;
+  // Next of Kin
+  nextOfKinName?: string;
+  nextOfKinPhone?: string;
+  nextOfKinRelationship?: string;
+  // Shares
+  shareAmount?: number;
+  numberOfShares?: number;
   monthlyContribution?: number;
   profilePhotoPath?: string;
   nationalIdCopyPath?: string;

@@ -215,12 +215,23 @@ export async function initializeDatabase() {
 
     await sql`
       ALTER TABLE members
+      ADD COLUMN IF NOT EXISTS middle_name VARCHAR(255),
       ADD COLUMN IF NOT EXISTS date_of_birth DATE,
       ADD COLUMN IF NOT EXISTS gender VARCHAR(10),
       ADD COLUMN IF NOT EXISTS national_id VARCHAR(50),
       ADD COLUMN IF NOT EXISTS email VARCHAR(255),
       ADD COLUMN IF NOT EXISTS alternative_phone VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS province VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS district VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS sector VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS cell VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS village VARCHAR(100),
       ADD COLUMN IF NOT EXISTS address TEXT,
+      ADD COLUMN IF NOT EXISTS next_of_kin_name VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS next_of_kin_phone VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS next_of_kin_relationship VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS share_amount DECIMAL(15,2),
+      ADD COLUMN IF NOT EXISTS number_of_shares INTEGER,
       ADD COLUMN IF NOT EXISTS monthly_contribution DECIMAL(15,2),
       ADD COLUMN IF NOT EXISTS contribution_date DATE,
       ADD COLUMN IF NOT EXISTS collection_means VARCHAR(50),
