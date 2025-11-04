@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,12 +41,24 @@ export function ActionReasonDialog({
 }: ActionReasonDialogProps) {
   const [reason, setReason] = useState("");
 
+  // Reset reason when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setReason("");
+    }
+  }, [open]);
+
   const handleConfirm = async () => {
     if (!reason.trim()) {
       return;
     }
     await onConfirm(reason);
+    // Don't close here - let the parent handler close after success
+  };
+
+  const handleCancel = () => {
     setReason("");
+    onOpenChange(false);
   };
 
   return (
@@ -72,8 +84,9 @@ export function ActionReasonDialog({
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={handleCancel}
             disabled={isPending}
+            type="button"
           >
             Cancel
           </Button>
@@ -81,6 +94,7 @@ export function ActionReasonDialog({
             variant={confirmButtonVariant}
             onClick={handleConfirm}
             disabled={isPending || !reason.trim()}
+            type="button"
           >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {confirmButtonText}

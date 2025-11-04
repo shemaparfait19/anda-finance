@@ -43,6 +43,7 @@ export default function MemberActions({ member }: { member: Member }) {
           title: "Success",
           description: result.message,
         });
+        setDeactivateDialogOpen(false);
       } else {
         toast({
           variant: "destructive",
@@ -50,7 +51,6 @@ export default function MemberActions({ member }: { member: Member }) {
           description: result.message,
         });
       }
-      setDeactivateDialogOpen(false);
     });
   };
 
@@ -62,6 +62,7 @@ export default function MemberActions({ member }: { member: Member }) {
           title: "Success",
           description: result.message,
         });
+        setReactivateDialogOpen(false);
       } else {
         toast({
           variant: "destructive",
@@ -69,7 +70,6 @@ export default function MemberActions({ member }: { member: Member }) {
           description: result.message,
         });
       }
-      setReactivateDialogOpen(false);
     });
   };
 
@@ -81,6 +81,7 @@ export default function MemberActions({ member }: { member: Member }) {
           title: "Success",
           description: result.message,
         });
+        setCloseMembershipDialogOpen(false);
       } else {
         toast({
           variant: "destructive",
@@ -88,7 +89,6 @@ export default function MemberActions({ member }: { member: Member }) {
           description: result.message,
         });
       }
-      setCloseMembershipDialogOpen(false);
     });
   };
 
