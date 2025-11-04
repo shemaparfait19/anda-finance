@@ -35,6 +35,18 @@ const initialState = {
   success: false,
 };
 
+// Helper function to format date to yyyy-MM-dd
+function formatDateForInput(dateString?: string): string {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
+  } catch {
+    return '';
+  }
+}
+
 function SubmitButton() {
     const { pending } = useFormStatus();
     return (
@@ -123,7 +135,7 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="dateOfBirth">Date of Birth (Must be 18+)</Label>
-                            <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={member.dateOfBirth} max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]} />
+                            <Input id="dateOfBirth" name="dateOfBirth" type="date" defaultValue={formatDateForInput(member.dateOfBirth)} max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]} />
                             {state.fields?.dateOfBirth && <p className="text-sm text-destructive">{state.fields.dateOfBirth}</p>}
                         </div>
                         <div className="grid gap-2">
@@ -242,7 +254,7 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="contributionDate">Date of Contribution Collection</Label>
-                            <Input id="contributionDate" name="contributionDate" type="date" defaultValue={member.contributionDate} min={new Date().toISOString().split('T')[0]} />
+                            <Input id="contributionDate" name="contributionDate" type="date" defaultValue={formatDateForInput(member.contributionDate)} min={new Date().toISOString().split('T')[0]} />
                             {state.fields?.contributionDate && <p className="text-sm text-destructive">{state.fields.contributionDate}</p>}
                         </div>
                         <div className="grid gap-2">
