@@ -40,16 +40,16 @@ const AddMemberFormSchema = z.object({
   nextOfKinName: z.string().min(2, { message: "Next of kin name is required." }),
   nextOfKinPhone: z.string().min(10, { message: "Next of kin phone is required." }),
   nextOfKinRelationship: z.string().min(2, { message: "Relationship is required." }),
-  // Shares
-  shareAmount: z.coerce.number().min(15000, { message: "Share amount must be at least 15,000 RWF." }),
-  monthlyContribution: z.coerce.number().optional(),
+  // Shares/Contribution
+  monthlyContribution: z.coerce.number().min(15000, { message: "Monthly contribution must be at least 15,000 RWF." }),
+  shareAmount: z.coerce.number().optional(),
   contributionDate: z.string().refine((date) => {
     if (!date) return true;
     const contributionDate = new Date(date);
     const today = new Date();
     return contributionDate >= today;
   }, { message: "Contribution date must be today or in the future." }).optional(),
-  collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "OTHER"]).optional(),
+  collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "BANKS OUTSIDE RWANDA"]).optional(),
   otherCollectionMeans: z.string().optional(),
   accountNumber: z.string().optional(),
 });
@@ -87,16 +87,16 @@ const EditMemberFormSchema = z.object({
   nextOfKinName: z.string().min(2, { message: "Next of kin name is required." }),
   nextOfKinPhone: z.string().min(10, { message: "Next of kin phone is required." }),
   nextOfKinRelationship: z.string().min(2, { message: "Relationship is required." }),
-  // Shares
-  shareAmount: z.coerce.number().min(15000, { message: "Share amount must be at least 15,000 RWF." }),
-  monthlyContribution: z.coerce.number().optional(),
+  // Shares/Contribution
+  monthlyContribution: z.coerce.number().min(15000, { message: "Monthly contribution must be at least 15,000 RWF." }),
+  shareAmount: z.coerce.number().optional(),
   contributionDate: z.string().refine((date) => {
     if (!date) return true;
     const contributionDate = new Date(date);
     const today = new Date();
     return contributionDate >= today;
   }, { message: "Contribution date must be today or in the future." }).optional(),
-  collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "OTHER"]).optional(),
+  collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "BANKS OUTSIDE RWANDA"]).optional(),
   otherCollectionMeans: z.string().optional(),
   accountNumber: z.string().optional(),
   status: z.enum(["Active", "Inactive", "Temporary Inactive", "Dormant", "Closed"]),
@@ -158,7 +158,7 @@ export async function addMember(
     // Calculate number of shares (each share = 15000 RWF)
     // Formula: Total amount ÷ Price per share
     // Example: 50,000 / 15,000 = 3.33 shares
-    const numberOfShares = parseFloat((memberData.shareAmount / 15000).toFixed(2));
+    const numberOfShares = memberData.shareAmount ? parseFloat((memberData.shareAmount / 15000).toFixed(2)) : undefined;
 
     // Build full name with middle name if provided
     const fullName = memberData.middleName 

@@ -32,7 +32,7 @@ export type Member = {
   memberId: string;
   joinDate: string;
   contributionDate?: string;
-  collectionMeans?: "MOMO" | "AIRTEL MONEY" | "BANKS IN RWANDA" | "OTHER";
+  collectionMeans?: "MOMO" | "AIRTEL MONEY" | "BANKS IN RWANDA" | "BANKS OUTSIDE RWANDA";
   otherCollectionMeans?: string;
   accountNumber?: string;
   savingsBalance: number;

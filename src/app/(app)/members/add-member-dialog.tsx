@@ -278,20 +278,36 @@ export default function AddMemberDialog() {
                 </div>
               </div>
 
-              {/* Shares */}
+              {/* Shares/Contribution Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Shares *</h3>
+                <h3 className="text-lg font-medium">Shares/Contribution Information *</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="shareAmount">Share Amount (RWF) *</Label>
+                    <Label htmlFor="monthlyContribution">Monthly Contribution (RWF) *</Label>
+                    <Input 
+                      id="monthlyContribution" 
+                      name="monthlyContribution" 
+                      type="number" 
+                      min="15000"
+                      step="1000"
+                      placeholder="Minimum 15,000 RWF"
+                    />
+                    {state.fields?.monthlyContribution && (
+                      <p className="text-sm text-destructive">
+                        {state.fields.monthlyContribution}
+                      </p>
+                    )}
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="shareAmount">Share Amount (RWF)</Label>
                     <Input 
                       id="shareAmount" 
                       name="shareAmount" 
                       type="number" 
-                      min="15000" 
+                      min="0" 
                       step="15000"
                       onChange={handleShareAmountChange}
-                      placeholder="Minimum 15,000 RWF"
+                      placeholder="Optional"
                     />
                     {state.fields?.shareAmount && (
                       <p className="text-sm text-destructive">
@@ -309,22 +325,14 @@ export default function AddMemberDialog() {
                     />
                     <p className="text-xs text-muted-foreground">Auto-calculated: Amount ÷ 15,000 (e.g., 50,000 ÷ 15,000 = 3.33 shares)</p>
                   </div>
-                </div>
-              </div>
-
-              {/* Contribution Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">
-                  Contribution Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="monthlyContribution">Monthly Contribution (RWF)</Label>
-                    <Input id="monthlyContribution" name="monthlyContribution" type="number" />
-                  </div>
                   <div className="grid gap-2">
                     <Label htmlFor="contributionDate">Date of Contribution Collection</Label>
                     <Input id="contributionDate" name="contributionDate" type="date" />
+                    {state.fields?.contributionDate && (
+                      <p className="text-sm text-destructive">
+                        {state.fields.contributionDate}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="collectionMeans">Means of Collection</Label>
@@ -336,14 +344,14 @@ export default function AddMemberDialog() {
                         <SelectItem value="MOMO">MOMO</SelectItem>
                         <SelectItem value="AIRTEL MONEY">AIRTEL MONEY</SelectItem>
                         <SelectItem value="BANKS IN RWANDA">BANKS IN RWANDA</SelectItem>
-                        <SelectItem value="OTHER">OTHER</SelectItem>
+                        <SelectItem value="BANKS OUTSIDE RWANDA">Banks outside Rwanda</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  {collectionMeans === "OTHER" && (
+                  {(collectionMeans === "BANKS IN RWANDA" || collectionMeans === "BANKS OUTSIDE RWANDA") && (
                     <div className="grid gap-2">
-                      <Label htmlFor="otherCollectionMeans">Other Means of Collection</Label>
-                      <Input id="otherCollectionMeans" name="otherCollectionMeans" />
+                      <Label htmlFor="otherCollectionMeans">Bank Name</Label>
+                      <Input id="otherCollectionMeans" name="otherCollectionMeans" placeholder="Enter bank name" />
                     </div>
                   )}
                   <div className="grid gap-2">
