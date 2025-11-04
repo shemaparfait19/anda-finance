@@ -14,23 +14,31 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 
-interface DeactivationDialogProps {
+interface ActionReasonDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
   description: string;
+  reasonLabel: string;
+  reasonPlaceholder: string;
+  confirmButtonText: string;
+  confirmButtonVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   onConfirm: (reason: string) => Promise<void>;
   isPending: boolean;
 }
 
-export function DeactivationDialog({
+export function ActionReasonDialog({
   open,
   onOpenChange,
   title,
   description,
+  reasonLabel,
+  reasonPlaceholder,
+  confirmButtonText,
+  confirmButtonVariant = "destructive",
   onConfirm,
   isPending,
-}: DeactivationDialogProps) {
+}: ActionReasonDialogProps) {
   const [reason, setReason] = useState("");
 
   const handleConfirm = async () => {
@@ -50,10 +58,10 @@ export function DeactivationDialog({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="reason">Reason for deactivation *</Label>
+            <Label htmlFor="reason">{reasonLabel} *</Label>
             <Textarea
               id="reason"
-              placeholder="Enter the reason for temporary deactivation..."
+              placeholder={reasonPlaceholder}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={4}
@@ -70,15 +78,18 @@ export function DeactivationDialog({
             Cancel
           </Button>
           <Button
-            variant="destructive"
+            variant={confirmButtonVariant}
             onClick={handleConfirm}
             disabled={isPending || !reason.trim()}
           >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Confirm Deactivation
+            {confirmButtonText}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+// Keep the old name for backward compatibility
+export const DeactivationDialog = ActionReasonDialog;

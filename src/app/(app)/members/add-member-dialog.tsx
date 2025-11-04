@@ -106,7 +106,9 @@ export default function AddMemberDialog() {
   const handleShareAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const amount = parseFloat(e.target.value) || 0;
     setShareAmount(amount);
-    setNumberOfShares(Math.floor(amount / 15000));
+    // Formula: Total amount ÷ Price per share
+    // Example: 50,000 / 15,000 = 3.33 shares
+    setNumberOfShares(parseFloat((amount / 15000).toFixed(2)));
   }, []);
 
   useEffect(() => {
@@ -301,11 +303,11 @@ export default function AddMemberDialog() {
                     <Label htmlFor="numberOfShares">Number of Shares</Label>
                     <Input 
                       id="numberOfShares" 
-                      value={numberOfShares} 
+                      value={numberOfShares || ''} 
                       readOnly 
                       className="bg-muted"
                     />
-                    <p className="text-xs text-muted-foreground">Auto-calculated (1 share = 15,000 RWF)</p>
+                    <p className="text-xs text-muted-foreground">Auto-calculated: Amount ÷ 15,000 (e.g., 50,000 ÷ 15,000 = 3.33 shares)</p>
                   </div>
                 </div>
               </div>

@@ -231,7 +231,7 @@ export async function initializeDatabase() {
       ADD COLUMN IF NOT EXISTS next_of_kin_phone VARCHAR(20),
       ADD COLUMN IF NOT EXISTS next_of_kin_relationship VARCHAR(100),
       ADD COLUMN IF NOT EXISTS share_amount DECIMAL(15,2),
-      ADD COLUMN IF NOT EXISTS number_of_shares INTEGER,
+      ADD COLUMN IF NOT EXISTS number_of_shares DECIMAL(10,2),
       ADD COLUMN IF NOT EXISTS monthly_contribution DECIMAL(15,2),
       ADD COLUMN IF NOT EXISTS contribution_date DATE,
       ADD COLUMN IF NOT EXISTS collection_means VARCHAR(50),

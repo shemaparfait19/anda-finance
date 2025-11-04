@@ -20,8 +20,7 @@ import { getPlaceholderImage } from "@/lib/placeholder-images";
 import type { Member } from "@/lib/types";
 import { deactivateMember, reactivateMember, closeMembership } from "./actions";
 import { useToast } from "@/hooks/use-toast";
-import { AppConfirmationDialog } from "@/components/ui/app-confirmation-dialog";
-import { DeactivationDialog } from "@/components/ui/deactivation-dialog";
+import { ActionReasonDialog } from "@/components/ui/deactivation-dialog";
 import EditMemberSheet from "./edit-member-sheet";
 
 export default function MemberActions({ member }: { member: Member }) {
@@ -55,9 +54,9 @@ export default function MemberActions({ member }: { member: Member }) {
     });
   };
 
-  const handleReactivate = async () => {
+  const handleReactivate = async (reason: string) => {
     startReactivationTransition(async () => {
-      const result = await reactivateMember(member.id);
+      const result = await reactivateMember(member.id, reason);
       if (result.success) {
         toast({
           title: "Success",
@@ -74,9 +73,9 @@ export default function MemberActions({ member }: { member: Member }) {
     });
   };
 
-  const handleCloseMembership = async () => {
+  const handleCloseMembership = async (reason: string) => {
     startCloseMembershipTransition(async () => {
-      const result = await closeMembership(member.id);
+      const result = await closeMembership(member.id, reason);
       if (result.success) {
         toast({
           title: "Success",
@@ -173,29 +172,41 @@ export default function MemberActions({ member }: { member: Member }) {
         onOpenChange={setEditDialogOpen}
       />
 
-      <DeactivationDialog
+      <ActionReasonDialog
         open={isDeactivateDialogOpen}
         onOpenChange={setDeactivateDialogOpen}
         title="Temporary Deactivate Member"
         description={`Please provide a reason for temporarily deactivating ${member.name}.`}
+        reasonLabel="Reason for deactivation"
+        reasonPlaceholder="Enter the reason for temporary deactivation..."
+        confirmButtonText="Confirm Deactivation"
+        confirmButtonVariant="destructive"
         onConfirm={handleDeactivate}
         isPending={isDeactivating}
       />
 
-      <AppConfirmationDialog
+      <ActionReasonDialog
         open={isReactivateDialogOpen}
         onOpenChange={setReactivateDialogOpen}
         title="Reactivate Member"
-        description={`Are you sure you want to reactivate ${member.name}?`}
+        description={`Please provide a reason for reactivating ${member.name}.`}
+        reasonLabel="Reason for reactivation"
+        reasonPlaceholder="Enter the reason for reactivation..."
+        confirmButtonText="Confirm Reactivation"
+        confirmButtonVariant="default"
         onConfirm={handleReactivate}
         isPending={isReactivating}
       />
 
-      <AppConfirmationDialog
+      <ActionReasonDialog
         open={isCloseMembershipDialogOpen}
         onOpenChange={setCloseMembershipDialogOpen}
         title="Close Membership"
-        description={`Are you sure you want to close ${member.name}'s membership? This action cannot be undone.`}
+        description={`Please provide a reason for closing ${member.name}'s membership.`}
+        reasonLabel="Reason for closure"
+        reasonPlaceholder="Enter the reason for closing membership..."
+        confirmButtonText="Confirm Closure"
+        confirmButtonVariant="destructive"
         onConfirm={handleCloseMembership}
         isPending={isClosingMembership}
       />

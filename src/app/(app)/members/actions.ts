@@ -156,7 +156,9 @@ export async function addMember(
     const memberId = await generateMemberId();
 
     // Calculate number of shares (each share = 15000 RWF)
-    const numberOfShares = Math.floor(memberData.shareAmount / 15000);
+    // Formula: Total amount ÷ Price per share
+    // Example: 50,000 / 15,000 = 3.33 shares
+    const numberOfShares = parseFloat((memberData.shareAmount / 15000).toFixed(2));
 
     // Build full name with middle name if provided
     const fullName = memberData.middleName 
@@ -223,7 +225,8 @@ export async function editMember(
         const { id, ...updates } = parsed.data;
         
         // Calculate number of shares if share amount is provided
-        const numberOfShares = updates.shareAmount ? Math.floor(updates.shareAmount / 15000) : undefined;
+        // Formula: Total amount ÷ Price per share (rounded to 2 decimals)
+        const numberOfShares = updates.shareAmount ? parseFloat((updates.shareAmount / 15000).toFixed(2)) : undefined;
         
         // Build full name with middle name if provided
         const fullName = updates.middleName 
@@ -264,9 +267,9 @@ export async function deactivateMember(memberId: string, reason: string): Promis
 
 
 
-export async function reactivateMember(memberId: string): Promise<FormState> {
+export async function reactivateMember(memberId: string, reason: string): Promise<FormState> {
     try {
-    await updateMemberInDb(memberId, { status: "Active" });
+    await updateMemberInDb(memberId, { status: "Active", deactivationReason: reason });
     revalidatePath("/members");
     return { message: "Member has been reactivated.", success: true };
     } catch (e) {
@@ -278,16 +281,16 @@ export async function reactivateMember(memberId: string): Promise<FormState> {
     }
 }
 
-export async function closeMembership(memberId: string): Promise<FormState> {
+export async function closeMembership(memberId: string, reason: string): Promise<FormState> {
     try {
-        await updateMemberInDb(memberId, { status: "Closed" });
-        revalidatePath("/members");
-        return { message: "Membership has been closed.", success: true };
+    await updateMemberInDb(memberId, { status: "Closed", deactivationReason: reason });
+    revalidatePath("/members");
+    return { message: "Membership has been closed.", success: true };
     } catch (e) {
         const error = e as Error;
-        return {
-            message: error.message || "An unexpected error occurred.",
-            success: false,
-        };
+    return {
+      message: error.message || "An unexpected error occurred.",
+      success: false,
+    };
     }
 }
