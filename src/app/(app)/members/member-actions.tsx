@@ -177,7 +177,7 @@ export default function MemberActions({ member }: { member: Member }) {
         onOpenChange={setDeactivateDialogOpen}
         title="Temporary Deactivate Member"
         description={`Please provide a reason for temporarily deactivating ${member.name}.`}
-        reasonLabel="Reason for deactivation"
+        reasonLabel="Reason"
         reasonPlaceholder="Enter the reason for temporary deactivation..."
         confirmButtonText="Confirm Deactivation"
         confirmButtonVariant="destructive"

@@ -42,7 +42,6 @@ const AddMemberFormSchema = z.object({
   nextOfKinRelationship: z.string().min(2, { message: "Relationship is required." }),
   // Shares/Contribution
   monthlyContribution: z.coerce.number().min(15000, { message: "Monthly contribution must be at least 15,000 RWF." }),
-  shareAmount: z.coerce.number().optional(),
   contributionDate: z.string().refine((date) => {
     if (!date) return true;
     const contributionDate = new Date(date);
@@ -89,7 +88,6 @@ const EditMemberFormSchema = z.object({
   nextOfKinRelationship: z.string().min(2, { message: "Relationship is required." }),
   // Shares/Contribution
   monthlyContribution: z.coerce.number().min(15000, { message: "Monthly contribution must be at least 15,000 RWF." }),
-  shareAmount: z.coerce.number().optional(),
   contributionDate: z.string().refine((date) => {
     if (!date) return true;
     const contributionDate = new Date(date);
@@ -155,10 +153,10 @@ export async function addMember(
     // Generate sequential member ID
     const memberId = await generateMemberId();
 
-    // Calculate number of shares (each share = 15000 RWF)
-    // Formula: Total amount ÷ Price per share
-    // Example: 50,000 / 15,000 = 3.33 shares
-    const numberOfShares = memberData.shareAmount ? parseFloat((memberData.shareAmount / 15000).toFixed(2)) : undefined;
+    // Calculate number of shares from monthly contribution (each share = 15000 RWF)
+    // Formula: Monthly Contribution ÷ Price per share
+    // Example: 45,000 / 15,000 = 3.00 shares
+    const numberOfShares = parseFloat((memberData.monthlyContribution / 15000).toFixed(2));
 
     // Build full name with middle name if provided
     const fullName = memberData.middleName 
@@ -224,9 +222,9 @@ export async function editMember(
 
         const { id, ...updates } = parsed.data;
         
-        // Calculate number of shares if share amount is provided
-        // Formula: Total amount ÷ Price per share (rounded to 2 decimals)
-        const numberOfShares = updates.shareAmount ? parseFloat((updates.shareAmount / 15000).toFixed(2)) : undefined;
+        // Calculate number of shares from monthly contribution
+        // Formula: Monthly Contribution ÷ Price per share (rounded to 2 decimals)
+        const numberOfShares = updates.monthlyContribution ? parseFloat((updates.monthlyContribution / 15000).toFixed(2)) : undefined;
         
         // Build full name with middle name if provided
         const fullName = updates.middleName 

@@ -62,14 +62,14 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [collectionMeans, setCollectionMeans] = useState(member.collectionMeans || '');
-  const [shareAmount, setShareAmount] = useState(member.shareAmount || 0);
+  const [monthlyContribution, setMonthlyContribution] = useState(member.monthlyContribution || 0);
   const [numberOfShares, setNumberOfShares] = useState(member.numberOfShares || 0);
 
-  const handleShareAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMonthlyContributionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const amount = parseFloat(e.target.value) || 0;
-    setShareAmount(amount);
+    setMonthlyContribution(amount);
     // Formula: Total amount ÷ Price per share
-    // Example: 50,000 / 15,000 = 3.33 shares
+    // Example: 45,000 / 15,000 = 3.00 shares
     setNumberOfShares(parseFloat((amount / 15000).toFixed(2)));
   }, []);
 
@@ -225,22 +225,9 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                               step="1000"
                               defaultValue={member.monthlyContribution}
                               placeholder="Minimum 15,000 RWF"
+                              onChange={handleMonthlyContributionChange}
                             />
                             {state.fields?.monthlyContribution && <p className="text-sm text-destructive">{state.fields.monthlyContribution}</p>}
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="shareAmount">Share Amount (RWF)</Label>
-                            <Input 
-                              id="shareAmount" 
-                              name="shareAmount" 
-                              type="number" 
-                              min="0" 
-                              step="15000"
-                              defaultValue={member.shareAmount}
-                              onChange={handleShareAmountChange}
-                              placeholder="Optional"
-                            />
-                            {state.fields?.shareAmount && <p className="text-sm text-destructive">{state.fields.shareAmount}</p>}
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="numberOfShares">Number of Shares</Label>
@@ -250,7 +237,7 @@ export default function EditMemberSheet({ member, open, onOpenChange }: { member
                               readOnly 
                               className="bg-muted"
                             />
-                            <p className="text-xs text-muted-foreground">Auto-calculated: Amount ÷ 15,000 (e.g., 50,000 ÷ 15,000 = 3.33 shares)</p>
+                            <p className="text-xs text-muted-foreground">Auto-calculated: Amount ÷ 15,000 (e.g., 45,000 ÷ 15,000 = 3.00 shares)</p>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="contributionDate">Date of Contribution Collection</Label>

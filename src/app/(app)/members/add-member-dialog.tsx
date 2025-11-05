@@ -97,17 +97,17 @@ function FileUpload({
 export default function AddMemberDialog() {
   const [open, setOpen] = useState(false);
   const [collectionMeans, setCollectionMeans] = useState('');
-  const [shareAmount, setShareAmount] = useState(0);
+  const [monthlyContribution, setMonthlyContribution] = useState(0);
   const [numberOfShares, setNumberOfShares] = useState(0);
   const [state, formAction] = useActionState(addMember, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
-  const handleShareAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMonthlyContributionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const amount = parseFloat(e.target.value) || 0;
-    setShareAmount(amount);
+    setMonthlyContribution(amount);
     // Formula: Total amount ÷ Price per share
-    // Example: 50,000 / 15,000 = 3.33 shares
+    // Example: 45,000 / 15,000 = 3.00 shares
     setNumberOfShares(parseFloat((amount / 15000).toFixed(2)));
   }, []);
 
@@ -291,27 +291,11 @@ export default function AddMemberDialog() {
                       min="15000"
                       step="1000"
                       placeholder="Minimum 15,000 RWF"
+                      onChange={handleMonthlyContributionChange}
                     />
                     {state.fields?.monthlyContribution && (
                       <p className="text-sm text-destructive">
                         {state.fields.monthlyContribution}
-                      </p>
-                    )}
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="shareAmount">Share Amount (RWF)</Label>
-                    <Input 
-                      id="shareAmount" 
-                      name="shareAmount" 
-                      type="number" 
-                      min="0" 
-                      step="15000"
-                      onChange={handleShareAmountChange}
-                      placeholder="Optional"
-                    />
-                    {state.fields?.shareAmount && (
-                      <p className="text-sm text-destructive">
-                        {state.fields.shareAmount}
                       </p>
                     )}
                   </div>
@@ -323,7 +307,7 @@ export default function AddMemberDialog() {
                       readOnly 
                       className="bg-muted"
                     />
-                    <p className="text-xs text-muted-foreground">Auto-calculated: Amount ÷ 15,000 (e.g., 50,000 ÷ 15,000 = 3.33 shares)</p>
+                    <p className="text-xs text-muted-foreground">Auto-calculated: Amount ÷ 15,000 (e.g., 45,000 ÷ 15,000 = 3.00 shares)</p>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="contributionDate">Date of Contribution Collection</Label>
