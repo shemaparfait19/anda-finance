@@ -13,14 +13,15 @@ import {
   Landmark,
   UserCheck,
   FileText,
+  Download,
+  Mail as MailIcon,
 } from "lucide-react";
-import {
-  getMemberById,
-  getLoans,
-  getSavingsAccounts,
-} from "@/lib/data-service";
-import { getPlaceholderImage } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
+import { getMemberById, getLoans, getSavingsAccounts } from "@/lib/data-service";
+import { getPlaceholderImage } from "@/lib/placeholder-images";
+import { SavingsBreakdown } from "@/components/savings-breakdown";
+import { generateMemberStatementPdf } from "@/lib/pdf-utils";
+import { formatCurrency } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -100,14 +101,54 @@ export default async function MemberProfilePage({
 
   const image = getPlaceholderImage(member.avatarId);
 
+  // Calculate savings breakdown (these would come from your database in a real app)
+  const principal = member.savingsBalance * 0.9; // Assuming 90% of savings is principal
+  const interest = member.savingsBalance * 0.1; // Assuming 10% is interest
+  const principalShares = principal / 15000; // 15,000 RWF per share
+  const interestShares = interest / 15000;
+  const totalShares = principalShares + interestShares;
+
+  const handleDownloadPdf = async () => {
+    await generateMemberStatementPdf({
+      name: member.name || '',
+      memberId: member.memberId || '',
+      joinDate: member.joinDate || new Date().toISOString(),
+      status: member.status || 'Active',
+      principal,
+      interest,
+      principalShares,
+      interestShares,
+      totalSavings: principal + interest,
+      totalShares,
+    });
+  };
+
+  const handleEmailStatement = () => {
+    // In a real app, this would trigger an email with the PDF attachment
+    const emailSubject = `Your Savings Statement - ${member.name}`;
+    const emailBody = `Dear ${member.name || 'Valued Member'},\n\nPlease find attached your savings statement.\n\nThank you for being a valued member of ANDA FINANCE.`;
+    
+    window.location.href = `mailto:${member.email || ''}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
-          <Link href="/members">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="icon" asChild>
+            <Link href={`/members/${member.id}/edit`}>
+              <Edit className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="icon" onClick={handleDownloadPdf}>
+            <Download className="h-4 w-4" />
+          </Button>
+          {member.email && (
+            <Button variant="outline" size="icon" onClick={handleEmailStatement}>
+              <MailIcon className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
         <h1 className="text-2xl font-bold">Member Profile</h1>
       </div>
 
@@ -174,6 +215,13 @@ export default async function MemberProfilePage({
               colorClass="text-red-600"
             />
           </div>
+
+          <SavingsBreakdown 
+            principal={principal}
+            interest={interest}
+            principalShares={principalShares}
+            interestShares={interestShares}
+          />
 
           <Card>
             <CardHeader>
