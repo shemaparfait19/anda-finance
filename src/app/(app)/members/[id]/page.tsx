@@ -13,10 +13,9 @@ import {
   Landmark,
   UserCheck,
   FileText,
-  Download,
-  Mail as MailIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MemberActionsClient } from "@/components/member-actions-client";
 import { getMemberById, getLoans, getSavingsAccounts } from "@/lib/data-service";
 import { getPlaceholderImage } from "@/lib/placeholder-images";
 import { SavingsBreakdown } from "@/components/savings-breakdown";
@@ -108,28 +107,6 @@ export default async function MemberProfilePage({
   const interestShares = interest / 15000;
   const totalShares = principalShares + interestShares;
 
-  const handleDownloadPdf = async () => {
-    await generateMemberStatementPdf({
-      name: member.name || '',
-      memberId: member.memberId || '',
-      joinDate: member.joinDate || new Date().toISOString(),
-      status: member.status || 'Active',
-      principal,
-      interest,
-      principalShares,
-      interestShares,
-      totalSavings: principal + interest,
-      totalShares,
-    });
-  };
-
-  const handleEmailStatement = () => {
-    // In a real app, this would trigger an email with the PDF attachment
-    const emailSubject = `Your Savings Statement - ${member.name}`;
-    const emailBody = `Dear ${member.name || 'Valued Member'},\n\nPlease find attached your savings statement.\n\nThank you for being a valued member of ANDA FINANCE.`;
-    
-    window.location.href = `mailto:${member.email || ''}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-  };
 
   return (
     <div className="space-y-6">
@@ -140,14 +117,15 @@ export default async function MemberProfilePage({
               <Edit className="h-4 w-4" />
             </Link>
           </Button>
-          <Button variant="outline" size="icon" onClick={handleDownloadPdf}>
-            <Download className="h-4 w-4" />
-          </Button>
-          {member.email && (
-            <Button variant="outline" size="icon" onClick={handleEmailStatement}>
-              <MailIcon className="h-4 w-4" />
-            </Button>
-          )}
+          <MemberActionsClient member={{
+            id: member.id,
+            name: member.name || '',
+            memberId: member.memberId || '',
+            joinDate: member.joinDate,
+            status: member.status || 'Active',
+            savingsBalance: member.savingsBalance,
+            email: member.email
+          }} />
         </div>
         <h1 className="text-2xl font-bold">Member Profile</h1>
       </div>
