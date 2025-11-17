@@ -14,6 +14,7 @@ import SavingsAccountsTable from "./savings-accounts-table";
 import type { SavingsAccount } from "@/lib/types";
 import NewDepositDialog from "./new-deposit-dialog";
 import NewWithdrawalDialog from "./new-withdrawal-dialog";
+import CreateAccountDialog from "./create-account-dialog";
 
 // Force dynamic rendering to access environment variables
 export const dynamic = "force-dynamic";
@@ -35,7 +36,8 @@ export default async function SavingsPage() {
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="compulsory">Compulsory</TabsTrigger>
-          <TabsTrigger value="voluntary">Voluntary</TabsTrigger>
+          <TabsTrigger value="voluntary">Voluntary Saving Accounts</TabsTrigger>
+          <TabsTrigger value="internal">Internal Accounts</TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
           <NewWithdrawalDialog
@@ -60,12 +62,13 @@ export default async function SavingsPage() {
               </Button>
             }
           />
+          <CreateAccountDialog members={members} trigger={<Button size="sm" variant="secondary">Create Account</Button>} />
         </div>
       </div>
       <TabsContent value="all">
         <Card>
           <CardHeader>
-            <CardTitle>All Savings Accounts</CardTitle>
+            <CardTitle>Compulsory Saving Account</CardTitle>
             <CardDescription>
               Track member contributions, deposits, withdrawals, and balances.
             </CardDescription>
@@ -81,7 +84,7 @@ export default async function SavingsPage() {
       <TabsContent value="compulsory">
         <Card>
           <CardHeader>
-            <CardTitle>Compulsory Savings Accounts</CardTitle>
+            <CardTitle>Compulsory Saving Account</CardTitle>
             <CardDescription>
               Accounts for regular, required member contributions.
             </CardDescription>
@@ -97,9 +100,9 @@ export default async function SavingsPage() {
       <TabsContent value="voluntary">
         <Card>
           <CardHeader>
-            <CardTitle>Voluntary Savings Accounts</CardTitle>
+            <CardTitle>Voluntary Saving Accounts</CardTitle>
             <CardDescription>
-              Additional, flexible savings accounts for members.
+              Additional, flexible voluntary saving accounts for members.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -107,6 +110,19 @@ export default async function SavingsPage() {
               accounts={voluntaryAccounts}
               members={members}
             />
+          </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="internal">
+        <Card>
+          <CardHeader>
+            <CardTitle>Internal Accounts</CardTitle>
+            <CardDescription>
+              Manage internal organization accounts here (e.g. reserves, admin, etc.).
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-muted-foreground">Internal accounts functionality coming soon.</div>
           </CardContent>
         </Card>
       </TabsContent>

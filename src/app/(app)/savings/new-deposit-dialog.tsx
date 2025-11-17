@@ -97,20 +97,38 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
             <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="memberId" className="text-right">
-                    Member
+                    Member ID
                     </Label>
                     <div className='col-span-3'>
-                        <Select name="memberId" defaultValue={selectedMemberId}>
-                             <SelectTrigger disabled={!!selectedMemberId}>
-                                <SelectValue placeholder="Select a member" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {members.map(member => (
-                                    <SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Input id="memberId" name="memberId" placeholder="Enter Member ID" autoComplete="off" />
+                        {/* Display member name below when ID is entered (to be handled in component logic) */}
+                        <div id="memberNameDisplay" className="text-xs text-muted-foreground mt-1"></div>
                         {state.fields?.memberId && <p className="text-sm text-destructive mt-1">{state.fields.memberId}</p>}
+                    </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="account" className="text-right">
+                    Account to deposit to
+                    </Label>
+                    <div className='col-span-3'>
+                        <Input id="account" name="account" placeholder="e.g. BIF00501" autoComplete="off" />
+                    </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="amount" className="text-right">
+                    Amount
+                    </Label>
+                    <div className='col-span-3'>
+                        <Input id="amount" name="amount" type="number" placeholder='RWF 0' className="w-full" />
+                        {state.fields?.amount && <p className="text-sm text-destructive mt-1">{state.fields.amount}</p>}
+                    </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="reason" className="text-right">
+                    Reason
+                    </Label>
+                    <div className='col-span-3'>
+                        <Input id="reason" name="reason" placeholder="Reason for deposit (shows on statement)" />
                     </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">

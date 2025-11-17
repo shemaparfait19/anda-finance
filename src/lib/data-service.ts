@@ -362,7 +362,7 @@ export async function updateSavingsAccount(
 
       await sql`
         INSERT INTO savings_accounts (id, member_id, member_name, account_number, type, balance, open_date)
-        VALUES (${newId}, ${memberId}, ${member.name}, ${accountNumber}, 'Voluntary', ${amount}, CURRENT_DATE)
+        VALUES (${newId}, ${memberId}, ${member.name}, ${accountNumber}, 'Compulsory', ${amount}, CURRENT_DATE)
       `;
 
       revalidatePath("/savings");
@@ -371,7 +371,7 @@ export async function updateSavingsAccount(
         memberId,
         memberName: member.name,
         accountNumber,
-        type: "Voluntary",
+        type: "Compulsory",
         balance: amount,
         openDate: new Date().toISOString().split("T")[0],
       };
