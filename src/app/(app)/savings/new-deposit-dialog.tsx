@@ -100,8 +100,21 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
                     Member ID
                     </Label>
                     <div className='col-span-3'>
-                        <Input id="memberId" name="memberId" placeholder="Enter Member ID" autoComplete="off" />
-                        {/* Display member name below when ID is entered (to be handled in component logic) */}
+                        <Input id="memberId" name="memberId" placeholder="Enter Member ID" autoComplete="off"
+                          onBlur={async (e) => {
+                            const val = e.target.value.trim();
+                            const display = document.getElementById('memberNameDisplay');
+                            if (!val) { if (display) display.textContent = ''; return; }
+                            display!.textContent = '...';
+                            try {
+                              const res = await fetch(`/api/members/lookup?memberId=${encodeURIComponent(val)}`);
+                              const data = await res.json();
+                              display!.textContent = data.name ? data.name : 'Not found';
+                            } catch {
+                              display!.textContent = 'Not found';
+                            }
+                          }}
+                        />
                         <div id="memberNameDisplay" className="text-xs text-muted-foreground mt-1"></div>
                         {state.fields?.memberId && <p className="text-sm text-destructive mt-1">{state.fields.memberId}</p>}
                     </div>
@@ -129,15 +142,6 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
                     </Label>
                     <div className='col-span-3'>
                         <Input id="reason" name="reason" placeholder="Reason for deposit (shows on statement)" />
-                    </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="amount" className="text-right">
-                    Amount
-                    </Label>
-                    <div className='col-span-3'>
-                    <Input id="amount" name="amount" type="number" placeholder='RWF 0' className="w-full" />
-                    {state.fields?.amount && <p className="text-sm text-destructive mt-1">{state.fields.amount}</p>}
                     </div>
                 </div>
             </div>
