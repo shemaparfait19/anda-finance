@@ -59,8 +59,9 @@ export type SavingsAccount = {
   memberId: string;
   memberName: string;
   accountNumber: string;
-  type: "Compulsory" | "Voluntary";
+  type: "Compulsory" | "Voluntary" | "Internal";
   balance: number;
+  accountName?: string;
   openDate: string;
 };
 

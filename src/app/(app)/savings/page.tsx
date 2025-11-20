@@ -29,14 +29,17 @@ export default async function SavingsPage() {
   const voluntaryAccounts = savingsAccounts.filter(
     (a) => a.type === "Voluntary"
   );
+  const internalAccounts = savingsAccounts.filter(
+    (a) => a.type === "Internal"
+  );
 
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="compulsory">Compulsory</TabsTrigger>
-          <TabsTrigger value="voluntary">Voluntary Saving Accounts</TabsTrigger>
+          <TabsTrigger value="compulsory">Compulsory Saving account</TabsTrigger>
+          <TabsTrigger value="voluntary">Voluntary Saving Account</TabsTrigger>
           <TabsTrigger value="internal">Internal Accounts</TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
@@ -68,9 +71,9 @@ export default async function SavingsPage() {
       <TabsContent value="all">
         <Card>
           <CardHeader>
-            <CardTitle>Compulsory Saving Account</CardTitle>
+            <CardTitle>All Accounts</CardTitle>
             <CardDescription>
-              Track member contributions, deposits, withdrawals, and balances.
+              Overview of all savings and internal accounts.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -100,7 +103,7 @@ export default async function SavingsPage() {
       <TabsContent value="voluntary">
         <Card>
           <CardHeader>
-            <CardTitle>Voluntary Saving Accounts</CardTitle>
+            <CardTitle>Voluntary Saving Account</CardTitle>
             <CardDescription>
               Additional, flexible voluntary saving accounts for members.
             </CardDescription>
@@ -122,7 +125,10 @@ export default async function SavingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-muted-foreground">Internal accounts functionality coming soon.</div>
+            <SavingsAccountsTable
+              accounts={internalAccounts}
+              members={members}
+            />
           </CardContent>
         </Card>
       </TabsContent>

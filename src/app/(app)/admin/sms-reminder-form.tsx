@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
+import { useActionState } from "react";
 import { CheckCircle, AlertTriangle, Info, Loader2 } from "lucide-react";
 
 import { runSmsPaymentReminder } from "./actions";
@@ -36,7 +37,7 @@ function SubmitButton() {
 }
 
 export default function SmsReminderForm() {
-  const [state, formAction] = useFormState(runSmsPaymentReminder, initialState);
+  const [state, formAction] = useActionState(runSmsPaymentReminder, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 

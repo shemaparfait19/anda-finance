@@ -80,3 +80,60 @@ export async function makeDeposit(prevState: FormState, formData: FormData) {
 export async function makeWithdrawal(prevState: FormState, formData: FormData) {
     return handleTransaction('Withdrawal', prevState, formData);
 }
+
+export async function processBulkDeposit(data: any[]) {
+    try {
+        let successCount = 0;
+        let errors: string[] = [];
+
+        for (const row of data) {
+            // Expected columns: "MEMBER ID", "Account Number", "Amount", "Reason"
+            // Normalize keys to handle case variations or spaces
+            const normalizedRow: any = {};
+            Object.keys(row).forEach(key => {
+                normalizedRow[key.trim().toUpperCase()] = row[key];
+            });
+
+            const memberId = normalizedRow['MEMBER ID'];
+            const accountNumber = normalizedRow['ACCOUNT NUMBER']; // Optional validation
+            const amount = normalizedRow['AMOUNT'];
+            const reason = normalizedRow['REASON'] || 'Bulk Deposit';
+
+            if (!memberId || !amount) {
+                errors.push(`Row missing Member ID or Amount: ${JSON.stringify(row)}`);
+                continue;
+            }
+
+            // Validate member exists
+            const member = await getMemberById(memberId);
+            if (!member) {
+                errors.push(`Member not found: ${memberId}`);
+                continue;
+            }
+
+            // Perform deposit
+            await updateSavingsAccount(memberId, Number(amount));
+            const newSavingsBalance = member.savingsBalance + Number(amount);
+            await updateMember(memberId, { savingsBalance: newSavingsBalance });
+            await addTransaction({
+                member: { name: member.name, avatarId: member.avatarId },
+                type: 'Deposit',
+                amount: Number(amount),
+                date: new Date().toISOString().split('T')[0],
+            });
+
+            successCount++;
+        }
+
+        revalidatePath('/savings');
+        
+        if (errors.length > 0) {
+            return { success: false, message: `Processed ${successCount} deposits. Failed: ${errors.length}. Errors: ${errors.slice(0, 3).join(', ')}...` };
+        }
+        
+        return { success: true, message: `Successfully processed ${successCount} deposits.` };
+
+    } catch (error: any) {
+        return { success: false, message: "Server error: " + error.message };
+    }
+}

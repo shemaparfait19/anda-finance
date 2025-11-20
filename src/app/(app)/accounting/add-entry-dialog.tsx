@@ -2,7 +2,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -87,7 +88,7 @@ export default function AddEntryDialog({ entry, children, open: openProp, onOpen
 
 
   const action = isEditMode ? updateCashbookEntry : addCashbookEntry;
-  const [state, formAction] = useFormState(action, initialState);
+  const [state, formAction] = useActionState(action, initialState);
 
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);

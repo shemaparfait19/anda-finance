@@ -320,7 +320,8 @@ export async function getSavingsAccounts(): Promise<SavingsAccount[]> {
     const result = await sql`
       SELECT 
         id, member_id as "memberId", member_name as "memberName",
-        account_number as "accountNumber", type, balance, open_date as "openDate"
+        account_number as "accountNumber", type, balance, 
+        account_name as "accountName", open_date as "openDate"
       FROM savings_accounts 
       ORDER BY created_at DESC
     `;
@@ -394,6 +395,81 @@ export async function updateSavingsAccount(
     }
   } catch (error) {
     handleDatabaseError(error, "updateSavingsAccount");
+    throw error;
+  }
+}
+
+export async function createSavingsAccount(
+  memberId: string,
+  type: "Voluntary" | "Internal",
+  accountName: string
+): Promise<SavingsAccount> {
+  try {
+    await ensureInitialized();
+
+    // Get member details
+    const member = await getMemberById(memberId);
+    if (!member) throw new Error("Member not found");
+
+    // Check existing accounts for this member to determine next account number
+    const existingAccounts = await sql`
+      SELECT account_number FROM savings_accounts 
+      WHERE member_id = ${memberId} 
+      ORDER BY account_number DESC
+      LIMIT 1
+    `;
+
+    let nextAccountNumber;
+    if (existingAccounts.length > 0) {
+      // Extract the last 2 digits and increment
+      const lastAccount = existingAccounts[0].account_number;
+      // Assuming format MemberID + XX (e.g. BIF00101)
+      // If memberId is BIF001, account is BIF00101. 
+      // We need to be careful about parsing.
+      // Let's assume the suffix is always 2 digits.
+      const suffix = lastAccount.slice(-2);
+      const prefix = lastAccount.slice(0, -2);
+      
+      if (prefix === member.memberId && !isNaN(Number(suffix))) {
+         const nextNum = Number(suffix) + 1;
+         nextAccountNumber = `${member.memberId}${nextNum.toString().padStart(2, '0')}`;
+      } else {
+         // Fallback if format doesn't match
+         nextAccountNumber = `${member.memberId}${existingAccounts.length + 1}`;
+      }
+    } else {
+      // First account (though usually Compulsory is first, created elsewhere)
+      // If this is truly a new sub-account, maybe start at 02 if 01 is reserved for Compulsory?
+      // But we don't know if Compulsory exists.
+      // Let's check if ANY account exists, if not start 01.
+      // Actually the query above checks for ANY savings account for this member.
+      nextAccountNumber = `${member.memberId}01`;
+    }
+
+    const newId = `SAV${Date.now()}`;
+
+    await sql`
+      INSERT INTO savings_accounts (
+        id, member_id, member_name, account_number, type, balance, account_name, open_date
+      )
+      VALUES (
+        ${newId}, ${memberId}, ${member.name}, ${nextAccountNumber}, ${type}, 0, ${accountName}, CURRENT_DATE
+      )
+    `;
+
+    revalidatePath("/savings");
+    return {
+      id: newId,
+      memberId,
+      memberName: member.name,
+      accountNumber: nextAccountNumber,
+      type,
+      balance: 0,
+      accountName,
+      openDate: new Date().toISOString().split("T")[0],
+    };
+  } catch (error) {
+    handleDatabaseError(error, "createSavingsAccount");
     throw error;
   }
 }

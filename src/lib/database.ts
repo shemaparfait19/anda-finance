@@ -71,6 +71,7 @@ export async function initializeDatabase() {
         account_number VARCHAR(50) UNIQUE NOT NULL,
         type VARCHAR(50) DEFAULT 'Voluntary',
         balance DECIMAL(15,2) DEFAULT 0,
+        account_name VARCHAR(255),
         open_date DATE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -238,6 +239,11 @@ export async function initializeDatabase() {
       ADD COLUMN IF NOT EXISTS other_collection_means TEXT,
       ADD COLUMN IF NOT EXISTS account_number VARCHAR(100),
       ADD COLUMN IF NOT EXISTS deactivation_reason TEXT
+    `;
+
+    await sql`
+      ALTER TABLE savings_accounts
+      ADD COLUMN IF NOT EXISTS account_name VARCHAR(255)
     `;
 
     console.log("✅ Database tables created successfully");
