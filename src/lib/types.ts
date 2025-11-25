@@ -56,8 +56,8 @@ export type Transaction = {
 
 export type SavingsAccount = {
   id: string;
-  memberId: string;
-  memberName: string;
+  memberId?: string;
+  memberName?: string;
   accountNumber: string;
   type: "Compulsory" | "Voluntary" | "Internal";
   balance: number;

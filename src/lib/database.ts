@@ -66,8 +66,8 @@ export async function initializeDatabase() {
     await sql`
       CREATE TABLE IF NOT EXISTS savings_accounts (
         id VARCHAR(50) PRIMARY KEY,
-        member_id VARCHAR(50) NOT NULL,
-        member_name VARCHAR(255) NOT NULL,
+        member_id VARCHAR(50),
+        member_name VARCHAR(255),
         account_number VARCHAR(50) UNIQUE NOT NULL,
         type VARCHAR(50) DEFAULT 'Voluntary',
         balance DECIMAL(15,2) DEFAULT 0,
@@ -174,82 +174,6 @@ export async function initializeDatabase() {
         status VARCHAR(20) DEFAULT 'pending',
         description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
-      )
-    `;
-
-    await sql`
-      CREATE TABLE IF NOT EXISTS accounts (
-        id VARCHAR(50) PRIMARY KEY,
-        code VARCHAR(20) UNIQUE NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        type VARCHAR(50) NOT NULL,
-        balance DECIMAL(15,2) DEFAULT 0,
-        last_updated DATE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
-    await sql`
-      CREATE TABLE IF NOT EXISTS journal_entries (
-        id VARCHAR(50) PRIMARY KEY,
-        date DATE NOT NULL,
-        description TEXT NOT NULL,
-        reference VARCHAR(100),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
-    await sql`
-      CREATE TABLE IF NOT EXISTS journal_entry_lines (
-        id SERIAL PRIMARY KEY,
-        journal_entry_id VARCHAR(50) NOT NULL,
-        account_id VARCHAR(50) NOT NULL,
-        debit DECIMAL(15,2) DEFAULT 0,
-        credit DECIMAL(15,2) DEFAULT 0,
-        FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE,
-        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-      )
-    `;
-
-    await sql`
-      ALTER TABLE members
-      ADD COLUMN IF NOT EXISTS middle_name VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS date_of_birth DATE,
-      ADD COLUMN IF NOT EXISTS gender VARCHAR(10),
-      ADD COLUMN IF NOT EXISTS national_id VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS email VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS alternative_phone VARCHAR(20),
-      ADD COLUMN IF NOT EXISTS province VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS district VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS sector VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS cell VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS village VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS address TEXT,
-      ADD COLUMN IF NOT EXISTS next_of_kin_name VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS next_of_kin_phone VARCHAR(20),
-      ADD COLUMN IF NOT EXISTS next_of_kin_relationship VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS share_amount DECIMAL(15,2),
-      ADD COLUMN IF NOT EXISTS number_of_shares DECIMAL(10,2),
-      ADD COLUMN IF NOT EXISTS monthly_contribution DECIMAL(15,2),
-      ADD COLUMN IF NOT EXISTS contribution_date DATE,
-      ADD COLUMN IF NOT EXISTS collection_means VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS other_collection_means TEXT,
-      ADD COLUMN IF NOT EXISTS account_number VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS deactivation_reason TEXT
-    `;
-
-    await sql`
-      ALTER TABLE savings_accounts
-      ADD COLUMN IF NOT EXISTS account_name VARCHAR(255)
-    `;
-
-    console.log("✅ Database tables created successfully");
-
-    // Insert initial demo data if tables are empty
-    await insertInitialData();
   } catch (error) {
     console.error("❌ Error initializing database:", error);
     throw error;
@@ -315,6 +239,16 @@ async function insertInitialData() {
         VALUES 
         ('ACC001', '1000', 'Cash at Hand', 'asset', 200000, '2024-01-31'),
         ('ACC002', '2000', 'Member Savings', 'liability', 430000, '2024-01-31')
+      `;
+
+      // Migrations for Internal Accounts support
+      await sql`
+        ALTER TABLE savings_accounts 
+        ALTER COLUMN member_id DROP NOT NULL
+      `;
+      await sql`
+        ALTER TABLE savings_accounts 
+        ALTER COLUMN member_name DROP NOT NULL
       `;
 
       console.log("✅ Initial demo data inserted successfully");

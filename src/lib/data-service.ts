@@ -328,6 +328,8 @@ export async function getSavingsAccounts(): Promise<SavingsAccount[]> {
 
     return result.map((row) => ({
       ...row,
+      memberId: row.memberId || undefined,
+      memberName: row.memberName || undefined,
       balance: Number(row.balance),
       openDate:
         row.openDate instanceof Date
