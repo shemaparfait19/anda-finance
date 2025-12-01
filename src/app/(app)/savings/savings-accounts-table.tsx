@@ -62,6 +62,7 @@ export default function SavingsAccountsTable({
         <TableHeader>
           <TableRow>
             <TableHead>Member Name</TableHead>
+            <TableHead>Account Name</TableHead>
             <TableHead>Account No.</TableHead>
             <TableHead className="hidden md:table-cell">Account Type</TableHead>
             <TableHead className="hidden md:table-cell">Open Date</TableHead>
@@ -75,8 +76,9 @@ export default function SavingsAccountsTable({
           {accounts.map((account) => (
             <TableRow key={account.id}>
               <TableCell className="font-medium">
-                {account.memberName}
+                {account.memberName || <span className="text-muted-foreground">Organization</span>}
               </TableCell>
+              <TableCell>{account.accountName || "-"}</TableCell>
               <TableCell>{account.accountNumber}</TableCell>
               <TableCell className="hidden md:table-cell">
                 <Badge variant="outline">{account.type}</Badge>
