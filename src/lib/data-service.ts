@@ -92,6 +92,8 @@ export async function getMembers(): Promise<Member[]> {
 export async function getMemberById(id: string): Promise<Member | undefined> {
   try {
     await ensureInitialized();
+    
+    // Try to find by database ID first, then by member_id (e.g., BIF001)
     const result = await sql`
       SELECT
         id, name, first_name as "firstName", middle_name as "middleName", last_name as "lastName",
@@ -104,7 +106,7 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
         share_amount as "shareAmount", number_of_shares as "numberOfShares",
         monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber", deactivation_reason as "deactivationReason"
       FROM members
-      WHERE id = ${id}
+      WHERE id = ${id} OR member_id = ${id}
     `;
     if (!result || result.length === 0) return undefined;
     const row = result[0];
@@ -413,38 +415,40 @@ export async function createSavingsAccount(
     const member = await getMemberById(memberId);
     if (!member) throw new Error("Member not found");
 
-    // Check existing accounts for this member to determine next account number
+    // Get ALL existing accounts for this member to determine next account number
     const existingAccounts = await sql`
       SELECT account_number FROM savings_accounts 
       WHERE member_id = ${memberId} 
-      ORDER BY account_number DESC
-      LIMIT 1
+      ORDER BY account_number ASC
     `;
 
     let nextAccountNumber;
+    
     if (existingAccounts.length > 0) {
-      // Extract the last 2 digits and increment
-      const lastAccount = existingAccounts[0].account_number;
-      // Assuming format MemberID + XX (e.g. BIF00101)
-      // If memberId is BIF001, account is BIF00101. 
-      // We need to be careful about parsing.
-      // Let's assume the suffix is always 2 digits.
-      const suffix = lastAccount.slice(-2);
-      const prefix = lastAccount.slice(0, -2);
+      // Find the highest account number suffix
+      let maxSuffix = 0;
       
-      if (prefix === member.memberId && !isNaN(Number(suffix))) {
-         const nextNum = Number(suffix) + 1;
-         nextAccountNumber = `${member.memberId}${nextNum.toString().padStart(2, '0')}`;
-      } else {
-         // Fallback if format doesn't match
-         nextAccountNumber = `${member.memberId}${existingAccounts.length + 1}`;
+      for (const account of existingAccounts) {
+        const accountNum = account.account_number;
+        // Extract suffix (last 2 digits)
+        const suffix = accountNum.slice(-2);
+        const prefix = accountNum.slice(0, -2);
+        
+        // Verify it matches the member ID format
+        if (prefix === member.memberId && !isNaN(Number(suffix))) {
+          const suffixNum = Number(suffix);
+          if (suffixNum > maxSuffix) {
+            maxSuffix = suffixNum;
+          }
+        }
       }
+      
+      // Increment the highest suffix found
+      const nextNum = maxSuffix + 1;
+      nextAccountNumber = `${member.memberId}${nextNum.toString().padStart(2, '0')}`;
+      
     } else {
-      // First account (though usually Compulsory is first, created elsewhere)
-      // If this is truly a new sub-account, maybe start at 02 if 01 is reserved for Compulsory?
-      // But we don't know if Compulsory exists.
-      // Let's check if ANY account exists, if not start 01.
-      // Actually the query above checks for ANY savings account for this member.
+      // First account for this member
       nextAccountNumber = `${member.memberId}01`;
     }
 

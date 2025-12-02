@@ -32,27 +32,32 @@ async function handleTransaction(
                     fields[key] = (parsed.error.format() as any)[key]?._errors.join(", ");
                 }
             }
-            return { message: 'Invalid form data.', fields, success: false };
+            return { message: 'Invalid form data. Please check all required fields.', fields, success: false };
         }
 
         const { memberId, amount } = parsed.data;
         const transactionAmount = type === 'Deposit' ? amount : -amount;
 
+        // Try to find member by memberId field (e.g., BIF001)
         const member = await getMemberById(memberId);
         if (!member) {
-            return { message: 'Member not found.', success: false };
+            return { 
+                message: `Member ID '${memberId}' not found in the system. Please verify the Member ID is correct.`, 
+                fields: { memberId: 'Member not found' },
+                success: false 
+            };
         }
 
         if (type === 'Withdrawal' && member.savingsBalance < amount) {
              return { message: 'Insufficient savings balance for this withdrawal.', success: false };
         }
 
-        // 1. Update savings account balance
-        await updateSavingsAccount(memberId, transactionAmount);
+        // 1. Update savings account balance (using database ID)
+        await updateSavingsAccount(member.id, transactionAmount);
 
         // 2. Update member's total savings balance
         const newSavingsBalance = member.savingsBalance + transactionAmount;
-        await updateMember(memberId, { savingsBalance: newSavingsBalance });
+        await updateMember(member.id, { savingsBalance: newSavingsBalance });
 
         // 3. Add a record to the transaction log
         await addTransaction({
@@ -65,11 +70,12 @@ async function handleTransaction(
         revalidatePath('/savings');
         revalidatePath('/'); // For dashboard totals
 
-        return { message: `${type} successful.`, success: true };
+        return { message: `${type} of RWF ${amount.toLocaleString()} successful for ${member.name} (${member.memberId}).`, success: true };
 
     } catch (e) {
         const error = e as Error;
-        return { message: error.message || 'An unexpected error occurred.', success: false };
+        console.error(`Transaction error:`, error);
+        return { message: error.message || 'An unexpected error occurred. Please try again.', success: false };
     }
 }
 
