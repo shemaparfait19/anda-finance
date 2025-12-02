@@ -94,10 +94,22 @@ export async function processBulkDeposit(data: any[]) {
         let successCount = 0;
         let errors: string[] = [];
         let skippedRows = 0;
+        const results: Array<{
+            row: number;
+            memberId: string;
+            accountNumber: string;
+            amount: string;
+            status: 'success' | 'failed' | 'skipped';
+            error?: string;
+        }> = [];
 
         // Validate that we have data
         if (!data || data.length === 0) {
-            return { success: false, message: "No data found in the uploaded file." };
+            return { 
+                success: false, 
+                message: "No data found in the uploaded file.",
+                results: []
+            };
         }
 
         // Check if the file has the expected columns by examining the first row
@@ -112,17 +124,27 @@ export async function processBulkDeposit(data: any[]) {
         if (!hasExpectedColumns) {
             return { 
                 success: false, 
-                message: "Invalid file format. Expected columns: 'MEMBER ID', 'ACCOUNT NUMBER', 'AMOUNT', 'REASON'. Please ensure your Excel file has these column headers in the first row." 
+                message: "Invalid file format. Expected columns: 'MEMBER ID', 'ACCOUNT NUMBER', 'AMOUNT', 'REASON'. Please ensure your Excel file has these column headers in the first row.",
+                results: []
             };
         }
 
         for (let i = 0; i < data.length; i++) {
             const row = data[i];
+            const rowNumber = i + 1;
             
             // Skip completely empty rows
             const hasAnyData = Object.values(row).some(val => val !== null && val !== undefined && val !== '');
             if (!hasAnyData) {
                 skippedRows++;
+                results.push({
+                    row: rowNumber,
+                    memberId: '',
+                    accountNumber: '',
+                    amount: '',
+                    status: 'skipped',
+                    error: 'Empty row'
+                });
                 continue;
             }
 
@@ -152,9 +174,26 @@ export async function processBulkDeposit(data: any[]) {
                 // Only log as error if the row has some data (not just empty cells)
                 const rowKeys = Object.keys(row).filter(k => !k.startsWith('_EMPTY'));
                 if (rowKeys.length > 0) {
-                    errors.push(`Row ${i + 1}: Missing Member ID or Amount`);
+                    const errorMsg = 'Missing Member ID or Amount';
+                    errors.push(`Row ${rowNumber}: ${errorMsg}`);
+                    results.push({
+                        row: rowNumber,
+                        memberId: String(memberId || ''),
+                        accountNumber: String(accountNumber || ''),
+                        amount: String(amount || ''),
+                        status: 'failed',
+                        error: errorMsg
+                    });
                 } else {
                     skippedRows++;
+                    results.push({
+                        row: rowNumber,
+                        memberId: '',
+                        accountNumber: '',
+                        amount: '',
+                        status: 'skipped',
+                        error: 'Empty row'
+                    });
                 }
                 continue;
             }
@@ -162,7 +201,16 @@ export async function processBulkDeposit(data: any[]) {
             // Validate amount is a number
             const numericAmount = Number(amount);
             if (isNaN(numericAmount) || numericAmount <= 0) {
-                errors.push(`Row ${i + 1}: Invalid amount '${amount}' for member ${memberId}`);
+                const errorMsg = `Invalid amount '${amount}'`;
+                errors.push(`Row ${rowNumber}: ${errorMsg}`);
+                results.push({
+                    row: rowNumber,
+                    memberId: String(memberId),
+                    accountNumber: String(accountNumber || ''),
+                    amount: String(amount),
+                    status: 'failed',
+                    error: errorMsg
+                });
                 continue;
             }
 
@@ -170,7 +218,16 @@ export async function processBulkDeposit(data: any[]) {
                 // Validate member exists
                 const member = await getMemberById(String(memberId).trim());
                 if (!member) {
-                    errors.push(`Row ${i + 1}: Member not found: ${memberId}`);
+                    const errorMsg = `Member not found: ${memberId}`;
+                    errors.push(`Row ${rowNumber}: ${errorMsg}`);
+                    results.push({
+                        row: rowNumber,
+                        memberId: String(memberId),
+                        accountNumber: String(accountNumber || ''),
+                        amount: String(amount),
+                        status: 'failed',
+                        error: errorMsg
+                    });
                     continue;
                 }
 
@@ -186,8 +243,24 @@ export async function processBulkDeposit(data: any[]) {
                 });
 
                 successCount++;
+                results.push({
+                    row: rowNumber,
+                    memberId: String(memberId),
+                    accountNumber: String(accountNumber || ''),
+                    amount: String(amount),
+                    status: 'success'
+                });
             } catch (error: any) {
-                errors.push(`Row ${i + 1}: ${error.message}`);
+                const errorMsg = error.message;
+                errors.push(`Row ${rowNumber}: ${errorMsg}`);
+                results.push({
+                    row: rowNumber,
+                    memberId: String(memberId),
+                    accountNumber: String(accountNumber || ''),
+                    amount: String(amount),
+                    status: 'failed',
+                    error: errorMsg
+                });
             }
         }
 
@@ -204,10 +277,15 @@ export async function processBulkDeposit(data: any[]) {
         
         return { 
             success: successCount > 0, 
-            message 
+            message,
+            results // Return detailed results
         };
 
     } catch (error: any) {
-        return { success: false, message: "Server error: " + error.message };
+        return { 
+            success: false, 
+            message: "Server error: " + error.message,
+            results: []
+        };
     }
 }

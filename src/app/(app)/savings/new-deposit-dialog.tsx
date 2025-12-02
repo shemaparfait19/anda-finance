@@ -23,6 +23,7 @@ import { makeDeposit, processBulkDeposit } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import type { Member } from '@/lib/types';
 import * as XLSX from 'xlsx';
+import BulkUploadResultsDialog from './bulk-upload-results-dialog';
 
 const initialState = {
   message: '',
@@ -56,6 +57,16 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
   const [depositType, setDepositType] = useState("single"); // Changed to state for dropdown
   const [bulkFile, setBulkFile] = useState<File | null>(null);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
+  
+  // Results dialog state
+  const [resultsDialogOpen, setResultsDialogOpen] = useState(false);
+  const [uploadResults, setUploadResults] = useState<any[]>([]);
+  const [uploadSummary, setUploadSummary] = useState({
+    total: 0,
+    succeeded: 0,
+    failed: 0,
+    skipped: 0
+  });
 
   const isControlled = open !== undefined && onOpenChange !== undefined;
   const currentOpen = isControlled ? open : internalOpen;
@@ -105,12 +116,28 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
        // Call server action
        const result = await processBulkDeposit(jsonData);
 
+       // Calculate summary
+       const succeeded = result.results?.filter(r => r.status === 'success').length || 0;
+       const failed = result.results?.filter(r => r.status === 'failed').length || 0;
+       const skipped = result.results?.filter(r => r.status === 'skipped').length || 0;
+       
+       setUploadResults(result.results || []);
+       setUploadSummary({
+         total: result.results?.length || 0,
+         succeeded,
+         failed,
+         skipped
+       });
+
+       // Show results dialog
+       setResultsDialogOpen(true);
+       
+       // Also show toast for quick feedback
        if (result.success) {
            toast({
              title: "Bulk Upload Processed",
              description: result.message,
            });
-           setCurrentOpen(false);
        } else {
            toast({
              variant: "destructive",
@@ -118,6 +145,9 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
              description: result.message,
            });
        }
+       
+       // Close main dialog
+       setCurrentOpen(false);
      } catch (error: any) {
        toast({ variant: "destructive", title: "Error", description: "Failed to process file: " + error.message });
      } finally {
@@ -127,6 +157,7 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
 
 
   return (
+    <>
     <Dialog open={currentOpen} onOpenChange={setCurrentOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-[500px]">
@@ -243,5 +274,14 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
         </div>
       </DialogContent>
     </Dialog>
+    
+    {/* Bulk Upload Results Dialog */}
+    <BulkUploadResultsDialog
+      open={resultsDialogOpen}
+      onOpenChange={setResultsDialogOpen}
+      results={uploadResults}
+      summary={uploadSummary}
+    />
+    </>
   );
 }
