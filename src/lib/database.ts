@@ -173,7 +173,11 @@ export async function initializeDatabase() {
         reference VARCHAR(100),
         status VARCHAR(20) DEFAULT 'pending',
         description TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    console.log("✅ Database tables created successfully");
   } catch (error) {
     console.error("❌ Error initializing database:", error);
     throw error;
