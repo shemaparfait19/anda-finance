@@ -346,7 +346,8 @@ export async function getSavingsAccounts(): Promise<SavingsAccount[]> {
 
 export async function updateSavingsAccount(
   memberId: string,
-  amount: number
+  amount: number,
+  accountNumber?: string
 ): Promise<SavingsAccount> {
   try {
     await ensureInitialized();
@@ -357,32 +358,44 @@ export async function updateSavingsAccount(
 
     // Check existing accounts for this member
     const existingAccounts = await sql`
-      SELECT * FROM savings_accounts WHERE member_id = ${memberId} ORDER BY account_number ASC
+      SELECT * FROM savings_accounts WHERE member_id = ${member.id} ORDER BY account_number ASC
     `;
 
     if (existingAccounts.length === 0) {
       // Create first account for this member
       const newId = `SAV${Date.now()}`;
-      const accountNumber = `${member.memberId}01`; // First account: MemberID + 01
+      const newAccountNumber = `${member.memberId}01`; // First account: MemberID + 01
 
       await sql`
         INSERT INTO savings_accounts (id, member_id, member_name, account_number, type, balance, open_date)
-        VALUES (${newId}, ${memberId}, ${member.name}, ${accountNumber}, 'Compulsory', ${amount}, CURRENT_DATE)
+        VALUES (${newId}, ${member.id}, ${member.name}, ${newAccountNumber}, 'Compulsory', ${amount}, CURRENT_DATE)
       `;
 
       revalidatePath("/savings");
       return {
         id: newId,
-        memberId,
+        memberId: member.id,
         memberName: member.name,
-        accountNumber,
+        accountNumber: newAccountNumber,
         type: "Compulsory",
         balance: amount,
         openDate: new Date().toISOString().split("T")[0],
       };
     } else {
-      // For now, update the first account (existing behavior)
-      const accountToUpdate = existingAccounts[0];
+      // Find the specific account to update
+      let accountToUpdate;
+      
+      if (accountNumber) {
+        // Update the specified account
+        accountToUpdate = existingAccounts.find(acc => acc.account_number === accountNumber);
+        if (!accountToUpdate) {
+          throw new Error(`Account ${accountNumber} not found for member ${member.memberId}`);
+        }
+      } else {
+        // If no account specified, update the first account (default behavior for backward compatibility)
+        accountToUpdate = existingAccounts[0];
+      }
+
       const newBalance = Number(accountToUpdate.balance) + amount;
 
       await sql`
@@ -404,52 +417,89 @@ export async function updateSavingsAccount(
 }
 
 export async function createSavingsAccount(
-  memberId: string,
+  memberId: string | null,
   type: "Voluntary" | "Internal",
   accountName: string
 ): Promise<SavingsAccount> {
   try {
     await ensureInitialized();
 
-    // Get member details
-    const member = await getMemberById(memberId);
-    if (!member) throw new Error("Member not found");
+    let nextAccountNumber: string;
+    let memberName: string | undefined;
+    let memberDatabaseId: string | null = null;
 
-    // Get ALL existing accounts for this member to determine next account number
-    const existingAccounts = await sql`
-      SELECT account_number FROM savings_accounts 
-      WHERE member_id = ${memberId} 
-      ORDER BY account_number ASC
-    `;
+    if (type === "Internal") {
+      // Internal accounts don't have a member
+      // Generate account number: INT + sequential number
+      const existingInternalAccounts = await sql`
+        SELECT account_number FROM savings_accounts 
+        WHERE type = 'Internal'
+        ORDER BY account_number DESC
+        LIMIT 1
+      `;
 
-    let nextAccountNumber;
-    
-    if (existingAccounts.length > 0) {
-      // Find the highest account number suffix
-      let maxSuffix = 0;
-      
-      for (const account of existingAccounts) {
-        const accountNum = account.account_number;
-        // Extract suffix (last 2 digits)
-        const suffix = accountNum.slice(-2);
-        const prefix = accountNum.slice(0, -2);
+      if (existingInternalAccounts.length > 0) {
+        const lastAccount = existingInternalAccounts[0].account_number;
+        // Extract number from INT001, INT002, etc.
+        const match = lastAccount.match(/INT(\d+)/);
+        if (match) {
+          const nextNum = parseInt(match[1]) + 1;
+          nextAccountNumber = `INT${nextNum.toString().padStart(3, '0')}`;
+        } else {
+          nextAccountNumber = 'INT001';
+        }
+      } else {
+        nextAccountNumber = 'INT001';
+      }
+
+      memberName = undefined;
+    } else {
+      // Voluntary accounts require a member
+      if (!memberId) {
+        throw new Error("Member ID is required for Voluntary accounts");
+      }
+
+      // Get member details
+      const member = await getMemberById(memberId);
+      if (!member) throw new Error("Member not found");
+
+      memberDatabaseId = member.id;
+      memberName = member.name;
+
+      // Get ALL existing accounts for this member to determine next account number
+      const existingAccounts = await sql`
+        SELECT account_number FROM savings_accounts 
+        WHERE member_id = ${member.id} 
+        ORDER BY account_number ASC
+      `;
+
+      if (existingAccounts.length > 0) {
+        // Find the highest account number suffix
+        let maxSuffix = 0;
         
-        // Verify it matches the member ID format
-        if (prefix === member.memberId && !isNaN(Number(suffix))) {
-          const suffixNum = Number(suffix);
-          if (suffixNum > maxSuffix) {
-            maxSuffix = suffixNum;
+        for (const account of existingAccounts) {
+          const accountNum = account.account_number;
+          // Extract suffix (last 2 digits)
+          const suffix = accountNum.slice(-2);
+          const prefix = accountNum.slice(0, -2);
+          
+          // Verify it matches the member ID format
+          if (prefix === member.memberId && !isNaN(Number(suffix))) {
+            const suffixNum = Number(suffix);
+            if (suffixNum > maxSuffix) {
+              maxSuffix = suffixNum;
+            }
           }
         }
+        
+        // Increment the highest suffix found
+        const nextNum = maxSuffix + 1;
+        nextAccountNumber = `${member.memberId}${nextNum.toString().padStart(2, '0')}`;
+        
+      } else {
+        // First account for this member
+        nextAccountNumber = `${member.memberId}01`;
       }
-      
-      // Increment the highest suffix found
-      const nextNum = maxSuffix + 1;
-      nextAccountNumber = `${member.memberId}${nextNum.toString().padStart(2, '0')}`;
-      
-    } else {
-      // First account for this member
-      nextAccountNumber = `${member.memberId}01`;
     }
 
     const newId = `SAV${Date.now()}`;
@@ -459,15 +509,15 @@ export async function createSavingsAccount(
         id, member_id, member_name, account_number, type, balance, account_name, open_date
       )
       VALUES (
-        ${newId}, ${memberId}, ${member.name}, ${nextAccountNumber}, ${type}, 0, ${accountName}, CURRENT_DATE
+        ${newId}, ${memberDatabaseId}, ${memberName || null}, ${nextAccountNumber}, ${type}, 0, ${accountName}, CURRENT_DATE
       )
     `;
 
     revalidatePath("/savings");
     return {
       id: newId,
-      memberId,
-      memberName: member.name,
+      memberId: memberDatabaseId || undefined,
+      memberName: memberName,
       accountNumber: nextAccountNumber,
       type,
       balance: 0,

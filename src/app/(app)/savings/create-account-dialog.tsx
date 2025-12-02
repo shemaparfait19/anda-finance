@@ -44,9 +44,8 @@ export default function CreateAccountDialog({ members, trigger }: { members: any
       }
 
       // Create account
-      // Note: For Internal accounts, we pass empty string for now
-      // This will need to be updated to accept null when data-service is fixed
-      const memberId = accountType === "Internal" ? "" : selectedMemberId;
+      // For Internal accounts, pass null for memberId
+      const memberId = accountType === "Internal" ? null : selectedMemberId;
       
       await createSavingsAccount(memberId, accountType, accountName);
 

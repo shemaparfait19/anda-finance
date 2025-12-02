@@ -8,6 +8,7 @@ import type { Member } from '@/lib/types';
 const TransactionSchema = z.object({
     memberId: z.string().min(1, 'Member is required.'),
     amount: z.coerce.number().positive('Amount must be a positive number.'),
+    account: z.string().optional(), // Optional account number
 });
 
 type FormState = {
@@ -35,7 +36,7 @@ async function handleTransaction(
             return { message: 'Invalid form data. Please check all required fields.', fields, success: false };
         }
 
-        const { memberId, amount } = parsed.data;
+        const { memberId, amount, account } = parsed.data;
         const transactionAmount = type === 'Deposit' ? amount : -amount;
 
         // Try to find member by memberId field (e.g., BIF001)
@@ -52,8 +53,8 @@ async function handleTransaction(
              return { message: 'Insufficient savings balance for this withdrawal.', success: false };
         }
 
-        // 1. Update savings account balance (using database ID)
-        await updateSavingsAccount(member.id, transactionAmount);
+        // 1. Update savings account balance (using database ID and optional account number)
+        await updateSavingsAccount(member.id, transactionAmount, account);
 
         // 2. Update member's total savings balance
         const newSavingsBalance = member.savingsBalance + transactionAmount;
@@ -70,7 +71,8 @@ async function handleTransaction(
         revalidatePath('/savings');
         revalidatePath('/'); // For dashboard totals
 
-        return { message: `${type} of RWF ${amount.toLocaleString()} successful for ${member.name} (${member.memberId}).`, success: true };
+        const accountInfo = account ? ` to account ${account}` : '';
+        return { message: `${type} of RWF ${amount.toLocaleString()} successful for ${member.name} (${member.memberId})${accountInfo}.`, success: true };
 
     } catch (e) {
         const error = e as Error;
@@ -172,8 +174,8 @@ export async function processBulkDeposit(data: any[]) {
                     continue;
                 }
 
-                // Perform deposit
-                await updateSavingsAccount(member.id, numericAmount);
+                // Perform deposit with optional account number
+                await updateSavingsAccount(member.id, numericAmount, accountNumber);
                 const newSavingsBalance = member.savingsBalance + numericAmount;
                 await updateMember(member.id, { savingsBalance: newSavingsBalance });
                 await addTransaction({
