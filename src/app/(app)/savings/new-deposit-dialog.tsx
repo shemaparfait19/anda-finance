@@ -212,8 +212,14 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
                 <div className="grid gap-4 py-4">
                 <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center">
                     <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">
-                    Upload Excel file with columns: MEMBER ID, Account Number, Amount, Reason
+                    <p className="text-sm font-medium mb-2">
+                    Upload Excel file for bulk deposits
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                    Required columns (first row): <strong>MEMBER ID</strong>, <strong>ACCOUNT NUMBER</strong>, <strong>AMOUNT</strong>, <strong>REASON</strong>
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                    Example: BIF001 | BIF00101 | 50000 | Monthly contribution
                     </p>
                     <Input 
                     type="file" 

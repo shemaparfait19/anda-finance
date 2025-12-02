@@ -85,53 +85,119 @@ export async function processBulkDeposit(data: any[]) {
     try {
         let successCount = 0;
         let errors: string[] = [];
+        let skippedRows = 0;
 
-        for (const row of data) {
-            // Expected columns: "MEMBER ID", "Account Number", "Amount", "Reason"
+        // Validate that we have data
+        if (!data || data.length === 0) {
+            return { success: false, message: "No data found in the uploaded file." };
+        }
+
+        // Check if the file has the expected columns by examining the first row
+        const firstRow = data[0];
+        const hasExpectedColumns = firstRow && (
+            'MEMBER ID' in firstRow || 
+            'Member ID' in firstRow || 
+            'member id' in firstRow ||
+            'memberId' in firstRow
+        );
+
+        if (!hasExpectedColumns) {
+            return { 
+                success: false, 
+                message: "Invalid file format. Expected columns: 'MEMBER ID', 'ACCOUNT NUMBER', 'AMOUNT', 'REASON'. Please ensure your Excel file has these column headers in the first row." 
+            };
+        }
+
+        for (let i = 0; i < data.length; i++) {
+            const row = data[i];
+            
+            // Skip completely empty rows
+            const hasAnyData = Object.values(row).some(val => val !== null && val !== undefined && val !== '');
+            if (!hasAnyData) {
+                skippedRows++;
+                continue;
+            }
+
             // Normalize keys to handle case variations or spaces
             const normalizedRow: any = {};
             Object.keys(row).forEach(key => {
-                normalizedRow[key.trim().toUpperCase()] = row[key];
+                const normalizedKey = key.trim().toUpperCase().replace(/\s+/g, ' ');
+                normalizedRow[normalizedKey] = row[key];
             });
 
-            const memberId = normalizedRow['MEMBER ID'];
-            const accountNumber = normalizedRow['ACCOUNT NUMBER']; // Optional validation
-            const amount = normalizedRow['AMOUNT'];
-            const reason = normalizedRow['REASON'] || 'Bulk Deposit';
+            // Try multiple variations of column names
+            const memberId = normalizedRow['MEMBER ID'] || 
+                            normalizedRow['MEMBERID'] || 
+                            normalizedRow['ID'];
+            const accountNumber = normalizedRow['ACCOUNT NUMBER'] || 
+                                 normalizedRow['ACCOUNT'] || 
+                                 normalizedRow['ACCOUNTNUMBER'];
+            const amount = normalizedRow['AMOUNT'] || 
+                          normalizedRow['AMT'];
+            const reason = normalizedRow['REASON'] || 
+                          normalizedRow['DESCRIPTION'] || 
+                          normalizedRow['NOTE'] || 
+                          'Bulk Deposit';
 
+            // Skip rows with missing critical data
             if (!memberId || !amount) {
-                errors.push(`Row missing Member ID or Amount: ${JSON.stringify(row)}`);
+                // Only log as error if the row has some data (not just empty cells)
+                const rowKeys = Object.keys(row).filter(k => !k.startsWith('_EMPTY'));
+                if (rowKeys.length > 0) {
+                    errors.push(`Row ${i + 1}: Missing Member ID or Amount`);
+                } else {
+                    skippedRows++;
+                }
                 continue;
             }
 
-            // Validate member exists
-            const member = await getMemberById(memberId);
-            if (!member) {
-                errors.push(`Member not found: ${memberId}`);
+            // Validate amount is a number
+            const numericAmount = Number(amount);
+            if (isNaN(numericAmount) || numericAmount <= 0) {
+                errors.push(`Row ${i + 1}: Invalid amount '${amount}' for member ${memberId}`);
                 continue;
             }
 
-            // Perform deposit
-            await updateSavingsAccount(memberId, Number(amount));
-            const newSavingsBalance = member.savingsBalance + Number(amount);
-            await updateMember(memberId, { savingsBalance: newSavingsBalance });
-            await addTransaction({
-                member: { name: member.name, avatarId: member.avatarId },
-                type: 'Deposit',
-                amount: Number(amount),
-                date: new Date().toISOString().split('T')[0],
-            });
+            try {
+                // Validate member exists
+                const member = await getMemberById(String(memberId).trim());
+                if (!member) {
+                    errors.push(`Row ${i + 1}: Member not found: ${memberId}`);
+                    continue;
+                }
 
-            successCount++;
+                // Perform deposit
+                await updateSavingsAccount(member.id, numericAmount);
+                const newSavingsBalance = member.savingsBalance + numericAmount;
+                await updateMember(member.id, { savingsBalance: newSavingsBalance });
+                await addTransaction({
+                    member: { name: member.name, avatarId: member.avatarId },
+                    type: 'Deposit',
+                    amount: numericAmount,
+                    date: new Date().toISOString().split('T')[0],
+                });
+
+                successCount++;
+            } catch (error: any) {
+                errors.push(`Row ${i + 1}: ${error.message}`);
+            }
         }
 
         revalidatePath('/savings');
         
+        // Build result message
+        let message = `Processed ${successCount} deposit(s) successfully.`;
+        if (skippedRows > 0) {
+            message += ` Skipped ${skippedRows} empty row(s).`;
+        }
         if (errors.length > 0) {
-            return { success: false, message: `Processed ${successCount} deposits. Failed: ${errors.length}. Errors: ${errors.slice(0, 3).join(', ')}...` };
+            message += ` Failed: ${errors.length}. First errors: ${errors.slice(0, 5).join('; ')}`;
         }
         
-        return { success: true, message: `Successfully processed ${successCount} deposits.` };
+        return { 
+            success: successCount > 0, 
+            message 
+        };
 
     } catch (error: any) {
         return { success: false, message: "Server error: " + error.message };
