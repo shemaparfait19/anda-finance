@@ -37,6 +37,14 @@ export default function ViewStatementDialog({
   useEffect(() => {
     if (open) {
       setLoading(true);
+      
+      // Internal accounts don't have a memberId, so no transactions to fetch
+      if (!account.memberId) {
+        setTransactions([]);
+        setLoading(false);
+        return;
+      }
+
       getTransactionsByMemberId(account.memberId)
         .then((data) => {
           const filtered = data.filter(
@@ -54,7 +62,7 @@ export default function ViewStatementDialog({
         <DialogHeader>
           <DialogTitle>Account Statement: {account.accountNumber}</DialogTitle>
           <DialogDescription>
-            Showing recent transactions for {account.memberName}.
+            Showing recent transactions for {account.memberName || account.accountName || "Internal Account"}.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-96">
