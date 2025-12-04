@@ -154,9 +154,10 @@ export async function addMember(
     const memberId = await generateMemberId();
 
     // Calculate number of shares from monthly contribution (each share = 15000 RWF)
-    // Formula: Monthly Contribution ÷ Price per share
-    // Example: 45,000 / 15,000 = 3.00 shares
-    const numberOfShares = parseFloat((memberData.monthlyContribution / 15000).toFixed(2));
+    // Formula: Monthly Contribution ÷ Price per share (rounded to whole number)
+    // Example: 45,000 / 15,000 = 3 shares
+    // Example: 34,000 / 15,000 = 2.27 → rounds to 2 shares
+    const numberOfShares = Math.round(memberData.monthlyContribution / 15000);
 
     // Build full name with middle name if provided
     const fullName = memberData.middleName 
