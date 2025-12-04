@@ -106,9 +106,10 @@ export default function AddMemberDialog() {
   const handleMonthlyContributionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const amount = parseFloat(e.target.value) || 0;
     setMonthlyContribution(amount);
-    // Formula: Total amount ÷ Price per share
-    // Example: 45,000 / 15,000 = 3.00 shares
-    setNumberOfShares(parseFloat((amount / 15000).toFixed(2)));
+    // Formula: Total amount ÷ Price per share (rounded to whole number)
+    // Example: 45,000 / 15,000 = 3 shares
+    // Example: 34,000 / 15,000 = 2.27 → rounds to 2 shares
+    setNumberOfShares(Math.round(amount / 15000));
   }, []);
 
   useEffect(() => {
@@ -307,7 +308,7 @@ export default function AddMemberDialog() {
                       readOnly 
                       className="bg-muted"
                     />
-                    <p className="text-xs text-muted-foreground">Auto-calculated: Amount ÷ 15,000 (e.g., 45,000 ÷ 15,000 = 3.00 shares)</p>
+                    <p className="text-xs text-muted-foreground">Auto-calculated: Amount ÷ 15,000 (rounded). Example: 45,000 ÷ 15,000 = 3 shares, 34,000 ÷ 15,000 = 2 shares</p>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="contributionDate">Date of Contribution Collection</Label>
