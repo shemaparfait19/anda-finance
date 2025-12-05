@@ -46,6 +46,9 @@ const AddMemberFormSchema = z.object({
     if (!date) return true;
     const contributionDate = new Date(date);
     const today = new Date();
+    // Set time to 00:00:00 for both dates to compare only the date part
+    contributionDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
     return contributionDate >= today;
   }, { message: "Contribution date must be today or in the future." }).optional(),
   collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "BANKS OUTSIDE RWANDA"]).optional(),
@@ -92,6 +95,9 @@ const EditMemberFormSchema = z.object({
     if (!date) return true;
     const contributionDate = new Date(date);
     const today = new Date();
+    // Set time to 00:00:00 for both dates to compare only the date part
+    contributionDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
     return contributionDate >= today;
   }, { message: "Contribution date must be today or in the future." }).optional(),
   collectionMeans: z.enum(["MOMO", "AIRTEL MONEY", "BANKS IN RWANDA", "BANKS OUTSIDE RWANDA"]).optional(),
