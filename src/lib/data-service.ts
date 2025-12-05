@@ -525,6 +525,7 @@ export async function createSavingsAccount(
       openDate: new Date().toISOString().split("T")[0],
     };
   } catch (error) {
+    console.error("createSavingsAccount error:", error);
     handleDatabaseError(error, "createSavingsAccount");
     throw error;
   }

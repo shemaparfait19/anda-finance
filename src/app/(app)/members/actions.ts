@@ -196,6 +196,7 @@ export async function addMember(
     };
   } catch (e) {
     const error = e as Error;
+    console.error("addMember error:", error);
     return {
       message: error.message || "An unexpected error occurred.",
         success: false,
@@ -224,8 +225,8 @@ export async function editMember(
         const { id, ...updates } = parsed.data;
         
         // Calculate number of shares from monthly contribution
-        // Formula: Monthly Contribution ÷ Price per share (rounded to 2 decimals)
-        const numberOfShares = updates.monthlyContribution ? parseFloat((updates.monthlyContribution / 15000).toFixed(2)) : undefined;
+        // Formula: Monthly Contribution ÷ Price per share (rounded to whole number)
+        const numberOfShares = updates.monthlyContribution ? Math.round(updates.monthlyContribution / 15000) : undefined;
         
         // Build full name with middle name if provided
         const fullName = updates.middleName 
