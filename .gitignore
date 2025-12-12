@@ -45,3 +45,5 @@ firebase-debug.log
 firestore-debug.log
 package-lock.json
 package.json
+migrations/001_change_shares_to_decimal.sql
+.gitignore

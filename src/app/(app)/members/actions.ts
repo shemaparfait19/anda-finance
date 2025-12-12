@@ -197,7 +197,7 @@ export async function addMember(
 
     // Auto-create Compulsory savings account for new member
     try {
-      await createSavingsAccount(memberId, "Compulsory", "Compulsory Savings");
+      await createSavingsAccount(memberId, "Compulsory", fullName);
     } catch (accountError) {
       console.error("Failed to create compulsory account:", accountError);
       // Don't fail member creation if account creation fails

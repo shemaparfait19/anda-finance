@@ -27,6 +27,16 @@ export default function CreateAccountDialog({ members, trigger }: { members: any
     }
   }, [open]);
 
+  // Auto-fill account name when member is selected for Voluntary accounts
+  useEffect(() => {
+    if (accountType === "Voluntary" && selectedMemberId) {
+      const selectedMember = members.find(m => m.id === selectedMemberId);
+      if (selectedMember) {
+        setAccountName(selectedMember.name);
+      }
+    }
+  }, [selectedMemberId, accountType, members]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
