@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   addMember as addMemberToDb,
   updateMember as updateMemberInDb,
+  createSavingsAccount,
 } from "@/lib/data-service";
 import { revalidatePath } from "next/cache";
 import type { Member } from "@/lib/types";
@@ -160,10 +161,10 @@ export async function addMember(
     const memberId = await generateMemberId();
 
     // Calculate number of shares from monthly contribution (each share = 15000 RWF)
-    // Formula: Monthly Contribution ÷ Price per share (rounded to whole number)
-    // Example: 45,000 / 15,000 = 3 shares
-    // Example: 34,000 / 15,000 = 2.27 → rounds to 2 shares
-    const numberOfShares = Math.round(memberData.monthlyContribution / 15000);
+    // Formula: Monthly Contribution ÷ Price per share
+    // Example: 45,000 / 15,000 = 3.00 shares
+    // Example: 32,000 / 15,000 = 2.13 shares
+    const numberOfShares = parseFloat((memberData.monthlyContribution / 15000).toFixed(2));
 
     // Build full name with middle name if provided
     const fullName = memberData.middleName 
@@ -194,7 +195,17 @@ export async function addMember(
       avatarId: `avatar${Math.floor(Math.random() * 5) + 1}`,
     });
 
+    // Auto-create Compulsory savings account for new member
+    try {
+      await createSavingsAccount(memberId, "Compulsory", "Compulsory Savings");
+    } catch (accountError) {
+      console.error("Failed to create compulsory account:", accountError);
+      // Don't fail member creation if account creation fails
+      // Member is created, account can be created manually later
+    }
+
     revalidatePath("/members");
+    revalidatePath("/savings"); // Also revalidate savings page
 
     return {
         message: "Member added successfully.",
@@ -231,8 +242,8 @@ export async function editMember(
         const { id, ...updates } = parsed.data;
         
         // Calculate number of shares from monthly contribution
-        // Formula: Monthly Contribution ÷ Price per share (rounded to whole number)
-        const numberOfShares = updates.monthlyContribution ? Math.round(updates.monthlyContribution / 15000) : undefined;
+        // Formula: Monthly Contribution ÷ Price per share
+        const numberOfShares = updates.monthlyContribution ? parseFloat((updates.monthlyContribution / 15000).toFixed(2)) : undefined;
         
         // Build full name with middle name if provided
         const fullName = updates.middleName 

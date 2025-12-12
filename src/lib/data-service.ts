@@ -418,7 +418,7 @@ export async function updateSavingsAccount(
 
 export async function createSavingsAccount(
   memberId: string | null,
-  type: "Voluntary" | "Internal",
+  type: "Voluntary" | "Internal" | "Compulsory",
   accountName: string
 ): Promise<SavingsAccount> {
   try {
@@ -454,9 +454,9 @@ export async function createSavingsAccount(
 
       memberName = undefined;
     } else {
-      // Voluntary accounts require a member
+      // Voluntary and Compulsory accounts require a member
       if (!memberId) {
-        throw new Error("Member ID is required for Voluntary accounts");
+        throw new Error("Member ID is required for Voluntary and Compulsory accounts");
       }
 
       // Get member details
