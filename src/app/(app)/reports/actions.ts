@@ -1,9 +1,6 @@
 "use server";
 
 import { getMembers, getLoans, getSavingsAccounts, getTransactions, getMemberById } from "@/lib/data-service";
-import { neon } from "@neondatabase/serverless";
-
-const sql = neon(process.env.DATABASE_URL!);
 
 export type ReportData =
   | { type: "member_statement"; member: any; accounts: any[]; transactions: any[]; loans: any[] }
@@ -27,23 +24,17 @@ export async function generateReportData(params: {
         const member = await getMemberById(memberId);
         if (!member) return { success: false, error: "Member not found." };
 
-        const [allAccounts, allLoans] = await Promise.all([
+        const [allAccounts, allLoans, allTransactions] = await Promise.all([
           getSavingsAccounts(),
           getLoans(),
+          getTransactions(),
         ]);
 
-        // Fetch transactions filtered by member name and date range
-        let txQuery = `
-          SELECT id, member_name, type, amount, date, status
-          FROM transactions
-          WHERE member_name = $1
-        `;
-        const txParams: any[] = [member.name];
-        if (startDate) { txQuery += ` AND date >= $${txParams.length + 1}`; txParams.push(startDate); }
-        if (endDate)   { txQuery += ` AND date <= $${txParams.length + 1}`; txParams.push(endDate); }
-        txQuery += " ORDER BY date DESC";
-
-        const txResult = await sql(txQuery, txParams);
+        // Filter transactions by member name and optional date range in JS
+        const memberTx = allTransactions
+          .filter((t) => t.member.name === member.name)
+          .filter((t) => (!startDate || t.date >= startDate))
+          .filter((t) => (!endDate   || t.date <= endDate));
 
         return {
           success: true,
@@ -51,11 +42,7 @@ export async function generateReportData(params: {
             type: "member_statement",
             member,
             accounts: allAccounts.filter((a) => a.memberId === member.id),
-            transactions: txResult.map((r) => ({
-              ...r,
-              amount: Number(r.amount),
-              date: r.date instanceof Date ? r.date.toISOString().split("T")[0] : r.date,
-            })),
+            transactions: memberTx,
             loans: allLoans.filter((l) => l.memberId === member.id),
           },
         };
