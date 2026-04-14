@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getMembers, getTransactions } from "@/lib/data-service";
+import { getMembers, getTransactions, getDashboardStats } from "@/lib/data-service";
 
 import { getPlaceholderImage } from "@/lib/placeholder-images";
 import SavingsVsLoansChart from "@/components/charts/savings-vs-loans-chart";
@@ -28,16 +28,13 @@ import SavingsVsLoansChart from "@/components/charts/savings-vs-loans-chart";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const members = await getMembers();
-  const transactions = await getTransactions();
-  const totalSavings = members.reduce(
-    (acc, member) => acc + member.savingsBalance,
-    0
-  );
-  const totalLoans = members.reduce(
-    (acc, member) => acc + member.loanBalance,
-    0
-  );
+  const [members, transactions, stats] = await Promise.all([
+    getMembers(),
+    getTransactions(),
+    getDashboardStats(),
+  ]);
+  const totalSavings = members.reduce((acc, m) => acc + m.savingsBalance, 0);
+  const totalLoans = members.reduce((acc, m) => acc + m.loanBalance, 0);
   const activeMembers = members.filter((m) => m.status === "Active").length;
 
   return (
@@ -56,7 +53,7 @@ export default async function DashboardPage() {
                 RWF {totalSavings.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                +20.1% from last month
+                {stats.savingsChange ? `${stats.savingsChange} from last month` : "No data last month"}
               </p>
             </CardContent>
           </Card>
@@ -72,7 +69,7 @@ export default async function DashboardPage() {
                 RWF {totalLoans.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                +180.1% from last month
+                {stats.loansChange ? `${stats.loansChange} from last month` : "No disbursements last month"}
               </p>
             </CardContent>
           </Card>
@@ -85,10 +82,10 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold font-headline">
-                +{activeMembers}
+                {activeMembers}
               </div>
               <p className="text-xs text-muted-foreground">
-                +19% from last month
+                {stats.membersChange ? `${stats.membersChange} new joins vs last month` : "No new joins last month"}
               </p>
             </CardContent>
           </Card>
@@ -100,9 +97,9 @@ export default async function DashboardPage() {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-headline">5.2%</div>
+              <div className="text-2xl font-bold font-headline">{stats.portfolioRisk}%</div>
               <p className="text-xs text-muted-foreground">
-                +2% from last month
+                Overdue &amp; defaulted loans vs active portfolio
               </p>
             </CardContent>
           </Card>
@@ -117,7 +114,7 @@ export default async function DashboardPage() {
                 </CardDescription>
               </div>
               <Button asChild size="sm" className="ml-auto gap-1">
-                <Link href="#">
+                <Link href="/payments">
                   View All
                   <ArrowUpRight className="h-4 w-4" />
                 </Link>

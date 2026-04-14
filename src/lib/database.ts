@@ -189,6 +189,43 @@ export async function initializeDatabase() {
       )
     `;
 
+    // Fix loan status constraint: old schema had wrong values (Inactive/Dormant/Closed)
+    // Correct values match app logic: Active/Paid/Overdue/Defaulted/Pending
+    try {
+      await sql`ALTER TABLE loans DROP CONSTRAINT IF EXISTS loans_status_check`;
+      await sql`
+        ALTER TABLE loans ADD CONSTRAINT loans_status_check
+        CHECK (status IN ('Active', 'Paid', 'Overdue', 'Defaulted', 'Pending'))
+      `;
+    } catch (_) {
+      // Constraint already correct or table doesn't exist yet, safe to continue
+    }
+
+    // Ensure accounts table exists (was missing from original schema)
+    await sql`
+      CREATE TABLE IF NOT EXISTS accounts (
+        id VARCHAR(50) PRIMARY KEY,
+        code VARCHAR(20) UNIQUE NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        type VARCHAR(20) NOT NULL CHECK (type IN ('asset', 'liability', 'equity', 'income', 'expense')),
+        balance DECIMAL(15,2) DEFAULT 0,
+        last_updated DATE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Ensure journal_entries table exists
+    await sql`
+      CREATE TABLE IF NOT EXISTS journal_entries (
+        id VARCHAR(50) PRIMARY KEY,
+        date DATE NOT NULL,
+        description TEXT NOT NULL,
+        reference VARCHAR(100),
+        entries JSONB NOT NULL DEFAULT '[]',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
     console.log("✅ Database tables created successfully");
   } catch (error) {
     console.error("❌ Error initializing database:", error);

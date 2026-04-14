@@ -1153,3 +1153,101 @@ export async function updateAccountBalance(
     throw error;
   }
 }
+
+// Dashboard Stats — real month-over-month calculations
+export async function getDashboardStats() {
+  try {
+    await ensureInitialized();
+
+    const now = new Date();
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString()
+      .split("T")[0];
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      .toISOString()
+      .split("T")[0];
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+      .toISOString()
+      .split("T")[0];
+
+    // Savings: compare deposit totals this month vs last month
+    const [thisMonthSavings, lastMonthSavings] = await Promise.all([
+      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Deposit' AND date >= ${startOfThisMonth}`,
+      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Deposit' AND date >= ${startOfLastMonth} AND date <= ${endOfLastMonth}`,
+    ]);
+
+    // Loans: compare disbursement totals this month vs last month
+    const [thisMonthLoans, lastMonthLoans] = await Promise.all([
+      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Loan Disbursement' AND date >= ${startOfThisMonth}`,
+      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Loan Disbursement' AND date >= ${startOfLastMonth} AND date <= ${endOfLastMonth}`,
+    ]);
+
+    // Portfolio at risk: overdue/defaulted balance as % of all active loan balances
+    const loanRisk = await sql`
+      SELECT
+        COALESCE(SUM(CASE WHEN status IN ('Overdue', 'Defaulted') THEN balance ELSE 0 END), 0) as at_risk,
+        COALESCE(SUM(CASE WHEN status IN ('Active', 'Overdue', 'Defaulted') THEN balance ELSE 0 END), 0) as total_active
+      FROM loans
+    `;
+
+    // Active members: new joins this month vs last month
+    const memberJoins = await sql`
+      SELECT
+        COUNT(CASE WHEN created_at >= ${startOfThisMonth} THEN 1 END) as this_month,
+        COUNT(CASE WHEN created_at >= ${startOfLastMonth} AND created_at < ${startOfThisMonth} THEN 1 END) as last_month
+      FROM members
+      WHERE status = 'Active'
+    `;
+
+    const thisSav = Number(thisMonthSavings[0].total);
+    const lastSav = Number(lastMonthSavings[0].total);
+    const thisLoan = Number(thisMonthLoans[0].total);
+    const lastLoan = Number(lastMonthLoans[0].total);
+    const atRisk = Number(loanRisk[0].at_risk);
+    const totalActive = Number(loanRisk[0].total_active);
+    const thisMembers = Number(memberJoins[0].this_month);
+    const lastMembers = Number(memberJoins[0].last_month);
+
+    const pctChange = (current: number, previous: number): string | null => {
+      if (previous === 0) return null;
+      const pct = ((current - previous) / previous) * 100;
+      return (pct >= 0 ? "+" : "") + pct.toFixed(1) + "%";
+    };
+
+    return {
+      savingsChange: pctChange(thisSav, lastSav),
+      loansChange: pctChange(thisLoan, lastLoan),
+      portfolioRisk: totalActive > 0 ? ((atRisk / totalActive) * 100).toFixed(1) : "0.0",
+      membersChange: pctChange(thisMembers, lastMembers),
+    };
+  } catch (error) {
+    handleDatabaseError(error, "getDashboardStats");
+    return { savingsChange: null, loansChange: null, portfolioRisk: "0.0", membersChange: null };
+  }
+}
+
+// Payments ledger — all financial movements across the system
+export async function getPaymentLedger(): Promise<Transaction[]> {
+  try {
+    await ensureInitialized();
+    const result = await sql`
+      SELECT
+        id, member_name, member_avatar_id as "memberAvatarId",
+        type, amount, date, status
+      FROM transactions
+      ORDER BY date DESC, created_at DESC
+      LIMIT 200
+    `;
+    return result.map((row) => ({
+      id: row.id,
+      member: { name: row.member_name, avatarId: row.memberAvatarId },
+      type: row.type,
+      amount: Number(row.amount),
+      date: row.date instanceof Date ? row.date.toISOString().split("T")[0] : row.date,
+      status: row.status,
+    })) as Transaction[];
+  } catch (error) {
+    handleDatabaseError(error, "getPaymentLedger");
+    return [];
+  }
+}
