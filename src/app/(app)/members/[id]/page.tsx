@@ -2,25 +2,20 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowLeft,
   Edit,
-  Briefcase,
-  Calendar,
   Phone,
   Mail,
   Home,
   PiggyBank,
   Landmark,
   UserCheck,
-  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MemberActionsClient } from "@/components/member-actions-client";
 import { getMemberById, getLoans, getSavingsAccounts } from "@/lib/data-service";
 import { getPlaceholderImage } from "@/lib/placeholder-images";
-import { SavingsBreakdown } from "@/components/savings-breakdown";
-import { generateMemberStatementPdf } from "@/lib/pdf-utils";
-import { formatCurrency } from "@/lib/utils";
+import { MemberAccountStatement } from "@/components/member-account-statement";
+import { buildStatementData } from "@/lib/statement-utils";
 import {
   Card,
   CardContent,
@@ -100,12 +95,7 @@ export default async function MemberProfilePage({
 
   const image = getPlaceholderImage(member.avatarId);
 
-  // Calculate savings breakdown (these would come from your database in a real app)
-  const principal = member.savingsBalance * 0.9; // Assuming 90% of savings is principal
-  const interest = member.savingsBalance * 0.1; // Assuming 10% is interest
-  const principalShares = principal / 15000; // 15,000 RWF per share
-  const interestShares = interest / 15000;
-  const totalShares = principalShares + interestShares;
+  const statementData = buildStatementData(member, memberLoans);
 
 
   return (
@@ -194,56 +184,15 @@ export default async function MemberProfilePage({
             />
           </div>
 
-          <SavingsBreakdown 
-            principal={principal}
-            interest={interest}
-            principalShares={principalShares}
-            interestShares={interestShares}
-          />
-
           <Card>
             <CardHeader>
-              <CardTitle>Loan History</CardTitle>
+              <CardTitle>Account Statement</CardTitle>
               <CardDescription>
-                A summary of all loans taken by {member.name}.
+                Full savings breakdown, shares, loan eligibility and debt summary for {member.name}.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {memberLoans.length > 0 ? (
-                <ul className="space-y-4">
-                  {memberLoans.map((loan) => (
-                    <li
-                      key={loan.id}
-                      className="flex justify-between items-center p-3 rounded-md border"
-                    >
-                      <div>
-                        <p className="font-semibold">
-                          RWF {loan.principal.toLocaleString()}{" "}
-                          <span className="text-muted-foreground font-normal">
-                            - {loan.loanPurpose}
-                          </span>
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Issued:{" "}
-                          {new Date(loan.issueDate).toLocaleDateString()} | Due:{" "}
-                          {new Date(loan.dueDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Badge
-                        variant={
-                          loan.status === "Overdue" ? "destructive" : "outline"
-                        }
-                      >
-                        {loan.status}
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No loan history found.
-                </p>
-              )}
+              <MemberAccountStatement data={statementData} />
             </CardContent>
           </Card>
 
