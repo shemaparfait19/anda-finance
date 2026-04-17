@@ -33,6 +33,7 @@ export default function SavingsAccountsTable({
   accounts,
   members,
 }: SavingsAccountsTableProps) {
+  const maxBalance = Math.max(...accounts.map((a) => a.balance), 1);
   const [dialogState, setDialogState] = useState({
     deposit: { open: false, account: null as SavingsAccount | null },
     withdrawal: { open: false, account: null as SavingsAccount | null },
@@ -64,12 +65,11 @@ export default function SavingsAccountsTable({
             <TableHead>Member Name</TableHead>
             <TableHead>Account Name</TableHead>
             <TableHead>Account No.</TableHead>
-            <TableHead className="hidden md:table-cell">Account Type</TableHead>
+            <TableHead className="hidden md:table-cell">Type</TableHead>
             <TableHead className="hidden md:table-cell">Open Date</TableHead>
+            <TableHead className="hidden lg:table-cell">Balance Bar</TableHead>
             <TableHead className="text-right">Balance</TableHead>
-            <TableHead>
-              <span className="sr-only">Actions</span>
-            </TableHead>
+            <TableHead><span className="sr-only">Actions</span></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -83,10 +83,23 @@ export default function SavingsAccountsTable({
               <TableCell className="hidden md:table-cell">
                 <Badge variant="outline">{account.type}</Badge>
               </TableCell>
-              <TableCell className="hidden md:table-cell">
+              <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                 {new Date(account.openDate).toLocaleDateString()}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="hidden lg:table-cell w-36">
+                <div className="flex flex-col gap-1">
+                  <div className="text-[11px] text-muted-foreground">
+                    {Math.round((account.balance / maxBalance) * 100)}% of top
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all duration-500"
+                      style={{ width: `${Math.round((account.balance / maxBalance) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="text-right font-medium">
                 RWF {account.balance.toLocaleString()}
               </TableCell>
               <TableCell className="text-right">

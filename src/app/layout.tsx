@@ -15,6 +15,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Prevent dark-mode flash before React hydrates */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            const t = localStorage.getItem('theme');
+            if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+              document.documentElement.classList.add('dark');
+            }
+          } catch(_) {}
+        `}} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

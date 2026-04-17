@@ -97,33 +97,50 @@ export default function LoansTable({ loans }: LoansTableProps) {
             <TableHead>Member Name</TableHead>
             <TableHead>Loan ID</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead className="hidden lg:table-cell">Repayment</TableHead>
             <TableHead className="hidden md:table-cell">Due Date</TableHead>
-            <TableHead className="hidden md:table-cell text-right">
-              Principal
-            </TableHead>
+            <TableHead className="hidden md:table-cell text-right">Principal</TableHead>
             <TableHead className="text-right">Balance</TableHead>
-            <TableHead>
-              <span className="sr-only">Actions</span>
-            </TableHead>
+            <TableHead><span className="sr-only">Actions</span></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {loans.map((loan) => (
+          {loans.map((loan) => {
+            const paid = loan.principal - loan.balance;
+            const pct = loan.principal > 0 ? Math.round((paid / loan.principal) * 100) : 0;
+            const barColor =
+              loan.status === "Paid" ? "bg-green-500" :
+              loan.status === "Overdue" || loan.status === "Defaulted" ? "bg-red-500" :
+              "bg-primary";
+            return (
             <TableRow key={loan.id}>
               <TableCell className="font-medium">{loan.memberName}</TableCell>
-              <TableCell>{loan.loanId}</TableCell>
+              <TableCell className="text-muted-foreground text-sm">{loan.loanId}</TableCell>
               <TableCell>
                 <Badge variant={getStatusBadgeVariant(loan.status)}>
                   {loan.status}
                 </Badge>
               </TableCell>
-              <TableCell className="hidden md:table-cell">
+              <TableCell className="hidden lg:table-cell w-36">
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between text-[11px] text-muted-foreground">
+                    <span>{pct}% repaid</span>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+                      style={{ width: `${Math.min(pct, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                 {new Date(loan.dueDate).toLocaleDateString()}
               </TableCell>
-              <TableCell className="hidden md:table-cell text-right">
+              <TableCell className="hidden md:table-cell text-right text-sm">
                 RWF {loan.principal.toLocaleString()}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right font-medium text-sm">
                 RWF {loan.balance.toLocaleString()}
               </TableCell>
               <TableCell>
@@ -161,7 +178,8 @@ export default function LoansTable({ loans }: LoansTableProps) {
                 </DropdownMenu>
               </TableCell>
             </TableRow>
-          ))}
+            );
+          })}
         </TableBody>
       </Table>
       <CardFooter>

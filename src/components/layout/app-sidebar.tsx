@@ -75,16 +75,20 @@ export default function AppSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border p-2">
+      <SidebarFooter className="border-t border-sidebar-border p-2 space-y-2">
         <div className="flex items-center gap-3 p-2 rounded-md bg-sidebar-accent">
             <Avatar className='h-9 w-9'>
                 <AvatarImage src={adminAvatar.imageUrl} alt={adminAvatar.description} data-ai-hint={adminAvatar.imageHint}/>
                 <AvatarFallback>ZJ</AvatarFallback>
             </Avatar>
-            <div className="flex flex-col">
-                <span className="text-sm font-semibold text-sidebar-accent-foreground">ZIGAMA Julius</span>
-                <span className="text-xs text-sidebar-accent-foreground/80">zigamaj6@gmail.com</span>
+            <div className="flex flex-col min-w-0">
+                <span className="text-sm font-semibold text-sidebar-accent-foreground truncate">ZIGAMA Julius</span>
+                <span className="text-xs text-sidebar-accent-foreground/70 truncate">Administrator</span>
             </div>
+        </div>
+        <div className="px-2 pb-1 flex items-center justify-between">
+          <span className="text-[10px] text-sidebar-foreground/40 font-mono">ANDA Finance v1.0</span>
+          <span className="text-[10px] text-sidebar-foreground/40">FY 2025–26</span>
         </div>
       </SidebarFooter>
     </Sidebar>

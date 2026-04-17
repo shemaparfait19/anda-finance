@@ -1,4 +1,4 @@
-import { Activity, ArrowUpRight, Landmark, Users, Wallet } from "lucide-react";
+import { Activity, ArrowUpRight, Landmark, Users, Wallet, AlertTriangle, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,99 +19,155 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getMembers, getTransactions, getDashboardStats } from "@/lib/data-service";
-
+import { getMembers, getTransactions, getDashboardStats, getLoans } from "@/lib/data-service";
 import { getPlaceholderImage } from "@/lib/placeholder-images";
 import SavingsVsLoansChart from "@/components/charts/savings-vs-loans-chart";
 
-// Force dynamic rendering to access environment variables
 export const dynamic = "force-dynamic";
 
+function TrendBadge({ change }: { change: string | null }) {
+  if (!change) return <p className="text-xs text-muted-foreground">No data last month</p>;
+  const isPositive = change.startsWith("+");
+  const isNegative = change.startsWith("-");
+  const Icon = isPositive ? TrendingUp : isNegative ? TrendingDown : Minus;
+  return (
+    <p className={`text-xs flex items-center gap-1 font-medium ${
+      isPositive ? "text-green-600 dark:text-green-400" :
+      isNegative ? "text-red-500" :
+      "text-muted-foreground"
+    }`}>
+      <Icon className="h-3 w-3" />
+      {change} from last month
+    </p>
+  );
+}
+
 export default async function DashboardPage() {
-  const [members, transactions, stats] = await Promise.all([
+  const [members, transactions, stats, loans] = await Promise.all([
     getMembers(),
     getTransactions(),
     getDashboardStats(),
+    getLoans(),
   ]);
+
   const totalSavings = members.reduce((acc, m) => acc + m.savingsBalance, 0);
   const totalLoans = members.reduce((acc, m) => acc + m.loanBalance, 0);
   const activeMembers = members.filter((m) => m.status === "Active").length;
 
+  const overdueLoans = loans.filter((l) => l.status === "Overdue" || l.status === "Defaulted");
+  const overdueTotal = overdueLoans.reduce((s, l) => s + l.balance, 0);
+  const pendingLoans = loans.filter((l) => l.status === "Pending");
+
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <main className="flex flex-1 flex-col gap-4 md:gap-8">
-        <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-          <Card>
+      <main className="flex flex-1 flex-col gap-4 md:gap-6">
+
+        {/* ── Alert banners ─────────────────────────────────────── */}
+        {overdueLoans.length > 0 && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-900/40 dark:bg-orange-950/30 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-4 w-4 text-orange-500 shrink-0" />
+              <p className="text-sm text-orange-800 dark:text-orange-300">
+                <span className="font-semibold">{overdueLoans.length} loan{overdueLoans.length > 1 ? "s" : ""} overdue</span>
+                {" "}— RWF {overdueTotal.toLocaleString()} at risk
+              </p>
+            </div>
+            <Button asChild size="sm" variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-800 dark:text-orange-400 shrink-0">
+              <Link href="/loans">View Arrears</Link>
+            </Button>
+          </div>
+        )}
+
+        {pendingLoans.length > 0 && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-900/40 dark:bg-yellow-950/30 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <Activity className="h-4 w-4 text-yellow-500 shrink-0" />
+              <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                <span className="font-semibold">{pendingLoans.length} loan application{pendingLoans.length > 1 ? "s" : ""} pending approval</span>
+              </p>
+            </div>
+            <Button asChild size="sm" variant="outline" className="border-yellow-300 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-800 dark:text-yellow-400 shrink-0">
+              <Link href="/loans">Review</Link>
+            </Button>
+          </div>
+        )}
+
+        {/* ── KPI Cards ─────────────────────────────────────────── */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="border-l-4 border-l-primary">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium font-body">
-                Total Savings
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold font-headline">
                 RWF {totalSavings.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground">
-                {stats.savingsChange ? `${stats.savingsChange} from last month` : "No data last month"}
-              </p>
+              <TrendBadge change={stats.savingsChange} />
             </CardContent>
           </Card>
-          <Card>
+
+          <Card className="border-l-4 border-l-red-400">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium font-body">
-                Total Loans
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Total Loans</CardTitle>
               <Landmark className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold font-headline">
                 RWF {totalLoans.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground">
-                {stats.loansChange ? `${stats.loansChange} from last month` : "No disbursements last month"}
-              </p>
+              <TrendBadge change={stats.loansChange} />
             </CardContent>
           </Card>
-          <Card>
+
+          <Card className="border-l-4 border-l-green-400">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium font-body">
-                Active Members
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Active Members</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-headline">
-                {activeMembers}
-              </div>
+              <div className="text-2xl font-bold font-headline">{activeMembers}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.membersChange ? `${stats.membersChange} new joins vs last month` : "No new joins last month"}
+                {stats.membersChange
+                  ? `${stats.membersChange} new joins vs last month`
+                  : "No new joins last month"}
               </p>
             </CardContent>
           </Card>
-          <Card>
+
+          <Card className={`border-l-4 ${
+            parseFloat(stats.portfolioRisk) > 10
+              ? "border-l-red-500"
+              : parseFloat(stats.portfolioRisk) > 5
+              ? "border-l-orange-400"
+              : "border-l-green-400"
+          }`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium font-body">
-                Portfolio at Risk
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Portfolio at Risk</CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-headline">{stats.portfolioRisk}%</div>
+              <div className={`text-2xl font-bold font-headline ${
+                parseFloat(stats.portfolioRisk) > 10 ? "text-red-500" :
+                parseFloat(stats.portfolioRisk) > 5 ? "text-orange-500" :
+                "text-green-600 dark:text-green-400"
+              }`}>
+                {stats.portfolioRisk}%
+              </div>
               <p className="text-xs text-muted-foreground">
-                Overdue &amp; defaulted loans vs active portfolio
+                Overdue &amp; defaulted vs active portfolio
               </p>
             </CardContent>
           </Card>
         </div>
-        <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+
+        {/* ── Chart + Transactions ──────────────────────────────── */}
+        <div className="grid gap-4 md:gap-6 lg:grid-cols-2 xl:grid-cols-3">
           <Card className="xl:col-span-2">
             <CardHeader className="flex flex-row items-center">
-              <div className="grid gap-2">
-                <CardTitle>Transactions</CardTitle>
-                <CardDescription>
-                  Recent transactions from your group.
-                </CardDescription>
+              <div className="grid gap-1">
+                <CardTitle>Recent Transactions</CardTitle>
+                <CardDescription>Latest financial activity</CardDescription>
               </div>
               <Button asChild size="sm" className="ml-auto gap-1">
                 <Link href="/payments">
@@ -124,53 +180,39 @@ export default async function DashboardPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead className="hidden xl:table-column">
-                      Type
-                    </TableHead>
-                    <TableHead className="hidden xl:table-column">
-                      Status
-                    </TableHead>
+                    <TableHead>Member</TableHead>
+                    <TableHead className="hidden md:table-cell">Type</TableHead>
+                    <TableHead className="hidden md:table-cell">Status</TableHead>
                     <TableHead className="hidden md:table-cell">Date</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.map((transaction) => {
-                    const image = getPlaceholderImage(
-                      transaction.member.avatarId
-                    );
+                  {transactions.slice(0, 8).map((transaction) => {
+                    const image = getPlaceholderImage(transaction.member.avatarId);
                     return (
                       <TableRow key={transaction.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Avatar className="hidden h-9 w-9 sm:flex">
-                              <AvatarImage
-                                src={image.imageUrl}
-                                alt={`Avatar of ${transaction.member.name}`}
-                                data-ai-hint={image.imageHint}
-                              />
-                              <AvatarFallback>
-                                {transaction.member.name.charAt(0)}
-                              </AvatarFallback>
+                            <Avatar className="hidden h-8 w-8 sm:flex">
+                              <AvatarImage src={image.imageUrl} alt={transaction.member.name} data-ai-hint={image.imageHint} />
+                              <AvatarFallback>{transaction.member.name.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <div className="font-medium">
-                              {transaction.member.name}
-                            </div>
+                            <span className="font-medium text-sm">{transaction.member.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="hidden xl:table-column">
+                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                           {transaction.type}
                         </TableCell>
-                        <TableCell className="hidden xl:table-column">
-                          <Badge className="text-xs" variant="outline">
+                        <TableCell className="hidden md:table-cell">
+                          <Badge className="text-xs" variant={transaction.status === "Completed" ? "secondary" : "outline"}>
                             {transaction.status}
                           </Badge>
                         </TableCell>
-                        <TableCell className="hidden md:table-cell">
+                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                           {new Date(transaction.date).toLocaleDateString()}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right font-medium text-sm">
                           RWF {transaction.amount.toLocaleString()}
                         </TableCell>
                       </TableRow>
@@ -180,10 +222,11 @@ export default async function DashboardPage() {
               </Table>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Savings vs Loans</CardTitle>
-              <CardDescription>January - July 2024</CardDescription>
+              <CardDescription>Portfolio overview</CardDescription>
             </CardHeader>
             <CardContent>
               <SavingsVsLoansChart />
