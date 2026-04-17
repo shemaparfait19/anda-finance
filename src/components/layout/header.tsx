@@ -37,7 +37,7 @@ export default function Header() {
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
-      <SidebarTrigger className="md:hidden" />
+      <SidebarTrigger className="hidden" />
       <div className="w-full flex-1">
         <h1 className="text-lg font-headline font-semibold">{title}</h1>
       </div>
