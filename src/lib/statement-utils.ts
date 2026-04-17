@@ -100,6 +100,36 @@ export function buildStatementData(
     loanEligibility,
     loans: loansWithLabels,
     totalCurrentLoans,
-    totalDebts: totalCurrentLoans, // can be extended with fees/charges later
+    totalDebts: totalCurrentLoans,
+  };
+}
+
+// ── Final Balance types ───────────────────────────────────────────────────────
+export type FinalBalanceData = StatementData & {
+  exitFeeRate: number;   // % of total savings, default 0
+  exitFee: number;       // calculated from exitFeeRate
+  unpaidCharges: number; // always 0 — account scheme charge excluded per PM
+  totalToBeRefunded: number;
+  netClosingBalance: number; // always 0 — member fully settled on exit
+};
+
+// ── Final balance calculation (member exit) ───────────────────────────────────
+export function buildFinalBalanceData(
+  member: Member,
+  memberLoans: Loan[],
+  exitFeeRate = 0
+): FinalBalanceData {
+  const statement = buildStatementData(member, memberLoans);
+  const exitFee = Math.round(statement.total * (exitFeeRate / 100));
+  const unpaidCharges = 0; // account scheme charge excluded
+  const totalToBeRefunded = statement.total - statement.totalCurrentLoans - exitFee - unpaidCharges;
+
+  return {
+    ...statement,
+    exitFeeRate,
+    exitFee,
+    unpaidCharges,
+    totalToBeRefunded,
+    netClosingBalance: 0,
   };
 }

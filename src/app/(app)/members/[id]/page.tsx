@@ -15,7 +15,8 @@ import { MemberActionsClient } from "@/components/member-actions-client";
 import { getMemberById, getLoans, getSavingsAccounts } from "@/lib/data-service";
 import { getPlaceholderImage } from "@/lib/placeholder-images";
 import { MemberAccountStatement } from "@/components/member-account-statement";
-import { buildStatementData } from "@/lib/statement-utils";
+import { MemberExitStatementDialog } from "@/components/member-exit-statement-dialog";
+import { buildStatementData, buildFinalBalanceData } from "@/lib/statement-utils";
 import {
   Card,
   CardContent,
@@ -96,6 +97,7 @@ export default async function MemberProfilePage({
   const image = getPlaceholderImage(member.avatarId);
 
   const statementData = buildStatementData(member, memberLoans);
+  const finalBalanceData = buildFinalBalanceData(member, memberLoans);
 
 
   return (
@@ -107,6 +109,10 @@ export default async function MemberProfilePage({
               <Edit className="h-4 w-4" />
             </Link>
           </Button>
+          <MemberExitStatementDialog
+            memberName={member.name}
+            data={finalBalanceData}
+          />
           <MemberActionsClient member={{
             id: member.id,
             name: member.name || '',
