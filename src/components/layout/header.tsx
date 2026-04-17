@@ -32,7 +32,7 @@ export default function Header() {
   const adminAvatar = getPlaceholderImage("admin_avatar");
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 flex-col border-b bg-card/95 backdrop-blur-sm px-4 lg:h-auto lg:px-6">
+    <header className="sticky top-0 z-30 flex h-14 flex-col border-b border-border/50 bg-background/95 backdrop-blur-sm px-4 lg:h-auto lg:px-6">
       {/* Main row */}
       <div className="flex h-14 items-center gap-4">
         <SidebarTrigger className="hidden" />

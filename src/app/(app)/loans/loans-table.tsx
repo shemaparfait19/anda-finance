@@ -30,20 +30,14 @@ import ViewLoanDetailsDialog from "./view-loan-details-dialog";
 
 const getStatusBadgeVariant = (status: Loan["status"]) => {
   switch (status) {
-    case "Active":
-      return "default";
-    case "Paid":
-      return "secondary";
-    case "Overdue":
-      return "destructive";
-    case "Defaulted":
-      return "destructive";
-    case "Pending":
-      return "outline";
-    default:
-      return "outline";
+    case "Active":   return "success";
+    case "Paid":     return "secondary";
+    case "Overdue":  return "destructive";
+    case "Defaulted":return "destructive";
+    case "Pending":  return "warning";
+    default:         return "outline";
   }
-};
+} as (status: Loan["status"]) => "success" | "secondary" | "destructive" | "warning" | "outline";
 
 interface LoansTableProps {
   loans: Loan[];

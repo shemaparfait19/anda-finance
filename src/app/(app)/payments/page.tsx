@@ -131,7 +131,7 @@ export default async function PaymentsPage() {
                         {new Date(tx.date).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        <Badge variant={tx.status === "Completed" ? "secondary" : "outline"}>
+                        <Badge variant={tx.status === "Completed" ? "success" : tx.status === "Failed" ? "destructive" : "warning"}>
                           {tx.status}
                         </Badge>
                       </TableCell>
