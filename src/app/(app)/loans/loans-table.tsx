@@ -28,16 +28,18 @@ import { approveLoan } from "./actions";
 import RecordRepaymentDialog from "./record-repayment-dialog";
 import ViewLoanDetailsDialog from "./view-loan-details-dialog";
 
-const getStatusBadgeVariant = (status: Loan["status"]) => {
+type BadgeVariant = "success" | "secondary" | "destructive" | "warning" | "outline";
+
+const getStatusBadgeVariant = (status: Loan["status"]): BadgeVariant => {
   switch (status) {
-    case "Active":   return "success";
-    case "Paid":     return "secondary";
-    case "Overdue":  return "destructive";
-    case "Defaulted":return "destructive";
-    case "Pending":  return "warning";
-    default:         return "outline";
+    case "Active":    return "success";
+    case "Paid":      return "secondary";
+    case "Overdue":   return "destructive";
+    case "Defaulted": return "destructive";
+    case "Pending":   return "warning";
+    default:          return "outline";
   }
-} as (status: Loan["status"]) => "success" | "secondary" | "destructive" | "warning" | "outline";
+};
 
 interface LoansTableProps {
   loans: Loan[];
