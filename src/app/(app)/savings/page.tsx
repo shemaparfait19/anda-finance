@@ -19,7 +19,12 @@ import CreateAccountDialog from "./create-account-dialog";
 // Force dynamic rendering to access environment variables
 export const dynamic = "force-dynamic";
 
-export default async function SavingsPage() {
+export default async function SavingsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string }>;
+}) {
+  const { q } = (await searchParams) ?? {};
   const savingsAccounts = await getSavingsAccounts();
   const members = await getMembers();
 
@@ -80,6 +85,7 @@ export default async function SavingsPage() {
             <SavingsAccountsTable
               accounts={savingsAccounts}
               members={members}
+              initialQuery={q}
             />
           </CardContent>
         </Card>
@@ -96,6 +102,7 @@ export default async function SavingsPage() {
             <SavingsAccountsTable
               accounts={compulsoryAccounts}
               members={members}
+              initialQuery={q}
             />
           </CardContent>
         </Card>
@@ -112,6 +119,7 @@ export default async function SavingsPage() {
             <SavingsAccountsTable
               accounts={voluntaryAccounts}
               members={members}
+              initialQuery={q}
             />
           </CardContent>
         </Card>
@@ -128,6 +136,7 @@ export default async function SavingsPage() {
             <SavingsAccountsTable
               accounts={internalAccounts}
               members={members}
+              initialQuery={q}
             />
           </CardContent>
         </Card>

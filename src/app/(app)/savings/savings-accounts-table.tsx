@@ -28,14 +28,16 @@ import ViewStatementDialog from "./view-statement-dialog";
 interface SavingsAccountsTableProps {
   accounts: SavingsAccount[];
   members: Member[];
+  initialQuery?: string;
 }
 
 export default function SavingsAccountsTable({
   accounts,
   members,
+  initialQuery = "",
 }: SavingsAccountsTableProps) {
   const maxBalance = Math.max(...accounts.map((a) => a.balance), 1);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
 
   const filtered = query.trim()
     ? accounts.filter((a) => {
