@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 
 import { getSavingsAccounts, getMembers } from "@/lib/data-service";
@@ -19,12 +20,7 @@ import CreateAccountDialog from "./create-account-dialog";
 // Force dynamic rendering to access environment variables
 export const dynamic = "force-dynamic";
 
-export default async function SavingsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ q?: string }>;
-}) {
-  const { q } = (await searchParams) ?? {};
+export default async function SavingsPage() {
   const savingsAccounts = await getSavingsAccounts();
   const members = await getMembers();
 
@@ -82,11 +78,12 @@ export default async function SavingsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <Suspense>
             <SavingsAccountsTable
               accounts={savingsAccounts}
               members={members}
-              initialQuery={q}
             />
+            </Suspense>
           </CardContent>
         </Card>
       </TabsContent>
@@ -99,11 +96,12 @@ export default async function SavingsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <Suspense>
             <SavingsAccountsTable
               accounts={compulsoryAccounts}
               members={members}
-              initialQuery={q}
             />
+            </Suspense>
           </CardContent>
         </Card>
       </TabsContent>
@@ -116,11 +114,12 @@ export default async function SavingsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <Suspense>
             <SavingsAccountsTable
               accounts={voluntaryAccounts}
               members={members}
-              initialQuery={q}
             />
+            </Suspense>
           </CardContent>
         </Card>
       </TabsContent>
@@ -133,11 +132,12 @@ export default async function SavingsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <Suspense>
             <SavingsAccountsTable
               accounts={internalAccounts}
               members={members}
-              initialQuery={q}
             />
+            </Suspense>
           </CardContent>
         </Card>
       </TabsContent>
