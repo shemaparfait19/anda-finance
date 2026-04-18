@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { MoreHorizontal, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +51,28 @@ interface LoansTableProps {
 export default function LoansTable({ loans }: LoansTableProps) {
   const { toast } = useToast();
   const [isApproving, startApproveTransition] = useTransition();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const query = searchParams.get("q") ?? "";
+  const setQuery = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value.trim()) params.set("q", value.trim());
+    else params.delete("q");
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  const filtered = query.trim()
+    ? loans.filter((l) => {
+        const q = query.toLowerCase();
+        return (
+          (l.memberName ?? "").toLowerCase().includes(q) ||
+          (l.loanId ?? "").toLowerCase().includes(q) ||
+          (l.status ?? "").toLowerCase().includes(q)
+        );
+      })
+    : loans;
 
   const [dialogState, setDialogState] = useState({
     approve: { open: false, loan: null as Loan | null },
@@ -89,6 +113,20 @@ export default function LoansTable({ loans }: LoansTableProps) {
 
   return (
     <>
+      <div className="relative mb-4 max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by member, loan ID, or status…"
+          className="pl-9 pr-9"
+        />
+        {query && (
+          <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -103,7 +141,10 @@ export default function LoansTable({ loans }: LoansTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {loans.map((loan) => {
+          {filtered.length === 0 && (
+            <tr><td colSpan={8} className="py-10 text-center text-sm text-muted-foreground">No loans match &quot;{query}&quot;</td></tr>
+          )}
+          {filtered.map((loan) => {
             const paid = loan.principal - loan.balance;
             const pct = loan.principal > 0 ? Math.round((paid / loan.principal) * 100) : 0;
             const barColor =

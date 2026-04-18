@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Suspense } from "react";
 import {
   Card,
   CardContent,
@@ -6,16 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { getInvestments } from "@/lib/data-service";
 import AddInvestmentDialog from "./add-investment-dialog";
+import InvestmentsTable from "./investments-table";
 
 // Force dynamic rendering to access environment variables
 export const dynamic = "force-dynamic";
@@ -78,48 +71,9 @@ export default async function InvestmentsPage() {
           <AddInvestmentDialog />
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Investment</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Purchase Date
-                </TableHead>
-                <TableHead className="text-right">Amount Invested</TableHead>
-                <TableHead className="text-right">Current Value</TableHead>
-                <TableHead className="text-right">ROI (%)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {investments.map((investment) => (
-                <TableRow key={investment.id}>
-                  <TableCell className="font-medium">
-                    {investment.name}
-                  </TableCell>
-                  <TableCell>{investment.type}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {new Date(investment.purchaseDate).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    RWF {investment.amountInvested.toLocaleString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    RWF {investment.currentValue.toLocaleString()}
-                  </TableCell>
-                  <TableCell
-                    className={`text-right font-semibold ${
-                      investment.returnOnInvestment >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {investment.returnOnInvestment.toFixed(2)}%
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+            <InvestmentsTable investments={investments} />
+          </Suspense>
         </CardContent>
       </Card>
     </div>

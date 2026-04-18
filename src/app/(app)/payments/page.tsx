@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getPaymentLedger } from "@/lib/data-service";
 import {
   Card,
@@ -6,25 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { ArrowDownCircle, ArrowUpCircle, Banknote, RefreshCw } from "lucide-react";
+import PaymentsTable from "./payments-table";
 
 export const dynamic = "force-dynamic";
-
-const TYPE_META: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  Deposit:           { label: "Deposit",           color: "text-green-600",      icon: <ArrowDownCircle className="h-4 w-4 text-green-600" /> },
-  Withdrawal:        { label: "Withdrawal",         color: "text-red-600",        icon: <ArrowUpCircle className="h-4 w-4 text-red-600" /> },
-  "Loan Repayment":  { label: "Loan Repayment",     color: "text-blue-600",       icon: <RefreshCw className="h-4 w-4 text-blue-600" /> },
-  "Loan Disbursement":{ label: "Loan Disbursement", color: "text-orange-600",     icon: <Banknote className="h-4 w-4 text-orange-600" /> },
-};
 
 export default async function PaymentsPage() {
   const transactions = await getPaymentLedger();
@@ -105,45 +91,9 @@ export default async function PaymentsPage() {
               No transactions recorded yet.
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="hidden md:table-cell">Date</TableHead>
-                  <TableHead className="hidden md:table-cell">Status</TableHead>
-                  <TableHead className="text-right">Amount (RWF)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactions.map((tx) => {
-                  const meta = TYPE_META[tx.type] ?? { label: tx.type, color: "", icon: null };
-                  return (
-                    <TableRow key={tx.id}>
-                      <TableCell className="font-medium">{tx.member.name}</TableCell>
-                      <TableCell>
-                        <span className={`flex items-center gap-1 text-sm ${meta.color}`}>
-                          {meta.icon}
-                          {meta.label}
-                        </span>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                        {new Date(tx.date).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <Badge variant={tx.status === "Completed" ? "success" : tx.status === "Failed" ? "destructive" : "warning"}>
-                          {tx.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className={`text-right font-medium ${meta.color}`}>
-                        {tx.type === "Withdrawal" || tx.type === "Loan Disbursement" ? "-" : "+"}
-                        {tx.amount.toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+              <PaymentsTable transactions={transactions} />
+            </Suspense>
           )}
         </CardContent>
       </Card>

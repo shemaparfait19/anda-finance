@@ -1,5 +1,8 @@
 "use client";
 
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -25,7 +28,29 @@ export default function CashbookTable({
   data: CashbookEntry[];
   type: "Income" | "Expenses";
 }) {
-  const total = data.reduce((acc, entry) => acc + entry.amount, 0);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const query = searchParams.get("q") ?? "";
+  const setQuery = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value.trim()) params.set("q", value.trim());
+    else params.delete("q");
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  const filtered = query.trim()
+    ? data.filter((e) => {
+        const q = query.toLowerCase();
+        return (
+          (e.description ?? "").toLowerCase().includes(q) ||
+          (e.category ?? "").toLowerCase().includes(q)
+        );
+      })
+    : data;
+
+  const total = filtered.reduce((acc, entry) => acc + entry.amount, 0);
 
   return (
     <Card>
@@ -34,6 +59,20 @@ export default function CashbookTable({
         <CardDescription>
           All {type.toLowerCase()} recorded in the cashbook.
         </CardDescription>
+        <div className="relative max-w-sm pt-2">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by description or category…"
+            className="pl-9 pr-9"
+          />
+          {query && (
+            <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <Table>

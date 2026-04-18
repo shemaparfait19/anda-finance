@@ -1,12 +1,11 @@
+import { Suspense } from "react";
 import { File, ListFilter } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -18,20 +17,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { getMembers } from "@/lib/data-service";
 import AddMemberDialog from "./add-member-dialog";
-import MemberActions from "./member-actions";
-import type { Member } from "@/lib/types";
+import MembersTable from "./members-table";
 
 // Force dynamic rendering to access environment variables
 export const dynamic = "force-dynamic";
@@ -45,34 +35,6 @@ export default async function MembersPage() {
   );
   const dormantMembers = members.filter((m) => m.status === "Dormant");
   const closedMembers = members.filter((m) => m.status === "Closed");
-
-  const MemberTable = ({ members }: { members: Member[] }) => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="hidden w-[100px] sm:table-cell">
-            <span className="sr-only">Image</span>
-          </TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Member ID</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="hidden md:table-cell">Savings</TableHead>
-          <TableHead className="hidden md:table-cell">Loan Balance</TableHead>
-
-          <TableHead>
-            <span className="sr-only">Actions</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {members.map((member) => (
-          <TableRow key={member.id}>
-            <MemberActions member={member} />
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
 
   return (
     <Tabs defaultValue="all">
@@ -122,14 +84,10 @@ export default async function MembersPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <MemberTable members={members} />
+            <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+              <MembersTable members={members} />
+            </Suspense>
           </CardContent>
-          <CardFooter>
-            <div className="text-xs text-muted-foreground">
-              Showing <strong>1-{members.length}</strong> of{" "}
-              <strong>{members.length}</strong> members
-            </div>
-          </CardFooter>
         </Card>
       </TabsContent>
       <TabsContent value="active">
@@ -141,14 +99,10 @@ export default async function MembersPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <MemberTable members={activeMembers} />
+            <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+              <MembersTable members={activeMembers} />
+            </Suspense>
           </CardContent>
-          <CardFooter>
-            <div className="text-xs text-muted-foreground">
-              Showing <strong>1-{activeMembers.length}</strong> of{" "}
-              <strong>{activeMembers.length}</strong> active members
-            </div>
-          </CardFooter>
         </Card>
       </TabsContent>
       <TabsContent value="temporary-inactive">
@@ -160,14 +114,10 @@ export default async function MembersPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <MemberTable members={temporaryInactiveMembers} />
+            <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+              <MembersTable members={temporaryInactiveMembers} />
+            </Suspense>
           </CardContent>
-          <CardFooter>
-            <div className="text-xs text-muted-foreground">
-              Showing <strong>1-{temporaryInactiveMembers.length}</strong> of{" "}
-              <strong>{temporaryInactiveMembers.length}</strong> temporary inactive members
-            </div>
-          </CardFooter>
         </Card>
       </TabsContent>
       <TabsContent value="inactive">
@@ -179,14 +129,10 @@ export default async function MembersPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <MemberTable members={inactiveMembers} />
+            <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+              <MembersTable members={inactiveMembers} />
+            </Suspense>
           </CardContent>
-          <CardFooter>
-            <div className="text-xs text-muted-foreground">
-              Showing <strong>1-{inactiveMembers.length}</strong> of{" "}
-              <strong>{inactiveMembers.length}</strong> inactive members
-            </div>
-          </CardFooter>
         </Card>
       </TabsContent>
       <TabsContent value="dormant">
@@ -202,31 +148,25 @@ export default async function MembersPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Dormant Members - All</CardTitle>
-                <CardDescription>
-                  All dormant members in the group.
-                </CardDescription>
+                <CardDescription>All dormant members in the group.</CardDescription>
               </CardHeader>
               <CardContent>
-                <MemberTable members={dormantMembers} />
+                <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+                  <MembersTable members={dormantMembers} />
+                </Suspense>
               </CardContent>
-              <CardFooter>
-                <div className="text-xs text-muted-foreground">
-                  Showing <strong>1-{dormantMembers.length}</strong> of{" "}
-                  <strong>{dormantMembers.length}</strong> dormant members
-                </div>
-              </CardFooter>
             </Card>
           </TabsContent>
           <TabsContent value="active-dormant">
             <Card>
               <CardHeader>
                 <CardTitle>Dormant Members - Active</CardTitle>
-                <CardDescription>
-                  Active dormant members.
-                </CardDescription>
+                <CardDescription>Active dormant members.</CardDescription>
               </CardHeader>
               <CardContent>
-                <MemberTable members={dormantMembers.filter(m => m.status === "Active")} />
+                <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+                  <MembersTable members={dormantMembers.filter(m => m.status === "Active")} />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
@@ -234,12 +174,12 @@ export default async function MembersPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Dormant Members - Inactive</CardTitle>
-                <CardDescription>
-                  Inactive dormant members.
-                </CardDescription>
+                <CardDescription>Inactive dormant members.</CardDescription>
               </CardHeader>
               <CardContent>
-                <MemberTable members={dormantMembers.filter(m => m.status === "Inactive")} />
+                <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+                  <MembersTable members={dormantMembers.filter(m => m.status === "Inactive")} />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
@@ -258,31 +198,25 @@ export default async function MembersPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Closed Members - All</CardTitle>
-                <CardDescription>
-                  All closed members in the group.
-                </CardDescription>
+                <CardDescription>All closed members in the group.</CardDescription>
               </CardHeader>
               <CardContent>
-                <MemberTable members={closedMembers} />
+                <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+                  <MembersTable members={closedMembers} />
+                </Suspense>
               </CardContent>
-              <CardFooter>
-                <div className="text-xs text-muted-foreground">
-                  Showing <strong>1-{closedMembers.length}</strong> of{" "}
-                  <strong>{closedMembers.length}</strong> closed members
-                </div>
-              </CardFooter>
             </Card>
           </TabsContent>
           <TabsContent value="active-closed">
             <Card>
               <CardHeader>
                 <CardTitle>Closed Members - Active</CardTitle>
-                <CardDescription>
-                  Active closed members.
-                </CardDescription>
+                <CardDescription>Active closed members.</CardDescription>
               </CardHeader>
               <CardContent>
-                <MemberTable members={closedMembers.filter(m => m.status === "Active")} />
+                <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+                  <MembersTable members={closedMembers.filter(m => m.status === "Active")} />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
@@ -290,12 +224,12 @@ export default async function MembersPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Closed Members - Inactive</CardTitle>
-                <CardDescription>
-                  Inactive closed members.
-                </CardDescription>
+                <CardDescription>Inactive closed members.</CardDescription>
               </CardHeader>
               <CardContent>
-                <MemberTable members={closedMembers.filter(m => m.status === "Inactive")} />
+                <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+                  <MembersTable members={closedMembers.filter(m => m.status === "Inactive")} />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
