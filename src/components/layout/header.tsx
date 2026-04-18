@@ -1,9 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { usePathname } from "next/navigation";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -27,46 +24,6 @@ const getPageTitle = (pathname: string) => {
   return segment.charAt(0).toUpperCase() + segment.slice(1);
 };
 
-// Isolated component so useSearchParams is inside its own Suspense boundary
-function HeaderSearch() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const [searchValue, setSearchValue] = useState(searchParams.get("q") ?? "");
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    setSearchValue(searchParams.get("q") ?? "");
-  }, [pathname, searchParams]);
-
-  const handleSearch = (value: string) => {
-    setSearchValue(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (value.trim()) {
-        params.set("q", value.trim());
-      } else {
-        params.delete("q");
-      }
-      router.replace(`${pathname}?${params.toString()}`);
-    }, 300);
-  };
-
-  return (
-    <div className="relative">
-      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-      <Input
-        type="search"
-        placeholder="Search…"
-        value={searchValue}
-        onChange={(e) => handleSearch(e.target.value)}
-        className="pl-8 w-[180px] lg:w-[260px] h-9 text-sm"
-      />
-    </div>
-  );
-}
 
 export default function Header() {
   const pathname = usePathname();
@@ -88,18 +45,6 @@ export default function Header() {
         <div className="flex-1" />
 
         <LiveHeaderInfo />
-
-        {/* Search — wrapped in Suspense because HeaderSearch uses useSearchParams */}
-        <div className="hidden sm:block">
-          <Suspense fallback={
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search…" className="pl-8 w-[180px] lg:w-[260px] h-9 text-sm" disabled />
-            </div>
-          }>
-            <HeaderSearch />
-          </Suspense>
-        </div>
 
         <ThemeToggle />
         <NotificationBell />
