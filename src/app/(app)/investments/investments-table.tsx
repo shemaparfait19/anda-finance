@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,18 +9,7 @@ import {
 import type { Investment } from "@/lib/types";
 
 export default function InvestmentsTable({ investments }: { investments: Investment[] }) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const query = searchParams.get("q") ?? "";
-
-  const setQuery = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value.trim()) params.set("q", value.trim());
-    else params.delete("q");
-    router.replace(`${pathname}?${params.toString()}`);
-  };
+  const [query, setQuery] = useState("");
 
   const filtered = query.trim()
     ? investments.filter((inv) => {

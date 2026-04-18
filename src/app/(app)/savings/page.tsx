@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 
 import { getSavingsAccounts, getMembers } from "@/lib/data-service";
@@ -78,12 +77,10 @@ export default async function SavingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense>
             <SavingsAccountsTable
               accounts={savingsAccounts}
               members={members}
             />
-            </Suspense>
           </CardContent>
         </Card>
       </TabsContent>
@@ -96,12 +93,10 @@ export default async function SavingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense>
             <SavingsAccountsTable
               accounts={compulsoryAccounts}
               members={members}
             />
-            </Suspense>
           </CardContent>
         </Card>
       </TabsContent>
@@ -114,12 +109,10 @@ export default async function SavingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense>
             <SavingsAccountsTable
               accounts={voluntaryAccounts}
               members={members}
             />
-            </Suspense>
           </CardContent>
         </Card>
       </TabsContent>
@@ -132,12 +125,10 @@ export default async function SavingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense>
             <SavingsAccountsTable
               accounts={internalAccounts}
               members={members}
             />
-            </Suspense>
           </CardContent>
         </Card>
       </TabsContent>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { MoreHorizontal, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,23 +34,8 @@ export default function SavingsAccountsTable({
   accounts,
   members,
 }: SavingsAccountsTableProps) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
+  const [query, setQuery] = useState("");
   const maxBalance = Math.max(...accounts.map((a) => a.balance), 1);
-
-  // URL is the single source of truth — both the header and local bar write here
-  const query = searchParams.get("q") ?? "";
-
-  const setQuery = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value.trim()) {
-      params.set("q", value.trim());
-    } else {
-      params.delete("q");
-    }
-    router.replace(`${pathname}?${params.toString()}`);
-  };
 
   const filtered = query.trim()
     ? accounts.filter((a) => {

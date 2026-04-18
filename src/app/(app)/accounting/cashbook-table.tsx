@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,17 +28,7 @@ export default function CashbookTable({
   data: CashbookEntry[];
   type: "Income" | "Expenses";
 }) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const query = searchParams.get("q") ?? "";
-  const setQuery = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value.trim()) params.set("q", value.trim());
-    else params.delete("q");
-    router.replace(`${pathname}?${params.toString()}`);
-  };
+  const [query, setQuery] = useState("");
 
   const filtered = query.trim()
     ? data.filter((e) => {
@@ -88,28 +78,36 @@ export default function CashbookTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((entry) => (
-              <TableRow key={entry.id}>
-                <TableCell>
-                  {new Date(entry.date).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="font-medium">
-                  {entry.description}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {entry.category}
-                </TableCell>
-                <TableCell className="text-right">
-                  RWF {entry.amount.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-right">
-                  <CashbookRowActions
-                    entry={entry}
-                    type={type.toLowerCase() as "income" | "expenses"}
-                  />
+            {filtered.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
+                  No entries match &quot;{query}&quot;
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              filtered.map((entry) => (
+                <TableRow key={entry.id}>
+                  <TableCell>
+                    {new Date(entry.date).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {entry.description}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {entry.category}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    RWF {entry.amount.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <CashbookRowActions
+                      entry={entry}
+                      type={type.toLowerCase() as "income" | "expenses"}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
             <TableRow className="bg-muted/50 font-bold">
               <TableCell colSpan={4} className="text-right font-semibold">
                 Total

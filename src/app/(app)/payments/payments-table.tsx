@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
 import { Search, X, ArrowDownCircle, ArrowUpCircle, Banknote, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -17,18 +17,7 @@ const TYPE_META: Record<string, { label: string; color: string; icon: React.Reac
 };
 
 export default function PaymentsTable({ transactions }: { transactions: Transaction[] }) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const query = searchParams.get("q") ?? "";
-
-  const setQuery = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value.trim()) params.set("q", value.trim());
-    else params.delete("q");
-    router.replace(`${pathname}?${params.toString()}`);
-  };
+  const [query, setQuery] = useState("");
 
   const filtered = query.trim()
     ? transactions.filter((tx) => {
