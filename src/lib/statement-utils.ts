@@ -1,5 +1,10 @@
 import type { Member, Loan } from "./types";
 
+// ── Organization name ─────────────────────────────────────────────────────────
+// This appears as the header on all printed/downloaded statements.
+// When multi-tenancy is added, pull this from the tenant record instead.
+export const ORGANIZATION_NAME = "ANDA FINANCE";
+
 // ── Configurable group constants ─────────────────────────────────────────────
 // These reflect the group's rules confirmed by the PM.
 // Share price: 15,000 RWF buys one share.

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -34,6 +35,21 @@ export default function SavingsAccountsTable({
   members,
 }: SavingsAccountsTableProps) {
   const maxBalance = Math.max(...accounts.map((a) => a.balance), 1);
+  const [query, setQuery] = useState("");
+
+  const filtered = query.trim()
+    ? accounts.filter((a) => {
+        const q = query.toLowerCase();
+        const member = members.find((m) => m.id === a.memberId);
+        return (
+          (a.memberName ?? "").toLowerCase().includes(q) ||
+          (a.accountNumber ?? "").toLowerCase().includes(q) ||
+          (a.accountName ?? "").toLowerCase().includes(q) ||
+          (member?.memberId ?? "").toLowerCase().includes(q)
+        );
+      })
+    : accounts;
+
   const [dialogState, setDialogState] = useState({
     deposit: { open: false, account: null as SavingsAccount | null },
     withdrawal: { open: false, account: null as SavingsAccount | null },
@@ -59,6 +75,24 @@ export default function SavingsAccountsTable({
 
   return (
     <>
+      {/* Search bar */}
+      <div className="relative mb-4 max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by name, account no, or member ID…"
+          className="pl-9 pr-9"
+        />
+        {query && (
+          <button
+            onClick={() => setQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -73,7 +107,14 @@ export default function SavingsAccountsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {accounts.map((account) => (
+          {filtered.length === 0 && (
+            <tr>
+              <td colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
+                No accounts match &quot;{query}&quot;
+              </td>
+            </tr>
+          )}
+          {filtered.map((account) => (
             <TableRow key={account.id}>
               <TableCell className="font-medium">
                 {account.memberName || <span className="text-muted-foreground">Organization</span>}

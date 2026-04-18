@@ -177,8 +177,8 @@ export default async function MemberProfilePage({
         <div className="lg:col-span-2 space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <FinancialSummaryCard
-              title="Total Savings"
-              amount={member.savingsBalance}
+              title="Total Savings (incl. Interest)"
+              amount={statementData.total}
               icon={PiggyBank}
               colorClass="text-green-600"
             />
@@ -192,13 +192,13 @@ export default async function MemberProfilePage({
 
           <Card>
             <CardHeader>
-              <CardTitle>Account Statement</CardTitle>
+              <CardTitle>Summary Account Statement</CardTitle>
               <CardDescription>
-                Full savings breakdown, shares, loan eligibility and debt summary for {member.name}.
+                Savings breakdown, shares, loan eligibility and debt summary for {member.name}.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <MemberAccountStatement data={statementData} />
+              <MemberAccountStatement data={statementData} memberEmail={member.email} />
             </CardContent>
           </Card>
 

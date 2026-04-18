@@ -11,7 +11,7 @@ import { Loader2 } from "lucide-react";
 
 export default function CreateAccountDialog({ members, trigger }: { members: any[]; trigger: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [accountType, setAccountType] = useState<"Voluntary" | "Internal" | "">("");
+  const [accountType, setAccountType] = useState<"Voluntary" | "Compulsory" | "Internal" | "">("");
   const [selectedMemberId, setSelectedMemberId] = useState("");
   const [accountName, setAccountName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -27,9 +27,9 @@ export default function CreateAccountDialog({ members, trigger }: { members: any
     }
   }, [open]);
 
-  // Auto-fill account name when member is selected for Voluntary accounts
+  // Auto-fill account name when member is selected for Voluntary/Compulsory accounts
   useEffect(() => {
-    if (accountType === "Voluntary" && selectedMemberId) {
+    if ((accountType === "Voluntary" || accountType === "Compulsory") && selectedMemberId) {
       const selectedMember = members.find(m => m.id === selectedMemberId);
       if (selectedMember) {
         setAccountName(selectedMember.name);
@@ -49,11 +49,10 @@ export default function CreateAccountDialog({ members, trigger }: { members: any
       if (!accountName) {
         throw new Error("Please enter an account name");
       }
-      if (accountType === "Voluntary" && !selectedMemberId) {
-        throw new Error("Please select a member for Voluntary account");
+      if ((accountType === "Voluntary" || accountType === "Compulsory") && !selectedMemberId) {
+        throw new Error("Please select a member for this account type");
       }
 
-      // Create account
       // For Internal accounts, pass null for memberId
       const memberId = accountType === "Internal" ? null : selectedMemberId;
       
@@ -86,18 +85,19 @@ export default function CreateAccountDialog({ members, trigger }: { members: any
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="accountType">Account Type</Label>
-            <Select value={accountType} onValueChange={(value: "Voluntary" | "Internal") => setAccountType(value)}>
+            <Select value={accountType} onValueChange={(value: "Voluntary" | "Compulsory" | "Internal") => setAccountType(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select account type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Voluntary">Voluntary</SelectItem>
+                <SelectItem value="Compulsory">Compulsory Savings</SelectItem>
+                <SelectItem value="Voluntary">Voluntary Savings</SelectItem>
                 <SelectItem value="Internal">Internal Account</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {accountType === "Voluntary" && (
+          {(accountType === "Voluntary" || accountType === "Compulsory") && (
             <div>
               <Label htmlFor="memberId">Member</Label>
               <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>

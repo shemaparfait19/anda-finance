@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import type { FinalBalanceData } from "@/lib/statement-utils";
-import { LOAN_INTEREST_RATE } from "@/lib/statement-utils";
+import { LOAN_INTEREST_RATE, ORGANIZATION_NAME } from "@/lib/statement-utils";
 
 interface Props {
   data: FinalBalanceData;
@@ -75,7 +75,7 @@ export function MemberFinalBalance({ data }: Props) {
     // Header
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.text("ANDA FINANCE", W / 2, 14, { align: "center" });
+    doc.text(ORGANIZATION_NAME, W / 2, 14, { align: "center" });
     doc.setFontSize(11);
     doc.text("MEMBER'S FINAL BALANCE", W / 2, 21, { align: "center" });
     doc.setFont("helvetica", "normal");

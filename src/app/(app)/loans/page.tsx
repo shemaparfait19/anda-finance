@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getLoans, getMembers } from "@/lib/data-service";
 import NewLoanDialog from "./new-loan-dialog";
 import LoansTable from "./loans-table";
+import LoanAmortizationTab from "./loan-amortization-tab";
 import {
   Card,
   CardHeader,
@@ -29,6 +30,7 @@ export default async function LoansPage() {
     { value: "Overdue", label: "Overdue", isDestructive: true },
     { value: "Paid", label: "Paid" },
   ];
+  // "Amortization" is a special tab, not a loan status filter
 
   const getLoansByStatus = (status: Loan["status"]) =>
     loans.filter((loan) => loan.status === status);
@@ -46,6 +48,9 @@ export default async function LoansPage() {
               {tab.label}
             </TabsTrigger>
           ))}
+          <TabsTrigger value="amortization" className="text-primary font-medium">
+            Amortization
+          </TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
           <NewLoanDialog members={members} />
@@ -85,6 +90,20 @@ export default async function LoansPage() {
             </Card>
           </TabsContent>
         ))}
+      <TabsContent value="amortization">
+        <Card>
+          <CardHeader>
+            <CardTitle>Loan Amortization Calculator</CardTitle>
+            <CardDescription>
+              Calculate monthly instalments and generate a full repayment schedule.
+              Eligible amount (80% of savings) is at 3%/month; excess is at 5%/month.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LoanAmortizationTab members={members} />
+          </CardContent>
+        </Card>
+      </TabsContent>
     </Tabs>
   );
 }

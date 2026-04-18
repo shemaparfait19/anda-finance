@@ -60,13 +60,13 @@ async function handleTransaction(
         const newSavingsBalance = member.savingsBalance + transactionAmount;
         await updateMember(member.id, { savingsBalance: newSavingsBalance });
 
-        // 3. Add a record to the transaction log
+        // 3. Add a record to the transaction log (pass account number for per-account statement)
         await addTransaction({
             member: { name: member.name, avatarId: member.avatarId },
             type: type,
             amount: amount,
             date: new Date().toISOString().split('T')[0],
-        });
+        }, account ?? undefined);
 
         revalidatePath('/savings');
         revalidatePath('/'); // For dashboard totals

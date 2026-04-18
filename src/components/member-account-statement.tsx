@@ -1,13 +1,14 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Printer } from "lucide-react";
+import { Download, Printer, Mail, CheckCircle } from "lucide-react";
 import type { StatementData } from "@/lib/statement-utils";
-import { LOAN_INTEREST_RATE } from "@/lib/statement-utils";
+import { LOAN_INTEREST_RATE, ORGANIZATION_NAME } from "@/lib/statement-utils";
 
 interface Props {
   data: StatementData;
+  memberEmail?: string;
 }
 
 // ── Shared cell styles ────────────────────────────────────────────────────────
@@ -26,8 +27,26 @@ function fmtShares(n: number) {
   return n.toFixed(2);
 }
 
-export function MemberAccountStatement({ data }: Props) {
+export function MemberAccountStatement({ data, memberEmail }: Props) {
   const printRef = useRef<HTMLDivElement>(null);
+  const [emailSent, setEmailSent] = useState(false);
+
+  const handleEmailStatement = async () => {
+    if (!memberEmail) return;
+    // Build mailto link — replace with a real email service when available
+    const subject = encodeURIComponent(`${ORGANIZATION_NAME} — Account Statement for ${data.memberName}`);
+    const body = encodeURIComponent(
+      `Dear ${data.memberName},\n\nPlease find your account summary below.\n\n` +
+      `Member ID: ${data.memberId}\nAccount No: ${data.accountNumber}\nDate: ${data.statementDate}\n\n` +
+      `Total Savings (incl. interest): RWF ${data.total.toLocaleString()}\n` +
+      `Total Shares: ${data.totalShares.toFixed(2)}\n` +
+      `Outstanding Loans: RWF ${data.totalCurrentLoans.toLocaleString()}\n\n` +
+      `For a full PDF statement, please contact the office.\n\nRegards,\n${ORGANIZATION_NAME}`
+    );
+    window.location.href = `mailto:${memberEmail}?subject=${subject}&body=${body}`;
+    setEmailSent(true);
+    setTimeout(() => setEmailSent(false), 3000);
+  };
 
   const handlePrint = () => {
     const content = printRef.current;
@@ -69,25 +88,81 @@ export function MemberAccountStatement({ data }: Props) {
 
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const W = doc.internal.pageSize.getWidth();
-    const margin = 14;
+    const M = 14; // margin
 
-    // Header
+    // ── Header block ─────────────────────────────────────────────
+    doc.setFillColor(42, 120, 134);
+    doc.rect(0, 0, W, 30, "F");
+
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("ANDA FINANCE", W / 2, 14, { align: "center" });
-    doc.setFontSize(11);
-    doc.text("MEMBER'S ACCOUNT STATEMENT", W / 2, 21, { align: "center" });
+    doc.setFontSize(17);
+    doc.setTextColor(255, 255, 255);
+    doc.text(ORGANIZATION_NAME, W / 2, 12, { align: "center" });
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Account Name: ${data.memberName}`, margin, 30);
-    doc.text(`Account No: ${data.accountNumber}`, W / 2, 30);
-    doc.text(`Member ID: ${data.memberId}`, margin, 36);
-    doc.text(`Date: ${data.statementDate}`, W / 2, 36);
-    doc.text(`Status: ${data.status}`, margin, 42);
+    doc.setTextColor(210, 235, 238);
+    doc.text("MEMBER'S ACCOUNT STATEMENT", W / 2, 21, { align: "center" });
 
-    let y = 48;
+    // thin accent line under header
+    doc.setFillColor(255, 255, 255, 0.3);
+    doc.rect(0, 29, W, 0.4, "F");
 
-    // Savings section
+    // ── Meta section (gray bg) ────────────────────────────────────
+    const metaBg = 30;
+    const metaH = 28;
+    doc.setFillColor(248, 249, 250);
+    doc.rect(0, metaBg, W, metaH, "F");
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.rect(0, metaBg, W, metaH, "S"); // border
+
+    const metaY = metaBg + 7;
+    const col2 = W / 2 + 4;
+
+    // Row 1
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.setFont("helvetica", "normal");
+    doc.text("Account Name", M, metaY);
+    doc.text("Account No.", col2, metaY);
+
+    doc.setFontSize(9);
+    doc.setTextColor(30, 30, 30);
+    doc.setFont("helvetica", "bold");
+    doc.text(data.memberName, M, metaY + 5);
+    doc.text(data.accountNumber, col2, metaY + 5);
+
+    // Row 2
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.setFont("helvetica", "normal");
+    doc.text("Member ID", M, metaY + 13);
+    doc.text("Date", col2, metaY + 13);
+
+    doc.setFontSize(9);
+    doc.setTextColor(30, 30, 30);
+    doc.setFont("helvetica", "bold");
+    doc.text(data.memberId, M, metaY + 18);
+    doc.text(data.statementDate, col2, metaY + 18);
+
+    // Shares badge (teal pill, top-right of meta)
+    const badgeX = W - M - 28;
+    const badgeY = metaBg + 4;
+    doc.setFillColor(42, 120, 134);
+    doc.roundedRect(badgeX, badgeY, 28, 12, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`${fmtShares(data.totalShares)} sh`, badgeX + 14, badgeY + 7.5, { align: "center" });
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.text("Total Shares", badgeX + 14, badgeY + 13, { align: "center" });
+    doc.setTextColor(30, 30, 30);
+
+    let y = metaBg + metaH + 4;
+
+    // ── Savings table ─────────────────────────────────────────────
     autoTable(doc, {
       startY: y,
       head: [["SAVINGS / INTERESTS", "Amount (RWF)", "Shares", "Total Shares"]],
@@ -98,20 +173,37 @@ export function MemberAccountStatement({ data }: Props) {
         [`Total Savings Amount (Open to Loan at ${LOAN_INTEREST_RATE}%)`, fmt(data.loanEligibility), "", ""],
       ],
       theme: "grid",
-      headStyles: { fillColor: [42, 120, 134], textColor: 255, fontStyle: "bold", fontSize: 8 },
-      bodyStyles: { fontSize: 8 },
-      columnStyles: { 0: { cellWidth: 90 }, 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right", fontStyle: "bold" } },
+      margin: { left: M, right: M },
+      headStyles: { fillColor: [42, 120, 134], textColor: 255, fontStyle: "bold", fontSize: 8, cellPadding: 3 },
+      bodyStyles: { fontSize: 8, cellPadding: 3, textColor: [40, 40, 40] },
+      columnStyles: {
+        0: { cellWidth: "auto" },
+        1: { halign: "right", cellWidth: 30 },
+        2: { halign: "right", cellWidth: 22 },
+        3: { halign: "right", cellWidth: 28, fontStyle: "bold" },
+      },
       didParseCell: (hookData) => {
-        if (hookData.row.index === 2) hookData.cell.styles.fontStyle = "bold";
-        if (hookData.row.index === 3) hookData.cell.styles.fillColor = [255, 243, 224];
+        if (hookData.row.index === 2) {
+          hookData.cell.styles.fontStyle = "bold";
+          hookData.cell.styles.fillColor = [235, 245, 247];
+        }
+        if (hookData.row.index === 3) {
+          hookData.cell.styles.fillColor = [255, 246, 230];
+        }
       },
     });
 
-    y = (doc as any).lastAutoTable.finalY + 6;
+    y = (doc as any).lastAutoTable.finalY + 5;
 
-    // Loans section
+    // ── Loan table ────────────────────────────────────────────────
     const loanBody = data.loans.length > 0
-      ? data.loans.map((l) => [`Loan (${l.label})`, fmt(l.principal), fmt(l.balance), l.status, l.dueDate])
+      ? data.loans.map((l) => [
+          `Loan (${l.label})`,
+          fmt(l.principal),
+          fmt(l.balance),
+          l.status,
+          new Date(l.dueDate).toLocaleDateString("en-GB"),
+        ])
       : [["No loans on record", "", "", "", ""]];
 
     autoTable(doc, {
@@ -122,52 +214,85 @@ export function MemberAccountStatement({ data }: Props) {
         ["Total Current Loans", "", fmt(data.totalCurrentLoans), "", ""],
       ],
       theme: "grid",
-      headStyles: { fillColor: [85, 85, 85], textColor: 255, fontStyle: "bold", fontSize: 8 },
-      bodyStyles: { fontSize: 8 },
-      columnStyles: { 0: { cellWidth: 80 }, 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "center" } },
+      margin: { left: M, right: M },
+      headStyles: { fillColor: [70, 70, 70], textColor: 255, fontStyle: "bold", fontSize: 8, cellPadding: 3 },
+      bodyStyles: { fontSize: 8, cellPadding: 3, textColor: [40, 40, 40] },
+      columnStyles: {
+        0: { cellWidth: "auto" },
+        1: { halign: "right", cellWidth: 32 },
+        2: { halign: "right", cellWidth: 32 },
+        3: { halign: "center", cellWidth: 22 },
+        4: { halign: "center", cellWidth: 26 },
+      },
       didParseCell: (hookData) => {
         const isLastRow = hookData.row.index === loanBody.length;
-        if (isLastRow) hookData.cell.styles.fontStyle = "bold";
+        if (isLastRow) {
+          hookData.cell.styles.fontStyle = "bold";
+          hookData.cell.styles.fillColor = [235, 245, 247];
+        }
       },
     });
 
-    y = (doc as any).lastAutoTable.finalY + 6;
+    y = (doc as any).lastAutoTable.finalY + 5;
 
-    // Totals
+    // ── Totals table ──────────────────────────────────────────────
     autoTable(doc, {
       startY: y,
       body: [
-        ["Advanced Account Charges", "0"],
-        ["Total Debts", fmt(data.totalDebts)],
+        ["Advanced Account Charges", "", "0"],
+        ["TOTAL DEBTS", "", fmt(data.totalDebts)],
       ],
       theme: "grid",
-      bodyStyles: { fontSize: 9 },
-      columnStyles: { 0: { cellWidth: 100, fontStyle: "bold" }, 1: { halign: "right", fontStyle: "bold" } },
+      margin: { left: M, right: M },
+      bodyStyles: { fontSize: 9, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: "auto", fontStyle: "bold" },
+        1: { cellWidth: 32 },
+        2: { halign: "right", cellWidth: 32, fontStyle: "bold" },
+      },
       didParseCell: (hookData) => {
         if (hookData.row.index === 1) {
           hookData.cell.styles.fillColor = [192, 57, 43];
           hookData.cell.styles.textColor = [255, 255, 255];
           hookData.cell.styles.fontStyle = "bold";
+          hookData.cell.styles.fontSize = 9;
         }
       },
     });
 
-    // Total shares badge
-    doc.setFillColor(42, 120, 134);
-    doc.roundedRect(W - margin - 40, 44, 40, 12, 2, 2, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255);
-    doc.text(`${fmtShares(data.totalShares)} shares`, W - margin - 20, 52, { align: "center" });
-    doc.setTextColor(0, 0, 0);
+    // ── Footer ────────────────────────────────────────────────────
+    const footerY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text(
+      `System-generated statement · ${ORGANIZATION_NAME} · Share price: RWF 15,000 · Interest: 8% p.a. · Loan eligibility: 80%`,
+      W / 2,
+      footerY,
+      { align: "center" }
+    );
 
-    doc.save(`ANDA_Statement_${data.memberId}_${new Date().toISOString().split("T")[0]}.pdf`);
+    doc.save(`${ORGANIZATION_NAME.replace(/\s+/g, "_")}_Statement_${data.memberId}_${new Date().toISOString().split("T")[0]}.pdf`);
   };
 
   return (
     <div className="space-y-4">
       {/* Actions */}
-      <div className="flex gap-2 justify-end">
+      <div className="flex gap-2 justify-end flex-wrap">
+        {memberEmail && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleEmailStatement}
+            className={emailSent ? "text-green-600 border-green-300" : ""}
+          >
+            {emailSent ? (
+              <><CheckCircle className="h-4 w-4 mr-2 text-green-600" />Sent!</>
+            ) : (
+              <><Mail className="h-4 w-4 mr-2" />Email Statement</>
+            )}
+          </Button>
+        )}
         <Button variant="outline" size="sm" onClick={handlePrint}>
           <Printer className="h-4 w-4 mr-2" />
           Print
@@ -182,7 +307,7 @@ export function MemberAccountStatement({ data }: Props) {
       <div ref={printRef} className="border rounded-lg overflow-hidden font-mono text-xs bg-white">
         {/* Header */}
         <div className="bg-[#2A7886] text-white text-center py-3 px-4">
-          <h2 className="text-base font-bold tracking-wide">ANDA FINANCE</h2>
+          <h2 className="text-base font-bold tracking-wide">{ORGANIZATION_NAME}</h2>
           <p className="text-xs opacity-90">MEMBER'S ACCOUNT STATEMENT</p>
         </div>
 

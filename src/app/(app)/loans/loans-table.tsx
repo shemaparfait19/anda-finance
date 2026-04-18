@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { approveLoan } from "./actions";
 import RecordRepaymentDialog from "./record-repayment-dialog";
 import ViewLoanDetailsDialog from "./view-loan-details-dialog";
+import LoanAmortizationDialog from "./loan-amortization-dialog";
 
 type BadgeVariant = "success" | "secondary" | "destructive" | "warning" | "outline";
 
@@ -53,16 +54,17 @@ export default function LoansTable({ loans }: LoansTableProps) {
     approve: { open: false, loan: null as Loan | null },
     repayment: { open: false, loan: null as Loan | null },
     details: { open: false, loan: null as Loan | null },
+    amortization: { open: false, loan: null as Loan | null },
   });
 
   const handleOpenDialog = (
-    type: "approve" | "repayment" | "details",
+    type: "approve" | "repayment" | "details" | "amortization",
     loan: Loan
   ) => {
     setDialogState((prev) => ({ ...prev, [type]: { open: true, loan } }));
   };
 
-  const handleCloseDialog = (type: "approve" | "repayment" | "details") => {
+  const handleCloseDialog = (type: "approve" | "repayment" | "details" | "amortization") => {
     setDialogState((prev) => ({
       ...prev,
       [type]: { open: false, loan: null },
@@ -161,6 +163,11 @@ export default function LoansTable({ loans }: LoansTableProps) {
                     >
                       View Details
                     </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => handleOpenDialog("amortization", loan)}
+                    >
+                      View Amortization
+                    </DropdownMenuItem>
                     {loan.status === "Active" || loan.status === "Overdue" ? (
                       <DropdownMenuItem
                         onSelect={() => handleOpenDialog("repayment", loan)}
@@ -213,6 +220,14 @@ export default function LoansTable({ loans }: LoansTableProps) {
           loan={dialogState.details.loan}
           open={dialogState.details.open}
           onOpenChange={(open) => !open && handleCloseDialog("details")}
+        />
+      )}
+
+      {dialogState.amortization.loan && (
+        <LoanAmortizationDialog
+          loan={dialogState.amortization.loan}
+          open={dialogState.amortization.open}
+          onOpenChange={(open) => !open && handleCloseDialog("amortization")}
         />
       )}
     </>

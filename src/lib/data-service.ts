@@ -291,17 +291,19 @@ export async function getTransactions(): Promise<Transaction[]> {
 }
 
 export async function addTransaction(
-  transaction: Omit<Transaction, "id" | "status">
+  transaction: Omit<Transaction, "id" | "status">,
+  accountNumber?: string
 ): Promise<Transaction> {
   try {
     await ensureInitialized();
     const newId = `TXN${Date.now()}`;
 
     await sql`
-      INSERT INTO transactions (id, member_name, member_avatar_id, type, amount, date, status)
+      INSERT INTO transactions (id, member_name, member_avatar_id, type, amount, date, status, account_number)
       VALUES (
         ${newId}, ${transaction.member.name}, ${transaction.member.avatarId},
-        ${transaction.type}, ${transaction.amount}, ${transaction.date}, 'Completed'
+        ${transaction.type}, ${transaction.amount}, ${transaction.date}, 'Completed',
+        ${accountNumber ?? null}
       )
     `;
 
@@ -312,6 +314,32 @@ export async function addTransaction(
   } catch (error) {
     handleDatabaseError(error, "addTransaction");
     throw error;
+  }
+}
+
+export async function getTransactionsByAccountNumber(
+  accountNumber: string
+): Promise<Transaction[]> {
+  try {
+    await ensureInitialized();
+    const result = await sql`
+      SELECT id, member_name, member_avatar_id as "memberAvatarId",
+             type, amount, date, status
+      FROM transactions
+      WHERE account_number = ${accountNumber}
+      ORDER BY date ASC, created_at ASC
+    `;
+    return result.map((row) => ({
+      id: row.id,
+      member: { name: row.member_name, avatarId: row.memberAvatarId },
+      type: row.type,
+      amount: Number(row.amount),
+      date: row.date instanceof Date ? row.date.toISOString().split("T")[0] : row.date,
+      status: row.status,
+    })) as Transaction[];
+  } catch (error) {
+    handleDatabaseError(error, "getTransactionsByAccountNumber");
+    return [];
   }
 }
 
