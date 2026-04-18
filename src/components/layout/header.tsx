@@ -1,7 +1,7 @@
 "use client";
 
+import { Suspense, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -27,18 +27,15 @@ const getPageTitle = (pathname: string) => {
   return segment.charAt(0).toUpperCase() + segment.slice(1);
 };
 
-export default function Header() {
+// Isolated component so useSearchParams is inside its own Suspense boundary
+function HeaderSearch() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const title = getPageTitle(pathname);
-  const adminAvatar = getPlaceholderImage("admin_avatar");
 
-  // Sync input with the ?q= param; clear when navigating to a different page
   const [searchValue, setSearchValue] = useState(searchParams.get("q") ?? "");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // When page changes, clear the search input
   useEffect(() => {
     setSearchValue(searchParams.get("q") ?? "");
   }, [pathname, searchParams]);
@@ -58,12 +55,29 @@ export default function Header() {
   };
 
   return (
+    <div className="relative">
+      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <Input
+        type="search"
+        placeholder="Search…"
+        value={searchValue}
+        onChange={(e) => handleSearch(e.target.value)}
+        className="pl-8 w-[180px] lg:w-[260px] h-9 text-sm"
+      />
+    </div>
+  );
+}
+
+export default function Header() {
+  const pathname = usePathname();
+  const title = getPageTitle(pathname);
+  const adminAvatar = getPlaceholderImage("admin_avatar");
+
+  return (
     <header className="sticky top-0 z-30 flex h-14 flex-col border-b border-border/50 bg-background/95 backdrop-blur-sm px-4 lg:h-auto lg:px-6">
-      {/* Main row */}
       <div className="flex h-14 items-center gap-4">
         <SidebarTrigger className="hidden" />
 
-        {/* Title */}
         <div className="flex flex-col min-w-0">
           <h1 className="text-base font-headline font-semibold leading-tight truncate">
             {title}
@@ -73,30 +87,23 @@ export default function Header() {
 
         <div className="flex-1" />
 
-        {/* Live date + status — desktop only */}
         <LiveHeaderInfo />
 
-        {/* Search */}
+        {/* Search — wrapped in Suspense because HeaderSearch uses useSearchParams */}
         <div className="hidden sm:block">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search…"
-              value={searchValue}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-8 w-[180px] lg:w-[260px] h-9 text-sm"
-            />
-          </div>
+          <Suspense fallback={
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search…" className="pl-8 w-[180px] lg:w-[260px] h-9 text-sm" disabled />
+            </div>
+          }>
+            <HeaderSearch />
+          </Suspense>
         </div>
 
-        {/* Theme toggle */}
         <ThemeToggle />
-
-        {/* Notification bell */}
         <NotificationBell />
 
-        {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
