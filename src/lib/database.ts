@@ -294,29 +294,14 @@ async function insertInitialData() {
         ('ACC002', '2000', 'Member Savings', 'liability', 430000, '2024-01-31')
       `;
 
-      // Migrations for Internal Accounts support
-      await sql`
-        ALTER TABLE savings_accounts
-        ALTER COLUMN member_id DROP NOT NULL
-      `;
-      await sql`
-        ALTER TABLE savings_accounts
-        ALTER COLUMN member_name DROP NOT NULL
-      `;
-
       console.log("✅ Initial demo data inserted successfully");
     }
 
-    // Add account_name column if it doesn't exist (added after initial deployment)
-    await sql`
-      ALTER TABLE savings_accounts
-      ADD COLUMN IF NOT EXISTS account_name VARCHAR(255)
-    `;
-    // Add account_number to transactions so per-account statements are possible
-    await sql`
-      ALTER TABLE transactions
-      ADD COLUMN IF NOT EXISTS account_number VARCHAR(50)
-    `;
+    // Idempotent migrations — run on every cold start regardless of data state
+    await sql`ALTER TABLE savings_accounts ALTER COLUMN member_id DROP NOT NULL`;
+    await sql`ALTER TABLE savings_accounts ALTER COLUMN member_name DROP NOT NULL`;
+    await sql`ALTER TABLE savings_accounts ADD COLUMN IF NOT EXISTS account_name VARCHAR(255)`;
+    await sql`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS account_number VARCHAR(50)`;
   } catch (error) {
     console.error("❌ Error inserting initial data:", error);
   }
