@@ -1,18 +1,4 @@
 import { neon } from "@neondatabase/serverless";
-import type {
-  Member,
-  Transaction,
-  SavingsAccount,
-  Loan,
-  CashbookEntry,
-  Investment,
-  AuditLog,
-  User,
-  Report,
-  Payment,
-  AccountingData,
-  JournalEntry,
-} from "./types";
 
 // Initialize Neon client
 const sql = neon(process.env.DATABASE_URL!);
@@ -226,6 +212,7 @@ export async function initializeDatabase() {
       )
     `;
 
+    await insertInitialData();
     console.log("✅ Database tables created successfully");
   } catch (error) {
     console.error("❌ Error initializing database:", error);
@@ -233,7 +220,7 @@ export async function initializeDatabase() {
   }
 }
 
-// Insert initial demo data
+// Insert initial demo data (and run idempotent migrations)
 async function insertInitialData() {
   try {
     // Check if members table is empty
