@@ -8,7 +8,6 @@ import {
   Home,
   PiggyBank,
   Landmark,
-  UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MemberActionsClient } from "@/components/member-actions-client";
@@ -130,8 +129,8 @@ export default async function MemberProfilePage({
         {/* Left Column - Profile Card */}
         <div className="lg:col-span-1 space-y-6">
           <Card>
-            <CardHeader className="items-center text-center">
-              <Avatar className="h-24 w-24 mb-4">
+            <CardHeader className="items-center text-center pb-2">
+              <Avatar className="h-24 w-24 mb-3">
                 <AvatarImage
                   src={image.imageUrl}
                   alt={member.name}
@@ -142,24 +141,35 @@ export default async function MemberProfilePage({
                   {member.lastName?.[0]}
                 </AvatarFallback>
               </Avatar>
-              <CardTitle className="text-2xl">{member.name}</CardTitle>
-              <CardDescription>
-                <Badge
-                  variant={member.status === "Active" ? "default" : "secondary"}
-                >
-                  {member.status}
-                </Badge>
-              </CardDescription>
+              <Badge
+                variant={member.status === "Active" ? "default" : "secondary"}
+              >
+                {member.status}
+              </Badge>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Separator />
+              {/* 4-field identity block */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Member Name</p>
+                  <p className="font-medium mt-0.5">{member.name}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Member ID</p>
+                  <p className="font-medium mt-0.5">{member.memberId ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Joining Date</p>
+                  <p className="font-medium mt-0.5">
+                    {member.joinDate ? new Date(member.joinDate).toLocaleDateString() : "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Current Date</p>
+                  <p className="font-medium mt-0.5">{new Date().toLocaleDateString()}</p>
+                </div>
+              </div>
 
-
-              <InfoField
-                icon={UserCheck}
-                label="Member ID"
-                value={member.memberId}
-              />
               <Separator />
               <h3 className="font-semibold text-lg">Contact Information</h3>
               <InfoField

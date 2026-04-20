@@ -317,15 +317,9 @@ export function MemberAccountStatement({ data, memberEmail }: Props) {
             <span className="text-muted-foreground">Account Name: </span>
             <span className="font-semibold">{data.memberName}</span>
           </div>
-          <div className="flex justify-between items-start">
-            <div>
-              <span className="text-muted-foreground">Account No: </span>
-              <span className="font-semibold">{data.accountNumber}</span>
-            </div>
-            {/* Total shares badge */}
-            <div className="bg-[#2A7886] text-white rounded px-3 py-1 text-sm font-bold row-span-2">
-              {fmtShares(data.totalShares)}
-            </div>
+          <div>
+            <span className="text-muted-foreground">Account No: </span>
+            <span className="font-semibold">{data.accountNumber}</span>
           </div>
           <div>
             <span className="text-muted-foreground">Member ID: </span>
