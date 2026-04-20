@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MemberActionsClient } from "@/components/member-actions-client";
 import { getMemberById, getLoans, getSavingsAccounts } from "@/lib/data-service";
+import MemberSavingsAccounts from "@/app/(app)/members/member-savings-accounts";
 import { getPlaceholderImage } from "@/lib/placeholder-images";
 import { MemberAccountStatement } from "@/components/member-account-statement";
 import { MemberExitStatementDialog } from "@/components/member-exit-statement-dialog";
@@ -220,35 +221,7 @@ export default async function MemberProfilePage({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {memberSavings.length > 0 ? (
-                <ul className="space-y-4">
-                  {memberSavings.map((account) => (
-                    <li
-                      key={account.id}
-                      className="flex justify-between items-center p-3 rounded-md border"
-                    >
-                      <div>
-                        <p className="font-semibold">
-                          {account.accountNumber}{" "}
-                          <span className="text-muted-foreground font-normal">
-                            - {account.type}
-                          </span>
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Balance: RWF {account.balance.toLocaleString()}
-                        </p>
-                      </div>
-                      <Button variant="ghost" size="sm">
-                        View Statement
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No savings accounts found.
-                </p>
-              )}
+              <MemberSavingsAccounts accounts={memberSavings} />
             </CardContent>
           </Card>
         </div>
