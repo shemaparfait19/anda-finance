@@ -193,6 +193,7 @@ export default function SavingsAccountsTable({
             (m) => m.id === dialogState.withdrawal.account?.memberId
           )}
           selectedMemberId={dialogState.withdrawal.account.memberId}
+          selectedAccountNumber={dialogState.withdrawal.account.accountNumber}
           open={dialogState.withdrawal.open}
           onOpenChange={(open) => !open && handleCloseDialog("withdrawal")}
         />

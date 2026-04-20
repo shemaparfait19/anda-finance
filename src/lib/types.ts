@@ -52,6 +52,7 @@ export type Transaction = {
   amount: number;
   date: string;
   status: "Completed" | "Pending" | "Failed";
+  reason?: string;
 };
 
 export type SavingsAccount = {

@@ -8,7 +8,8 @@ import type { Member } from '@/lib/types';
 const TransactionSchema = z.object({
     memberId: z.string().min(1, 'Member is required.'),
     amount: z.coerce.number().positive('Amount must be a positive number.'),
-    account: z.string().optional(), // Optional account number
+    account: z.string().optional(),
+    reason: z.string().optional(),
 });
 
 type FormState = {
@@ -36,7 +37,7 @@ async function handleTransaction(
             return { message: 'Invalid form data. Please check all required fields.', fields, success: false };
         }
 
-        const { memberId, amount, account } = parsed.data;
+        const { memberId, amount, account, reason } = parsed.data;
         const transactionAmount = type === 'Deposit' ? amount : -amount;
 
         // Try to find member by memberId field (e.g., BIF001)
@@ -66,7 +67,7 @@ async function handleTransaction(
             type: type,
             amount: amount,
             date: new Date().toISOString().split('T')[0],
-        }, account ?? undefined);
+        }, account ?? undefined, reason ?? undefined);
 
         revalidatePath('/savings');
         revalidatePath('/'); // For dashboard totals

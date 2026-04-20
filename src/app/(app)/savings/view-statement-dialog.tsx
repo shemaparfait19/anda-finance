@@ -201,7 +201,7 @@ export default function ViewStatementDialog({
       rows.length > 0
         ? rows.map(({ tx, balance }) => [
             new Date(tx.date).toLocaleDateString("en-GB"),
-            tx.type === "Deposit" ? "Savings Deposit" : "Savings Withdrawal",
+            `${tx.id}${tx.reason ? ` | ${tx.reason}` : ""}`,
             tx.type === "Deposit" ? fmt(tx.amount) : "",
             tx.type === "Withdrawal" ? fmt(tx.amount) : "",
             fmt(balance),
@@ -411,7 +411,8 @@ export default function ViewStatementDialog({
                         {new Date(tx.date).toLocaleDateString()}
                       </td>
                       <td className={td}>
-                        {tx.type === "Deposit" ? "Savings Deposit" : "Savings Withdrawal"}
+                        <span className="font-mono text-[10px] text-muted-foreground">{tx.id}</span>
+                        {tx.reason && <span className="ml-1">| {tx.reason}</span>}
                       </td>
                       <td className={tdRight}>
                         {tx.type === "Deposit" ? (

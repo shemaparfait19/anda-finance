@@ -41,12 +41,13 @@ function SubmitButton() {
 interface NewWithdrawalDialogProps {
     members: Member[];
     selectedMemberId?: string;
+    selectedAccountNumber?: string;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
     trigger?: ReactNode;
 }
 
-export default function NewWithdrawalDialog({ members, selectedMemberId, open, onOpenChange, trigger }: NewWithdrawalDialogProps) {
+export default function NewWithdrawalDialog({ members, selectedMemberId, selectedAccountNumber, open, onOpenChange, trigger }: NewWithdrawalDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [state, formAction] = useActionState(makeWithdrawal, initialState);
   const { toast } = useToast();
@@ -95,12 +96,10 @@ export default function NewWithdrawalDialog({ members, selectedMemberId, open, o
             </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="memberId" className="text-right">
-                    Member
-                    </Label>
+                    <Label htmlFor="memberId" className="text-right">Member</Label>
                     <div className='col-span-3'>
                         <Select name="memberId" defaultValue={selectedMemberId}>
-                             <SelectTrigger disabled={!!selectedMemberId}>
+                            <SelectTrigger disabled={!!selectedMemberId}>
                                 <SelectValue placeholder="Select a member" />
                             </SelectTrigger>
                             <SelectContent>
@@ -113,12 +112,22 @@ export default function NewWithdrawalDialog({ members, selectedMemberId, open, o
                     </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="amount" className="text-right">
-                    Amount
-                    </Label>
+                    <Label htmlFor="account" className="text-right">Account</Label>
                     <div className='col-span-3'>
-                    <Input id="amount" name="amount" type="number" placeholder='RWF 0' className="w-full" />
-                    {state.fields?.amount && <p className="text-sm text-destructive mt-1">{state.fields.amount}</p>}
+                        <Input id="account" name="account" defaultValue={selectedAccountNumber ?? ""} placeholder="e.g. BIF00501" autoComplete="off" />
+                    </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="amount" className="text-right">Amount</Label>
+                    <div className='col-span-3'>
+                        <Input id="amount" name="amount" type="number" placeholder='RWF 0' className="w-full" />
+                        {state.fields?.amount && <p className="text-sm text-destructive mt-1">{state.fields.amount}</p>}
+                    </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="reason" className="text-right">Reason</Label>
+                    <div className='col-span-3'>
+                        <Input id="reason" name="reason" placeholder="Reason for withdrawal" />
                     </div>
                 </div>
             </div>

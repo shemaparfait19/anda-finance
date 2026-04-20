@@ -289,6 +289,7 @@ async function insertInitialData() {
     await sql`ALTER TABLE savings_accounts ALTER COLUMN member_name DROP NOT NULL`;
     await sql`ALTER TABLE savings_accounts ADD COLUMN IF NOT EXISTS account_name VARCHAR(255)`;
     await sql`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS account_number VARCHAR(50)`;
+    await sql`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS reason TEXT`;
   } catch (error) {
     console.error("❌ Error inserting initial data:", error);
   }
