@@ -15,8 +15,9 @@ export const authConfig: NextAuthConfig = {
       const isLoggedIn = !!auth?.user;
       const { pathname } = nextUrl;
 
-      // Always allow NextAuth internal routes
+      // Always allow NextAuth internal routes and public API routes
       if (pathname.startsWith('/api/auth')) return true;
+      if (pathname === '/api/send-otp') return true;
 
       // Redirect logged-in users away from the login page
       if (isLoggedIn && pathname === '/login') {

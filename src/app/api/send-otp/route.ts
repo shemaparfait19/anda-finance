@@ -12,12 +12,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'A valid email address is required.' }, { status: 400 });
     }
 
-    // Ensure DB is initialised (handles cold starts on serverless)
     await initializeDatabase();
 
     const user = await getUserByEmail(email);
     if (!user || !user.isActive) {
-      // Return a generic message to avoid user enumeration
       return NextResponse.json({
         success: false,
         message: 'This email is not registered in the system. Contact your administrator.',
