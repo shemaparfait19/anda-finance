@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { MemberActionsClient } from "@/components/member-actions-client";
 import { getMemberById, getLoans, getSavingsAccounts } from "@/lib/data-service";
 import MemberSavingsAccounts from "@/app/(app)/members/member-savings-accounts";
-import { getPlaceholderImage } from "@/lib/placeholder-images";
+import { MemberAvatar } from "@/components/member-avatar";
 import { MemberAccountStatement } from "@/components/member-account-statement";
 import { MemberExitStatementDialog } from "@/components/member-exit-statement-dialog";
 import { buildStatementData, buildFinalBalanceData } from "@/lib/statement-utils";
@@ -24,7 +24,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 
@@ -94,8 +93,6 @@ export default async function MemberProfilePage({
     (account) => account.memberId === id
   );
 
-  const image = getPlaceholderImage(member.avatarId);
-
   const statementData = buildStatementData(member, memberLoans);
   const finalBalanceData = buildFinalBalanceData(member, memberLoans);
 
@@ -131,17 +128,7 @@ export default async function MemberProfilePage({
         <div className="lg:col-span-1 space-y-6">
           <Card>
             <CardHeader className="items-center text-center pb-2">
-              <Avatar className="h-24 w-24 mb-3">
-                <AvatarImage
-                  src={image.imageUrl}
-                  alt={member.name}
-                  data-ai-hint={image.imageHint}
-                />
-                <AvatarFallback>
-                  {member.firstName?.[0]}
-                  {member.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
+              <MemberAvatar name={member.name} className="h-24 w-24 mb-3 text-3xl" />
               <Badge
                 variant={member.status === "Active" ? "default" : "secondary"}
               >

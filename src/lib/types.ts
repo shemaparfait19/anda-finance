@@ -120,11 +120,62 @@ export type AuditLog = {
   details: string;
 };
 
+export type UserRole =
+  | "SUPER_ADMIN"    // System owner – full access across all tenants, no approval needed
+  | "ADMIN_FULL"     // Full admin for a tenant – no approval needed
+  | "ADMIN_MAKER"    // Initiates controlled actions; they enter the approval queue
+  | "ADMIN_CHECKER"  // Approves / rejects pending actions from makers
+  | "IT_ADMIN";      // Read-only + system settings access
+
 export type User = {
   id: number;
   name: string;
   email: string;
-  role: "Admin" | "Manager" | "Teller" | "Auditor";
+  role: UserRole;
+  isActive?: boolean;
+  lastLogin?: string;
+  phoneNumber?: string;
+  approvalsRequired?: number;
+  groupId?: string | null;
+  createdAt?: string;
+};
+
+export type AuthUser = {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  approvalsRequired: number;
+  groupId: string | null;
+  groupName: string | null;
+  lastLogin?: string;
+  phoneNumber?: string;
+  createdAt: string;
+};
+
+export type PendingAction = {
+  id: number;
+  actionType: string;
+  actionData: Record<string, any>;
+  initiatedByEmail: string;
+  initiatedByName: string;
+  initiatedAt: string;
+  status: "pending" | "approved" | "rejected";
+  requiredApprovals: number;
+  executedAt?: string;
+  notes?: string;
+  approvals: ActionApproval[];
+};
+
+export type ActionApproval = {
+  id: number;
+  actionId: number;
+  approverEmail: string;
+  approverName: string;
+  decision: "approved" | "rejected";
+  comment?: string;
+  decidedAt: string;
 };
 
 export type Report = {

@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { getPlaceholderImage } from "@/lib/placeholder-images";
+import { MemberAvatar } from "@/components/member-avatar";
 import type { AuditLog } from "@/lib/types";
 
 export default function AuditTable({ logs }: { logs: AuditLog[] }) {
@@ -59,20 +58,11 @@ export default function AuditTable({ logs }: { logs: AuditLog[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((log) => {
-              const image = getPlaceholderImage(log.user.avatarId);
-              return (
+            {filtered.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Image
-                        alt={`Avatar of ${log.user.name}`}
-                        className="aspect-square rounded-full object-cover"
-                        height="32"
-                        width="32"
-                        src={image.imageUrl}
-                        data-ai-hint={image.imageHint}
-                      />
+                      <MemberAvatar name={log.user.name} className="h-8 w-8" />
                       <span className="font-medium">{log.user.name}</span>
                     </div>
                   </TableCell>
@@ -80,8 +70,7 @@ export default function AuditTable({ logs }: { logs: AuditLog[] }) {
                   <TableCell className="hidden md:table-cell">{log.timestamp}</TableCell>
                   <TableCell>{log.details}</TableCell>
                 </TableRow>
-              );
-            })}
+            ))}
           </TableBody>
         </Table>
       )}

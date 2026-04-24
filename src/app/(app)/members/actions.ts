@@ -7,6 +7,7 @@ import {
   createSavingsAccount,
 } from "@/lib/data-service";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 import type { Member } from "@/lib/types";
 
 const AddMemberFormSchema = z.object({
@@ -113,20 +114,20 @@ type FormState = {
     success?: boolean;
 };
 
-// Helper function to generate sequential member ID
+// Helper function to generate sequential member ID, scoped to the current group
 async function generateMemberId(): Promise<string> {
-    // Get the count of existing members to determine the next sequential number
-    const { neon } = await import("@neondatabase/serverless");
-    const sql = neon(process.env.DATABASE_URL!);
+  const { neon } = await import("@neondatabase/serverless");
+  const sql = neon(process.env.DATABASE_URL!);
+  const session = await auth();
+  const groupId = (session?.user as any)?.groupId ?? null;
 
-    try {
-        const result = await sql`SELECT COUNT(*) as count FROM members`;
-        const count = parseInt(result[0].count) + 1; // Next sequential number
-        return `BIF${count.toString().padStart(3, '0')}`;
-    } catch (error) {
-        // Fallback in case of error
-        return `BIF${Date.now().toString().slice(-3)}`;
-    }
+  try {
+    const result = await sql`SELECT COUNT(*) as count FROM members WHERE group_id = ${groupId}`;
+    const count = parseInt(result[0].count) + 1;
+    return `BIF${count.toString().padStart(3, '0')}`;
+  } catch {
+    return `BIF${Date.now().toString().slice(-3)}`;
+  }
 }
 
 export async function addMember(

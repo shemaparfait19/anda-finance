@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { MoreHorizontal } from "lucide-react";
 
@@ -16,7 +15,7 @@ import {
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getPlaceholderImage } from "@/lib/placeholder-images";
+import { MemberAvatar } from "@/components/member-avatar";
 import type { Member } from "@/lib/types";
 import { deactivateMember, reactivateMember, closeMembership } from "./actions";
 import { useToast } from "@/hooks/use-toast";
@@ -32,8 +31,6 @@ export default function MemberActions({ member }: { member: Member }) {
   const [isReactivateDialogOpen, setReactivateDialogOpen] = useState(false);
   const [isCloseMembershipDialogOpen, setCloseMembershipDialogOpen] = useState(false);
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
-
-  const image = getPlaceholderImage(member.avatarId);
 
   const handleDeactivate = async (reason: string) => {
     startDeactivationTransition(async () => {
@@ -95,14 +92,7 @@ export default function MemberActions({ member }: { member: Member }) {
   return (
     <>
       <TableCell className="hidden sm:table-cell">
-        <Image
-          alt={`Avatar of ${member.name}`}
-          className="aspect-square rounded-full object-cover"
-          height="40"
-          src={image.imageUrl}
-          width="40"
-          data-ai-hint={image.imageHint}
-        />
+        <MemberAvatar name={member.name} className="h-10 w-10" />
       </TableCell>
       <TableCell className="font-medium">{member.name}</TableCell>
       <TableCell>{member.memberId}</TableCell>

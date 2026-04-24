@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { getMembers } from "@/lib/data-service";
 import ReportGenerator from "./report-generator";
+import SkippedSavingsReport from "./skipped-savings-report";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,19 @@ export default async function ReportsPage() {
         </CardHeader>
         <CardContent>
           <ReportGenerator members={members} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Skipped Savings</CardTitle>
+          <CardDescription>
+            Members who have not made their savings contribution for a selected month.
+            Use this list to send payment reminders.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SkippedSavingsReport />
         </CardContent>
       </Card>
     </div>

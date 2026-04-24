@@ -2,6 +2,7 @@
 
 import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 import { initializeDatabase, handleDatabaseError } from "./database";
 import type {
   Member,
@@ -29,22 +30,35 @@ async function ensureInitialized() {
   }
 }
 
+// Returns the current session user's group_id.
+// SUPER_ADMIN has null → SQL `= null` never matches → zero rows (correct).
+async function getGroupId(): Promise<string | null> {
+  try {
+    const session = await auth();
+    return (session?.user as any)?.groupId ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Members
 export async function getMembers(): Promise<Member[]> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const result = await sql`
-      SELECT 
-        id, name, first_name as "firstName", middle_name as "middleName", last_name as "lastName", 
-        phone_number as "phoneNumber", member_id as "memberId", 
+      SELECT
+        id, name, first_name as "firstName", middle_name as "middleName", last_name as "lastName",
+        phone_number as "phoneNumber", member_id as "memberId",
         join_date as "joinDate", savings_balance as "savingsBalance",
         loan_balance as "loanBalance", status, avatar_id as "avatarId",
-        date_of_birth as "dateOfBirth", gender, national_id as "nationalId", email, alternative_phone as "alternativePhone", 
+        date_of_birth as "dateOfBirth", gender, national_id as "nationalId", email, alternative_phone as "alternativePhone",
         province, district, sector, cell, village, address,
         next_of_kin_name as "nextOfKinName", next_of_kin_phone as "nextOfKinPhone", next_of_kin_relationship as "nextOfKinRelationship",
         share_amount as "shareAmount", number_of_shares as "numberOfShares",
         monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber", deactivation_reason as "deactivationReason"
-      FROM members 
+      FROM members
+      WHERE group_id = ${groupId}
       ORDER BY created_at DESC
     `;
     return result.map((row) => ({
@@ -92,8 +106,7 @@ export async function getMembers(): Promise<Member[]> {
 export async function getMemberById(id: string): Promise<Member | undefined> {
   try {
     await ensureInitialized();
-    
-    // Try to find by database ID first, then by member_id (e.g., BIF001)
+    const groupId = await getGroupId();
     const result = await sql`
       SELECT
         id, name, first_name as "firstName", middle_name as "middleName", last_name as "lastName",
@@ -106,7 +119,7 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
         share_amount as "shareAmount", number_of_shares as "numberOfShares",
         monthly_contribution as "monthlyContribution", contribution_date as "contributionDate", collection_means as "collectionMeans", other_collection_means as "otherCollectionMeans", account_number as "accountNumber", deactivation_reason as "deactivationReason"
       FROM members
-      WHERE id = ${id} OR member_id = ${id}
+      WHERE (id = ${id} OR member_id = ${id}) AND group_id = ${groupId}
     `;
     if (!result || result.length === 0) return undefined;
     const row = result[0];
@@ -155,27 +168,30 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
 export async function addMember(member: Omit<Member, "id">): Promise<Member> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const newId = `MEM${Date.now()}`;
 
     await sql`
       INSERT INTO members (
         id, name, first_name, middle_name, last_name, phone_number, member_id, join_date,
-        savings_balance, loan_balance, status, avatar_id, 
-        date_of_birth, gender, national_id, email, alternative_phone, 
+        savings_balance, loan_balance, status, avatar_id,
+        date_of_birth, gender, national_id, email, alternative_phone,
         province, district, sector, cell, village, address,
         next_of_kin_name, next_of_kin_phone, next_of_kin_relationship,
         share_amount, number_of_shares,
-        monthly_contribution, contribution_date, collection_means, other_collection_means, account_number
+        monthly_contribution, contribution_date, collection_means, other_collection_means, account_number,
+        group_id
       ) VALUES (
         ${newId}, ${member.name}, ${member.firstName || null}, ${member.middleName || null}, ${member.lastName || null},
         ${member.phoneNumber || null}, ${member.memberId}, ${member.joinDate},
         ${member.savingsBalance || 0}, ${member.loanBalance || 0}, ${member.status},
-        ${member.avatarId || null}, 
+        ${member.avatarId || null},
         ${member.dateOfBirth || null}, ${member.gender || null}, ${member.nationalId || null}, ${member.email || null}, ${member.alternativePhone || null},
         ${member.province || null}, ${member.district || null}, ${member.sector || null}, ${member.cell || null}, ${member.village || null}, ${member.address || null},
         ${member.nextOfKinName || null}, ${member.nextOfKinPhone || null}, ${member.nextOfKinRelationship || null},
         ${member.shareAmount || null}, ${member.numberOfShares || null},
-        ${member.monthlyContribution || null}, ${member.contributionDate || null}, ${member.collectionMeans || null}, ${member.otherCollectionMeans || null}, ${member.accountNumber || null}
+        ${member.monthlyContribution || null}, ${member.contributionDate || null}, ${member.collectionMeans || null}, ${member.otherCollectionMeans || null}, ${member.accountNumber || null},
+        ${groupId}
       )
     `;
 
@@ -193,25 +209,21 @@ export async function updateMember(
 ): Promise<Member> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
 
-    // Build update sets dynamically
     const updateSets: string[] = [];
 
     if (updates.name !== undefined) {
       updateSets.push(`name = '${updates.name.replace(/'/g, "''")}'`);
     }
     if (updates.firstName !== undefined) {
-      updateSets.push(
-        `first_name = '${updates.firstName.replace(/'/g, "''")}'`
-      );
+      updateSets.push(`first_name = '${updates.firstName.replace(/'/g, "''")}'`);
     }
     if (updates.lastName !== undefined) {
       updateSets.push(`last_name = '${updates.lastName.replace(/'/g, "''")}'`);
     }
     if (updates.phoneNumber !== undefined) {
-      updateSets.push(
-        `phone_number = '${updates.phoneNumber.replace(/'/g, "''")}'`
-      );
+      updateSets.push(`phone_number = '${updates.phoneNumber.replace(/'/g, "''")}'`);
     }
     if (updates.status !== undefined) {
       updateSets.push(`status = '${updates.status.replace(/'/g, "''")}'`);
@@ -232,19 +244,18 @@ export async function updateMember(
     updateSets.push(`updated_at = CURRENT_TIMESTAMP`);
 
     if (updateSets.length === 1) {
-      // Only updated_at, no actual changes
       const member = await getMemberById(id);
       if (!member) throw new Error("Member not found");
       return member;
     }
 
     const result = await sql`
-      UPDATE members 
+      UPDATE members
       SET ${sql.unsafe(updateSets.join(", "))}
-      WHERE id = ${id}
-      RETURNING 
-        id, name, first_name as "firstName", last_name as "lastName", 
-        phone_number as "phoneNumber", member_id as "memberId", 
+      WHERE id = ${id} AND group_id = ${groupId}
+      RETURNING
+        id, name, first_name as "firstName", last_name as "lastName",
+        phone_number as "phoneNumber", member_id as "memberId",
         join_date as "joinDate", savings_balance as "savingsBalance",
         loan_balance as "loanBalance", status, avatar_id as "avatarId"
     `;
@@ -264,12 +275,14 @@ export async function updateMember(
 export async function getTransactions(): Promise<Transaction[]> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const result = await sql`
-      SELECT 
-        id, member_name, member_avatar_id as "memberAvatarId", 
+      SELECT
+        id, member_name, member_avatar_id as "memberAvatarId",
         type, amount, date, status
-      FROM transactions 
-      ORDER BY created_at DESC 
+      FROM transactions
+      WHERE group_id = ${groupId}
+      ORDER BY created_at DESC
       LIMIT 50
     `;
 
@@ -297,14 +310,15 @@ export async function addTransaction(
 ): Promise<Transaction> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const newId = `TXN${Date.now()}`;
 
     await sql`
-      INSERT INTO transactions (id, member_name, member_avatar_id, type, amount, date, status, account_number, reason)
+      INSERT INTO transactions (id, member_name, member_avatar_id, type, amount, date, status, account_number, reason, group_id)
       VALUES (
         ${newId}, ${transaction.member.name}, ${transaction.member.avatarId},
         ${transaction.type}, ${transaction.amount}, ${transaction.date}, 'Completed',
-        ${accountNumber ?? null}, ${reason ?? null}
+        ${accountNumber ?? null}, ${reason ?? null}, ${groupId}
       )
     `;
 
@@ -323,11 +337,12 @@ export async function getTransactionsByAccountNumber(
 ): Promise<Transaction[]> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const result = await sql`
       SELECT id, member_name, member_avatar_id as "memberAvatarId",
              type, amount, date, status, reason
       FROM transactions
-      WHERE account_number = ${accountNumber}
+      WHERE account_number = ${accountNumber} AND group_id = ${groupId}
       ORDER BY date ASC, created_at ASC
     `;
     return result.map((row) => ({
@@ -349,12 +364,14 @@ export async function getTransactionsByAccountNumber(
 export async function getSavingsAccounts(): Promise<SavingsAccount[]> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const result = await sql`
-      SELECT 
+      SELECT
         id, member_id as "memberId", member_name as "memberName",
-        account_number as "accountNumber", type, balance, 
+        account_number as "accountNumber", type, balance,
         account_name as "accountName", open_date as "openDate"
-      FROM savings_accounts 
+      FROM savings_accounts
+      WHERE group_id = ${groupId}
       ORDER BY created_at DESC
     `;
 
@@ -381,24 +398,24 @@ export async function updateSavingsAccount(
 ): Promise<SavingsAccount> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
 
-    // Get member details
     const member = await getMemberById(memberId);
     if (!member) throw new Error("Member not found");
 
-    // Check existing accounts for this member
     const existingAccounts = await sql`
-      SELECT * FROM savings_accounts WHERE member_id = ${member.id} ORDER BY account_number ASC
+      SELECT * FROM savings_accounts
+      WHERE member_id = ${member.id} AND group_id = ${groupId}
+      ORDER BY account_number ASC
     `;
 
     if (existingAccounts.length === 0) {
-      // Create first account for this member
       const newId = `SAV${Date.now()}`;
-      const newAccountNumber = `${member.memberId}01`; // First account: MemberID + 01
+      const newAccountNumber = `${member.memberId}01`;
 
       await sql`
-        INSERT INTO savings_accounts (id, member_id, member_name, account_number, type, balance, open_date)
-        VALUES (${newId}, ${member.id}, ${member.name}, ${newAccountNumber}, 'Compulsory', ${amount}, CURRENT_DATE)
+        INSERT INTO savings_accounts (id, member_id, member_name, account_number, type, balance, open_date, group_id)
+        VALUES (${newId}, ${member.id}, ${member.name}, ${newAccountNumber}, 'Compulsory', ${amount}, CURRENT_DATE, ${groupId})
       `;
 
       revalidatePath("/savings");
@@ -412,17 +429,14 @@ export async function updateSavingsAccount(
         openDate: new Date().toISOString().split("T")[0],
       };
     } else {
-      // Find the specific account to update
       let accountToUpdate;
-      
+
       if (accountNumber) {
-        // Update the specified account
         accountToUpdate = existingAccounts.find(acc => acc.account_number === accountNumber);
         if (!accountToUpdate) {
           throw new Error(`Account ${accountNumber} not found for member ${member.memberId}`);
         }
       } else {
-        // If no account specified, update the first account (default behavior for backward compatibility)
         accountToUpdate = existingAccounts[0];
       }
 
@@ -431,14 +445,11 @@ export async function updateSavingsAccount(
       await sql`
         UPDATE savings_accounts
         SET balance = ${newBalance}, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${accountToUpdate.id}
+        WHERE id = ${accountToUpdate.id} AND group_id = ${groupId}
       `;
 
       revalidatePath("/savings");
-      return {
-        ...accountToUpdate,
-        balance: newBalance,
-      } as SavingsAccount;
+      return { ...accountToUpdate, balance: newBalance } as SavingsAccount;
     }
   } catch (error) {
     handleDatabaseError(error, "updateSavingsAccount");
@@ -453,24 +464,22 @@ export async function createSavingsAccount(
 ): Promise<SavingsAccount> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
 
     let nextAccountNumber: string;
     let memberName: string | undefined;
     let memberDatabaseId: string | null = null;
 
     if (type === "Internal") {
-      // Internal accounts don't have a member
-      // Generate account number: INT + sequential number
       const existingInternalAccounts = await sql`
-        SELECT account_number FROM savings_accounts 
-        WHERE type = 'Internal'
+        SELECT account_number FROM savings_accounts
+        WHERE type = 'Internal' AND group_id = ${groupId}
         ORDER BY account_number DESC
         LIMIT 1
       `;
 
       if (existingInternalAccounts.length > 0) {
         const lastAccount = existingInternalAccounts[0].account_number;
-        // Extract number from INT001, INT002, etc.
         const match = lastAccount.match(/INT(\d+)/);
         if (match) {
           const nextNum = parseInt(match[1]) + 1;
@@ -484,50 +493,36 @@ export async function createSavingsAccount(
 
       memberName = undefined;
     } else {
-      // Voluntary and Compulsory accounts require a member
       if (!memberId) {
         throw new Error("Member ID is required for Voluntary and Compulsory accounts");
       }
 
-      // Get member details
       const member = await getMemberById(memberId);
       if (!member) throw new Error("Member not found");
 
       memberDatabaseId = member.id;
       memberName = member.name;
 
-      // Get ALL existing accounts for this member to determine next account number
       const existingAccounts = await sql`
-        SELECT account_number FROM savings_accounts 
-        WHERE member_id = ${member.id} 
+        SELECT account_number FROM savings_accounts
+        WHERE member_id = ${member.id} AND group_id = ${groupId}
         ORDER BY account_number ASC
       `;
 
       if (existingAccounts.length > 0) {
-        // Find the highest account number suffix
         let maxSuffix = 0;
-        
         for (const account of existingAccounts) {
           const accountNum = account.account_number;
-          // Extract suffix (last 2 digits)
           const suffix = accountNum.slice(-2);
           const prefix = accountNum.slice(0, -2);
-          
-          // Verify it matches the member ID format
           if (prefix === member.memberId && !isNaN(Number(suffix))) {
             const suffixNum = Number(suffix);
-            if (suffixNum > maxSuffix) {
-              maxSuffix = suffixNum;
-            }
+            if (suffixNum > maxSuffix) maxSuffix = suffixNum;
           }
         }
-        
-        // Increment the highest suffix found
         const nextNum = maxSuffix + 1;
         nextAccountNumber = `${member.memberId}${nextNum.toString().padStart(2, '0')}`;
-        
       } else {
-        // First account for this member
         nextAccountNumber = `${member.memberId}01`;
       }
     }
@@ -536,10 +531,10 @@ export async function createSavingsAccount(
 
     await sql`
       INSERT INTO savings_accounts (
-        id, member_id, member_name, account_number, type, balance, account_name, open_date
+        id, member_id, member_name, account_number, type, balance, account_name, open_date, group_id
       )
       VALUES (
-        ${newId}, ${memberDatabaseId}, ${memberName || null}, ${nextAccountNumber}, ${type}, 0, ${accountName}, CURRENT_DATE
+        ${newId}, ${memberDatabaseId}, ${memberName || null}, ${nextAccountNumber}, ${type}, 0, ${accountName}, CURRENT_DATE, ${groupId}
       )
     `;
 
@@ -565,13 +560,15 @@ export async function createSavingsAccount(
 export async function getLoans(): Promise<Loan[]> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const result = await sql`
-      SELECT 
+      SELECT
         id, member_id as "memberId", member_name as "memberName",
         loan_id as "loanId", principal, balance, interest_rate as "interestRate",
         issue_date as "issueDate", due_date as "dueDate", status,
         loan_term as "loanTerm", loan_purpose as "loanPurpose"
-      FROM loans 
+      FROM loans
+      WHERE group_id = ${groupId}
       ORDER BY created_at DESC
     `;
 
@@ -599,17 +596,18 @@ export async function getLoans(): Promise<Loan[]> {
 export async function addLoan(loan: Omit<Loan, "id">): Promise<Loan> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const newId = `LN${Date.now()}`;
 
     await sql`
       INSERT INTO loans (
         id, member_id, member_name, loan_id, principal, balance, interest_rate,
-        issue_date, due_date, status, loan_term, loan_purpose
+        issue_date, due_date, status, loan_term, loan_purpose, group_id
       ) VALUES (
         ${newId}, ${loan.memberId}, ${loan.memberName}, ${loan.loanId},
         ${loan.principal}, ${loan.balance}, ${loan.interestRate},
         ${loan.issueDate}, ${loan.dueDate}, ${loan.status},
-        ${loan.loanTerm}, ${loan.loanPurpose}
+        ${loan.loanTerm}, ${loan.loanPurpose}, ${groupId}
       )
     `;
 
@@ -624,14 +622,15 @@ export async function addLoan(loan: Omit<Loan, "id">): Promise<Loan> {
 export async function getLoanById(id: string): Promise<Loan | undefined> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const result = await sql`
-      SELECT 
+      SELECT
         id, member_id as "memberId", member_name as "memberName",
         loan_id as "loanId", principal, balance, interest_rate as "interestRate",
         issue_date as "issueDate", due_date as "dueDate", status,
         loan_term as "loanTerm", loan_purpose as "loanPurpose"
-      FROM loans 
-      WHERE id = ${id}
+      FROM loans
+      WHERE id = ${id} AND group_id = ${groupId}
     `;
 
     if (!result || result.length === 0) return undefined;
@@ -669,13 +668,12 @@ export async function updateLoanInDb(
 ): Promise<Loan> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
 
     const updateSets: string[] = [];
 
     if (updates.memberName !== undefined) {
-      updateSets.push(
-        `member_name = '${updates.memberName.replace(/'/g, "''")}'`
-      );
+      updateSets.push(`member_name = '${updates.memberName.replace(/'/g, "''")}'`);
     }
     if (updates.loanId !== undefined) {
       updateSets.push(`loan_id = '${updates.loanId.replace(/'/g, "''")}'`);
@@ -702,9 +700,7 @@ export async function updateLoanInDb(
       updateSets.push(`loan_term = ${updates.loanTerm}`);
     }
     if (updates.loanPurpose !== undefined) {
-      updateSets.push(
-        `loan_purpose = '${updates.loanPurpose.replace(/'/g, "''")}'`
-      );
+      updateSets.push(`loan_purpose = '${updates.loanPurpose.replace(/'/g, "''")}'`);
     }
 
     updateSets.push(`updated_at = CURRENT_TIMESTAMP`);
@@ -716,10 +712,10 @@ export async function updateLoanInDb(
     }
 
     const result = await sql`
-      UPDATE loans 
+      UPDATE loans
       SET ${sql.unsafe(updateSets.join(", "))}
-      WHERE id = ${id}
-      RETURNING 
+      WHERE id = ${id} AND group_id = ${groupId}
+      RETURNING
         id, member_id as "memberId", member_name as "memberName",
         loan_id as "loanId", principal, balance, interest_rate as "interestRate",
         issue_date as "issueDate", due_date as "dueDate", status,
@@ -747,9 +743,11 @@ export async function updateLoanInDb(
 export async function getCashbook() {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const result = await sql`
       SELECT id, type, date, description, category, amount
-      FROM cashbook_entries 
+      FROM cashbook_entries
+      WHERE group_id = ${groupId}
       ORDER BY date DESC
     `;
 
@@ -792,12 +790,13 @@ export async function addCashbookEntry(
 ): Promise<CashbookEntry> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const newId = `${type.slice(0, 3).toUpperCase()}${Date.now()}`;
     const dbType = type === "expenses" ? "expense" : "income";
 
     await sql`
-      INSERT INTO cashbook_entries (id, type, date, description, category, amount)
-      VALUES (${newId}, ${dbType}, ${entry.date}, ${entry.description}, ${entry.category}, ${entry.amount})
+      INSERT INTO cashbook_entries (id, type, date, description, category, amount, group_id)
+      VALUES (${newId}, ${dbType}, ${entry.date}, ${entry.description}, ${entry.category}, ${entry.amount}, ${groupId})
     `;
 
     revalidatePath("/accounting");
@@ -815,6 +814,7 @@ export async function updateCashbookEntry(
 ): Promise<CashbookEntry> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
 
     const updateSets: string[] = [];
 
@@ -822,9 +822,7 @@ export async function updateCashbookEntry(
       updateSets.push(`date = '${updates.date}'`);
     }
     if (updates.description !== undefined) {
-      updateSets.push(
-        `description = '${updates.description.replace(/'/g, "''")}'`
-      );
+      updateSets.push(`description = '${updates.description.replace(/'/g, "''")}'`);
     }
     if (updates.category !== undefined) {
       updateSets.push(`category = '${updates.category.replace(/'/g, "''")}'`);
@@ -840,9 +838,9 @@ export async function updateCashbookEntry(
     }
 
     const result = await sql`
-      UPDATE cashbook_entries 
+      UPDATE cashbook_entries
       SET ${sql.unsafe(updateSets.join(", "))}
-      WHERE id = ${id}
+      WHERE id = ${id} AND group_id = ${groupId}
       RETURNING id, date, description, category, amount
     `;
 
@@ -871,11 +869,9 @@ export async function deleteCashbookEntry(
 ): Promise<void> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
 
-    await sql`
-      DELETE FROM cashbook_entries 
-      WHERE id = ${id}
-    `;
+    await sql`DELETE FROM cashbook_entries WHERE id = ${id} AND group_id = ${groupId}`;
 
     revalidatePath("/accounting");
   } catch (error) {
@@ -888,12 +884,14 @@ export async function deleteCashbookEntry(
 export async function getInvestments(): Promise<Investment[]> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const result = await sql`
-      SELECT 
-        id, name, type, amount_invested as "amountInvested", 
+      SELECT
+        id, name, type, amount_invested as "amountInvested",
         current_value as "currentValue", purchase_date as "purchaseDate",
         return_on_investment as "returnOnInvestment"
-      FROM investments 
+      FROM investments
+      WHERE group_id = ${groupId}
       ORDER BY created_at DESC
     `;
     return result.map((row) => ({
@@ -917,12 +915,13 @@ export async function addInvestment(
 ): Promise<Investment> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const newId = `INV${Date.now()}`;
 
     await sql`
-      INSERT INTO investments (id, name, type, amount_invested, current_value, purchase_date, return_on_investment)
-      VALUES (${newId}, ${investment.name}, ${investment.type}, ${investment.amountInvested}, 
-              ${investment.currentValue}, ${investment.purchaseDate}, ${investment.returnOnInvestment})
+      INSERT INTO investments (id, name, type, amount_invested, current_value, purchase_date, return_on_investment, group_id)
+      VALUES (${newId}, ${investment.name}, ${investment.type}, ${investment.amountInvested},
+              ${investment.currentValue}, ${investment.purchaseDate}, ${investment.returnOnInvestment}, ${groupId})
     `;
 
     revalidatePath("/investments");
@@ -937,9 +936,11 @@ export async function addInvestment(
 export async function getAuditLogs(): Promise<AuditLog[]> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const result = await sql`
       SELECT id, timestamp, user_name, user_avatar_id, action, details
-      FROM audit_logs 
+      FROM audit_logs
+      WHERE group_id = ${groupId}
       ORDER BY timestamp DESC
       LIMIT 100
     `;
@@ -961,11 +962,12 @@ export async function addAuditLog(
 ): Promise<AuditLog> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const newId = `AUD${Date.now()}`;
 
     await sql`
-      INSERT INTO audit_logs (id, timestamp, user_name, user_avatar_id, action, details)
-      VALUES (${newId}, ${log.timestamp}, ${log.user.name}, ${log.user.avatarId}, ${log.action}, ${log.details})
+      INSERT INTO audit_logs (id, timestamp, user_name, user_avatar_id, action, details, group_id)
+      VALUES (${newId}, ${log.timestamp}, ${log.user.name}, ${log.user.avatarId}, ${log.action}, ${log.details}, ${groupId})
     `;
 
     revalidatePath("/audit");
@@ -1032,7 +1034,7 @@ export async function updateUser(
     }
 
     const result = await sql`
-      UPDATE users 
+      UPDATE users
       SET ${sql.unsafe(updateSets.join(", "))}
       WHERE id = ${id}
       RETURNING *
@@ -1060,8 +1062,6 @@ export async function getTransactionsByMemberId(
 export async function saveSettings(filename: string, data: any): Promise<void> {
   try {
     await ensureInitialized();
-    // This would typically save to a settings table or file
-    // For now, just a placeholder
     console.log(`Saving settings for ${filename}:`, data);
   } catch (error) {
     handleDatabaseError(error, "saveSettings");
@@ -1073,7 +1073,6 @@ export async function saveSettings(filename: string, data: any): Promise<void> {
 export async function getReports(): Promise<Report[]> {
   try {
     await ensureInitialized();
-    // Implement reports table query when needed
     return [];
   } catch (error) {
     handleDatabaseError(error, "getReports");
@@ -1085,7 +1084,6 @@ export async function addReport(report: Omit<Report, "id">): Promise<Report> {
   try {
     await ensureInitialized();
     const newId = `RPT${Date.now()}`;
-    // Implement reports table insert when needed
     return { ...report, id: newId };
   } catch (error) {
     handleDatabaseError(error, "addReport");
@@ -1097,7 +1095,6 @@ export async function addReport(report: Omit<Report, "id">): Promise<Report> {
 export async function getPayments(): Promise<Payment[]> {
   try {
     await ensureInitialized();
-    // Implement payments table query when needed
     return [];
   } catch (error) {
     handleDatabaseError(error, "getPayments");
@@ -1111,7 +1108,6 @@ export async function addPayment(
   try {
     await ensureInitialized();
     const newId = `PAY${Date.now()}`;
-    // Implement payments table insert when needed
     return { ...payment, id: newId };
   } catch (error) {
     handleDatabaseError(error, "addPayment");
@@ -1125,7 +1121,6 @@ export async function updatePayment(
 ): Promise<Payment> {
   try {
     await ensureInitialized();
-    // Implement payments table update when needed
     throw new Error("updatePayment not fully implemented yet");
   } catch (error) {
     handleDatabaseError(error, "updatePayment");
@@ -1137,7 +1132,6 @@ export async function updatePayment(
 export async function getAccounting(): Promise<AccountingData> {
   try {
     await ensureInitialized();
-    // Implement accounting tables query when needed
     return { accounts: [], journalEntries: [] };
   } catch (error) {
     handleDatabaseError(error, "getAccounting");
@@ -1148,7 +1142,6 @@ export async function getAccounting(): Promise<AccountingData> {
 export async function updateAccounting(data: AccountingData): Promise<void> {
   try {
     await ensureInitialized();
-    // Implement accounting tables update when needed
     console.log("Updating accounting data:", data);
   } catch (error) {
     handleDatabaseError(error, "updateAccounting");
@@ -1162,7 +1155,6 @@ export async function addJournalEntry(
   try {
     await ensureInitialized();
     const newId = `JE${Date.now()}`;
-    // Implement journal entries table insert when needed
     return { ...entry, id: newId };
   } catch (error) {
     handleDatabaseError(error, "addJournalEntry");
@@ -1176,7 +1168,6 @@ export async function updateAccountBalance(
 ): Promise<void> {
   try {
     await ensureInitialized();
-    // Implement account balance update when needed
     console.log(`Updating account ${accountId} balance to ${newBalance}`);
   } catch (error) {
     handleDatabaseError(error, "updateAccountBalance");
@@ -1184,10 +1175,11 @@ export async function updateAccountBalance(
   }
 }
 
-// Dashboard Stats — real month-over-month calculations
+// Dashboard Stats — real month-over-month calculations, scoped to current group
 export async function getDashboardStats() {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
 
     const now = new Date();
     const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -1200,33 +1192,30 @@ export async function getDashboardStats() {
       .toISOString()
       .split("T")[0];
 
-    // Savings: compare deposit totals this month vs last month
     const [thisMonthSavings, lastMonthSavings] = await Promise.all([
-      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Deposit' AND date >= ${startOfThisMonth}`,
-      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Deposit' AND date >= ${startOfLastMonth} AND date <= ${endOfLastMonth}`,
+      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Deposit' AND date >= ${startOfThisMonth} AND group_id = ${groupId}`,
+      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Deposit' AND date >= ${startOfLastMonth} AND date <= ${endOfLastMonth} AND group_id = ${groupId}`,
     ]);
 
-    // Loans: compare disbursement totals this month vs last month
     const [thisMonthLoans, lastMonthLoans] = await Promise.all([
-      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Loan Disbursement' AND date >= ${startOfThisMonth}`,
-      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Loan Disbursement' AND date >= ${startOfLastMonth} AND date <= ${endOfLastMonth}`,
+      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Loan Disbursement' AND date >= ${startOfThisMonth} AND group_id = ${groupId}`,
+      sql`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE type = 'Loan Disbursement' AND date >= ${startOfLastMonth} AND date <= ${endOfLastMonth} AND group_id = ${groupId}`,
     ]);
 
-    // Portfolio at risk: overdue/defaulted balance as % of all active loan balances
     const loanRisk = await sql`
       SELECT
         COALESCE(SUM(CASE WHEN status IN ('Overdue', 'Defaulted') THEN balance ELSE 0 END), 0) as at_risk,
         COALESCE(SUM(CASE WHEN status IN ('Active', 'Overdue', 'Defaulted') THEN balance ELSE 0 END), 0) as total_active
       FROM loans
+      WHERE group_id = ${groupId}
     `;
 
-    // Active members: new joins this month vs last month
     const memberJoins = await sql`
       SELECT
         COUNT(CASE WHEN created_at >= ${startOfThisMonth} THEN 1 END) as this_month,
         COUNT(CASE WHEN created_at >= ${startOfLastMonth} AND created_at < ${startOfThisMonth} THEN 1 END) as last_month
       FROM members
-      WHERE status = 'Active'
+      WHERE status = 'Active' AND group_id = ${groupId}
     `;
 
     const thisSav = Number(thisMonthSavings[0].total);
@@ -1256,15 +1245,17 @@ export async function getDashboardStats() {
   }
 }
 
-// Payments ledger — all financial movements across the system
+// Payments ledger — all financial movements, scoped to current group
 export async function getPaymentLedger(): Promise<Transaction[]> {
   try {
     await ensureInitialized();
+    const groupId = await getGroupId();
     const result = await sql`
       SELECT
         id, member_name, member_avatar_id as "memberAvatarId",
         type, amount, date, status
       FROM transactions
+      WHERE group_id = ${groupId}
       ORDER BY date DESC, created_at DESC
       LIMIT 200
     `;

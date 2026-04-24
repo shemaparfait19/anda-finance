@@ -212,12 +212,124 @@ export async function initializeDatabase() {
       )
     `;
 
+    // OTP codes for email-based login
+    await sql`
+      CREATE TABLE IF NOT EXISTS otp_codes (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        code VARCHAR(6) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        used BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Pending actions (maker/checker approval workflow)
+    await sql`
+      CREATE TABLE IF NOT EXISTS pending_actions (
+        id SERIAL PRIMARY KEY,
+        action_type VARCHAR(100) NOT NULL,
+        action_data JSONB NOT NULL,
+        initiated_by_email VARCHAR(255) NOT NULL,
+        initiated_by_name VARCHAR(255) NOT NULL,
+        initiated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        status VARCHAR(20) DEFAULT 'pending',
+        required_approvals INTEGER DEFAULT 1,
+        executed_at TIMESTAMP,
+        notes TEXT
+      )
+    `;
+
+    // Approval records for pending actions
+    await sql`
+      CREATE TABLE IF NOT EXISTS action_approvals (
+        id SERIAL PRIMARY KEY,
+        action_id INTEGER REFERENCES pending_actions(id) ON DELETE CASCADE,
+        approver_email VARCHAR(255) NOT NULL,
+        approver_name VARCHAR(255) NOT NULL,
+        decision VARCHAR(10) NOT NULL CHECK (decision IN ('approved', 'rejected')),
+        comment TEXT,
+        decided_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Groups (cooperative / company / client tenants)
+    await sql`
+      CREATE TABLE IF NOT EXISTS groups (
+        id           VARCHAR(50)  PRIMARY KEY,
+        name         VARCHAR(255) NOT NULL,
+        code         VARCHAR(20),
+        address      TEXT,
+        phone        VARCHAR(20),
+        email        VARCHAR(255),
+        created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
     await insertInitialData();
+    await createIndexes();
+    await migrateConstraints();
     console.log("✅ Database tables created successfully");
   } catch (error) {
     console.error("❌ Error initializing database:", error);
     throw error;
   }
+}
+
+async function createIndexes() {
+  try {
+    await sql`CREATE INDEX IF NOT EXISTS idx_members_member_id   ON members(member_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_members_name        ON members(name)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_members_status      ON members(status)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_transactions_acct   ON transactions(account_number)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_transactions_date   ON transactions(date DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_savings_member      ON savings_accounts(member_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_savings_acct        ON savings_accounts(account_number)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_loans_member        ON loans(member_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_loans_status        ON loans(status)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_loans_due_date      ON loans(due_date)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_payments_member     ON payments(member_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_payments_date       ON payments(payment_date)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_audit_timestamp     ON audit_logs(timestamp DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_otp_email           ON otp_codes(email)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_otp_expires         ON otp_codes(expires_at)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pending_status      ON pending_actions(status)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pending_initiator   ON pending_actions(initiated_by_email)`;
+    // Group-scoping indexes — one per data table
+    await sql`CREATE INDEX IF NOT EXISTS idx_users_group            ON users(group_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_members_group          ON members(group_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_transactions_group     ON transactions(group_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_savings_group          ON savings_accounts(group_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_loans_group            ON loans(group_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_cashbook_group         ON cashbook_entries(group_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_investments_group      ON investments(group_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_audit_group            ON audit_logs(group_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_pending_group          ON pending_actions(group_id)`;
+  } catch (_) {
+    // Non-fatal: indexes are a perf optimization, not schema correctness
+  }
+}
+
+// Drop global unique constraints and replace with per-group composite ones.
+// Each block is isolated so a "already exists" error on ADD doesn't stop the rest.
+async function migrateConstraints() {
+  // member_id must be unique within a group, not globally
+  try {
+    await sql`ALTER TABLE members DROP CONSTRAINT IF EXISTS members_member_id_key`;
+    await sql`ALTER TABLE members ADD CONSTRAINT members_member_id_group_uq UNIQUE (member_id, group_id)`;
+  } catch (_) {}
+
+  // account_number must be unique within a group
+  try {
+    await sql`ALTER TABLE savings_accounts DROP CONSTRAINT IF EXISTS savings_accounts_account_number_key`;
+    await sql`ALTER TABLE savings_accounts ADD CONSTRAINT savings_accounts_acct_group_uq UNIQUE (account_number, group_id)`;
+  } catch (_) {}
+
+  // loan_id must be unique within a group
+  try {
+    await sql`ALTER TABLE loans DROP CONSTRAINT IF EXISTS loans_loan_id_key`;
+    await sql`ALTER TABLE loans ADD CONSTRAINT loans_loan_id_group_uq UNIQUE (loan_id, group_id)`;
+  } catch (_) {}
 }
 
 // Insert initial demo data (and run idempotent migrations)
@@ -270,7 +382,7 @@ async function insertInitialData() {
       // Insert demo users
       await sql`
         INSERT INTO users (id, name, email, role)
-        VALUES (1, 'Admin User', 'admin@andafinance.com', 'Admin')
+        VALUES (1, 'Admin User', 'admin@andafinance.com', 'SUPER_ADMIN')
       `;
 
       // Insert demo accounts
@@ -290,6 +402,50 @@ async function insertInitialData() {
     await sql`ALTER TABLE savings_accounts ADD COLUMN IF NOT EXISTS account_name VARCHAR(255)`;
     await sql`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS account_number VARCHAR(50)`;
     await sql`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS reason TEXT`;
+
+    // User table extensions for auth system
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS approvals_required INTEGER DEFAULT 1`;
+
+    // Multi-tenancy: group_id on every data table (idempotent)
+    await sql`ALTER TABLE users            ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE members          ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE transactions     ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE savings_accounts ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE loans            ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE cashbook_entries ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE investments      ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE audit_logs       ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE reports          ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE payments         ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE accounts         ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE journal_entries  ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+    await sql`ALTER TABLE pending_actions  ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
+
+    // Migrate old role names to new format
+    await sql`UPDATE users SET role = 'SUPER_ADMIN' WHERE role = 'Admin'`;
+    await sql`UPDATE users SET role = 'ADMIN_FULL'    WHERE role = 'Manager'`;
+    await sql`UPDATE users SET role = 'ADMIN_MAKER'   WHERE role = 'Teller'`;
+    await sql`UPDATE users SET role = 'ADMIN_CHECKER' WHERE role = 'Auditor'`;
+    await sql`UPDATE users SET role = 'IT_ADMIN'      WHERE role = 'User'`;
+
+    // Fix users sequence so new inserts don't conflict with the demo row (id=1)
+    await sql`SELECT setval(pg_get_serial_sequence('users','id'), COALESCE((SELECT MAX(id) FROM users), 1))`;
+
+    // Sync super-admin email/name from env vars so the owner can configure their own credentials
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminName  = process.env.ADMIN_NAME;
+    if (adminEmail) {
+      await sql`
+        UPDATE users
+        SET email = ${adminEmail.toLowerCase()},
+            name  = ${adminName ?? 'Admin'},
+            updated_at = NOW()
+        WHERE role = 'SUPER_ADMIN'
+      `;
+    }
   } catch (error) {
     console.error("❌ Error inserting initial data:", error);
   }

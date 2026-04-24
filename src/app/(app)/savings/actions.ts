@@ -3,7 +3,10 @@
 import { z } from 'zod';
 import { getMemberById, updateMember, updateSavingsAccount, addTransaction } from '@/lib/data-service';
 import { revalidatePath } from 'next/cache';
-import type { Member } from '@/lib/types';
+import { auth } from '@/auth';
+import { requiresApproval } from '@/lib/permissions';
+import { createPendingAction } from '@/lib/pending-actions-service';
+import type { Member, UserRole } from '@/lib/types';
 
 const TransactionSchema = z.object({
     memberId: z.string().min(1, 'Member is required.'),
@@ -86,7 +89,39 @@ export async function makeDeposit(prevState: FormState, formData: FormData) {
     return handleTransaction('Deposit', prevState, formData);
 }
 
-export async function makeWithdrawal(prevState: FormState, formData: FormData) {
+export async function makeWithdrawal(prevState: FormState, formData: FormData): Promise<FormState> {
+    const session = await auth();
+
+    if (session?.user) {
+        const role = session.user.role as UserRole;
+
+        if (requiresApproval(role, 'CASH_WITHDRAWAL')) {
+            // Validate form data first so we surface errors before queueing
+            const parsed = TransactionSchema.safeParse(Object.fromEntries(formData));
+            if (!parsed.success) {
+                const fields: Record<string, string> = {};
+                for (const key in parsed.error.format()) {
+                    if (key !== '_errors') fields[key] = (parsed.error.format() as any)[key]?._errors.join(', ');
+                }
+                return { message: 'Please fix the errors below.', fields, success: false };
+            }
+
+            try {
+                await createPendingAction('CASH_WITHDRAWAL', { ...parsed.data }, {
+                    email:             session.user.email!,
+                    name:              session.user.name!,
+                    approvalsRequired: session.user.approvalsRequired,
+                });
+                return {
+                    message: 'Withdrawal submitted for approval. A checker must approve it before funds are released.',
+                    success: true,
+                };
+            } catch (e: any) {
+                return { message: e.message ?? 'Failed to submit for approval.', success: false };
+            }
+        }
+    }
+
     return handleTransaction('Withdrawal', prevState, formData);
 }
 

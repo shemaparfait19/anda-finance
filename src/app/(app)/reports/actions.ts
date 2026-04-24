@@ -1,6 +1,73 @@
 "use server";
 
+import { neon } from "@neondatabase/serverless";
+import { auth } from "@/auth";
 import { getMembers, getLoans, getSavingsAccounts, getTransactions, getMemberById } from "@/lib/data-service";
+
+const sql = neon(process.env.DATABASE_URL!);
+
+export type SkippedSavingsRow = {
+  no: number;
+  memberId: string;
+  name: string;
+  phone: string;
+  monthlyContribution: number;
+  paidShares: number;
+  paidOther: number;
+  isSkipped: boolean;
+};
+
+export async function getSkippedSavings(month: string): Promise<{ success: boolean; rows?: SkippedSavingsRow[]; error?: string }> {
+  try {
+    const session = await auth();
+    const groupId = (session?.user as any)?.groupId ?? null;
+
+    // month format: YYYY-MM
+    const monthStart = `${month}-01`;
+
+    const rows = await sql`
+      SELECT
+        m.id,
+        m.name,
+        m.phone_number,
+        m.monthly_contribution,
+        m.member_id,
+        COALESCE(SUM(t.amount) FILTER (
+          WHERE t.type = 'Deposit'
+            AND DATE_TRUNC('month', t.date::date) = DATE_TRUNC('month', ${monthStart}::date)
+        ), 0) AS paid_total
+      FROM members m
+      LEFT JOIN transactions t
+        ON t.member_name = m.name
+        AND t.group_id = ${groupId}
+      WHERE m.status = 'Active'
+        AND m.group_id = ${groupId}
+      GROUP BY m.id, m.name, m.phone_number, m.monthly_contribution, m.member_id
+      ORDER BY m.name
+    `;
+
+    const result: SkippedSavingsRow[] = rows.map((r, i) => {
+      const required = Number(r.monthly_contribution) || 0;
+      const paid = Number(r.paid_total) || 0;
+      const paidShares = Math.min(paid, required);
+      const paidOther = Math.max(0, paid - required);
+      return {
+        no: i + 1,
+        memberId: r.member_id,
+        name: r.name,
+        phone: r.phone_number,
+        monthlyContribution: required,
+        paidShares,
+        paidOther,
+        isSkipped: paid < required,
+      };
+    });
+
+    return { success: true, rows: result };
+  } catch (e: any) {
+    return { success: false, error: e.message || "Failed to load skipped savings." };
+  }
+}
 
 export type ReportData =
   | { type: "member_statement"; member: any; accounts: any[]; transactions: any[]; loans: any[] }

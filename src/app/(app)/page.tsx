@@ -1,7 +1,8 @@
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
 import { Activity, ArrowUpRight, Landmark, Users, Wallet, AlertTriangle, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import Link from "next/link";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getMembers, getTransactions, getDashboardStats, getLoans } from "@/lib/data-service";
-import { getPlaceholderImage } from "@/lib/placeholder-images";
+import { MemberAvatar } from "@/components/member-avatar";
 import SavingsVsLoansChart from "@/components/charts/savings-vs-loans-chart";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +44,11 @@ function TrendBadge({ change }: { change: string | null }) {
 }
 
 export default async function DashboardPage() {
+  const session = await auth();
+  if (session?.user?.role === 'SUPER_ADMIN' || session?.user?.role === 'IT_ADMIN') {
+    redirect('/admin');
+  }
+
   const [members, transactions, stats, loans] = await Promise.all([
     getMembers(),
     getTransactions(),
@@ -188,16 +194,11 @@ export default async function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.slice(0, 8).map((transaction) => {
-                    const image = getPlaceholderImage(transaction.member.avatarId);
-                    return (
+                  {transactions.slice(0, 8).map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Avatar className="hidden h-8 w-8 sm:flex">
-                              <AvatarImage src={image.imageUrl} alt={transaction.member.name} data-ai-hint={image.imageHint} />
-                              <AvatarFallback>{transaction.member.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
+                            <MemberAvatar name={transaction.member.name} className="hidden h-8 w-8 sm:flex" />
                             <span className="font-medium text-sm">{transaction.member.name}</span>
                           </div>
                         </TableCell>
@@ -216,8 +217,7 @@ export default async function DashboardPage() {
                           RWF {transaction.amount.toLocaleString()}
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
+                  ))}
                 </TableBody>
               </Table>
             </CardContent>

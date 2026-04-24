@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { usePathname, useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,24 +12,37 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { getPlaceholderImage } from "@/lib/placeholder-images";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { NotificationBell } from "@/components/layout/notification-bell";
-import { LiveHeaderInfo } from "@/components/layout/live-header-info";
-import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+} from '@/components/ui/dropdown-menu';
+import { ThemeToggle }    from '@/components/layout/theme-toggle';
+import { NotificationBell } from '@/components/layout/notification-bell';
+import { LiveHeaderInfo }  from '@/components/layout/live-header-info';
+import { Breadcrumbs }     from '@/components/layout/breadcrumbs';
+import { roleLabel }       from '@/lib/permissions';
+import type { UserRole }   from '@/lib/types';
 
 const getPageTitle = (pathname: string) => {
-  const segment = pathname.split("/").filter(Boolean)[0] || "dashboard";
-  if (pathname === "/") return "Dashboard";
+  if (pathname === '/') return 'Dashboard';
+  const segment = pathname.split('/').filter(Boolean)[0] ?? 'dashboard';
   return segment.charAt(0).toUpperCase() + segment.slice(1);
 };
 
+function initials(name?: string | null) {
+  if (!name) return '??';
+  return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+}
 
 export default function Header() {
   const pathname = usePathname();
-  const title = getPageTitle(pathname);
-  const adminAvatar = getPlaceholderImage("admin_avatar");
+  const router   = useRouter();
+  const title    = getPageTitle(pathname);
+  const { data: session } = useSession();
+  const user = session?.user;
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.push('/login');
+    router.refresh();
+  };
 
   return (
     <header className="sticky top-0 z-30 flex h-14 flex-col border-b border-border/50 bg-background/95 backdrop-blur-sm px-4 lg:h-auto lg:px-6">
@@ -36,16 +50,13 @@ export default function Header() {
         <SidebarTrigger className="hidden" />
 
         <div className="flex flex-col min-w-0">
-          <h1 className="text-base font-headline font-semibold leading-tight truncate">
-            {title}
-          </h1>
+          <h1 className="text-base font-headline font-semibold leading-tight truncate">{title}</h1>
           <Breadcrumbs />
         </div>
 
         <div className="flex-1" />
 
         <LiveHeaderInfo />
-
         <ThemeToggle />
         <NotificationBell />
 
@@ -53,25 +64,37 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
               <Avatar className="h-8 w-8">
-                <AvatarImage
-                  src={adminAvatar.imageUrl}
-                  alt={adminAvatar.description}
-                  data-ai-hint={adminAvatar.imageHint}
-                />
-                <AvatarFallback>ZJ</AvatarFallback>
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                  {initials(user?.name)}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
-              <p className="font-semibold">ZIGAMA Julius</p>
-              <p className="text-xs text-muted-foreground font-normal">Administrator</p>
+              <p className="font-semibold truncate">{user?.name ?? 'Loading…'}</p>
+              <p className="text-xs text-muted-foreground font-normal truncate">
+                {user?.role ? roleLabel(user.role as UserRole) : ''}
+              </p>
+              <p className="text-xs text-muted-foreground font-normal truncate mt-0.5">
+                {user?.email}
+              </p>
+              {(user as any)?.groupName && (
+                <p className="text-xs font-medium text-primary truncate mt-1">
+                  {(user as any).groupName}
+                </p>
+              )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Support</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Logout</DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onSelect={handleLogout}
+            >
+              Sign Out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
