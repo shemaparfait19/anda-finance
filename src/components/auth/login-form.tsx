@@ -167,6 +167,10 @@ export default function LoginForm({ callbackUrl }: LoginFormProps) {
         body: JSON.stringify({ email: trimmed }),
       });
       const data = await res.json();
+      if (data.status === 'inactive') {
+        setError('Your account is inactive. Contact your administrator.');
+        return;
+      }
       setStep(data.status === 'needs_setup' ? 'setup' : 'credentials');
     } catch {
       setError('Network error — please try again.');

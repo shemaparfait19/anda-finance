@@ -83,13 +83,14 @@ export async function updateUserLastLogin(userId: number): Promise<void> {
   await sql`UPDATE users SET last_login = NOW() WHERE id = ${userId}`;
 }
 
-export async function checkLoginStatus(email: string): Promise<'needs_setup' | 'ready'> {
+export async function checkLoginStatus(email: string): Promise<'needs_setup' | 'inactive' | 'ready'> {
   const rows = await sql`
-    SELECT must_set_credentials FROM users
-    WHERE LOWER(email) = LOWER(${email}) AND is_active = true
+    SELECT must_set_credentials, is_active FROM users
+    WHERE LOWER(email) = LOWER(${email})
     LIMIT 1
   `;
   if (rows.length === 0) return 'ready'; // don't reveal whether email exists
+  if (!rows[0].is_active) return 'inactive';
   return rows[0].must_set_credentials ? 'needs_setup' : 'ready';
 }
 
