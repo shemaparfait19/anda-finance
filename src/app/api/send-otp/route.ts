@@ -24,9 +24,13 @@ export async function POST(req: NextRequest) {
 
     const otp = generateOTP();
     await storeOTP(email, otp);
-    await sendOTPEmail(email, user.name, otp);
+    const { devOtp } = await sendOTPEmail(email, user.name, otp);
 
-    return NextResponse.json({ success: true, message: 'OTP sent to your email.' });
+    return NextResponse.json({
+      success: true,
+      message: 'OTP sent to your email.',
+      ...(devOtp ? { devOtp } : {}),
+    });
   } catch (err: any) {
     console.error('send-otp error:', err);
     return NextResponse.json({ success: false, message: 'Server error. Please try again.' }, { status: 500 });

@@ -48,11 +48,18 @@ function buildOTPEmail(name: string, otp: string): string {
 </html>`;
 }
 
-export async function sendOTPEmail(to: string, name: string, otp: string): Promise<void> {
+export async function sendOTPEmail(
+  to: string,
+  name: string,
+  otp: string,
+): Promise<{ devOtp?: string }> {
   if (!resend) {
-    // Dev fallback: log OTP to console when Resend is not configured
-    console.log(`\n📧 OTP EMAIL (dev mode — Resend not configured)\n   To: ${to}\n   Name: ${name}\n   OTP: ${otp}\n`);
-    return;
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Email service is not configured. Set RESEND_API_KEY in your environment variables.');
+    }
+    // Dev fallback: log OTP so developer can log in without real email
+    console.log(`\n📧 OTP (dev) → ${to}  CODE: ${otp}\n`);
+    return { devOtp: otp };
   }
 
   await resend.emails.send({
@@ -61,4 +68,6 @@ export async function sendOTPEmail(to: string, name: string, otp: string): Promi
     subject: `${otp} — Your ANDA Finance Sign-In Code`,
     html: buildOTPEmail(name, otp),
   });
+
+  return {};
 }

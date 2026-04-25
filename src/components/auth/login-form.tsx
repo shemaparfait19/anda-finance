@@ -118,6 +118,8 @@ export default function LoginForm({ callbackUrl }: LoginFormProps) {
       if (data.success) {
         setStep('otp');
         setCountdown(300);
+        // Dev mode: auto-fill the OTP so you can log in without real email
+        if (data.devOtp) setOtp(data.devOtp);
       } else {
         setError(data.message ?? 'Could not send code.');
       }
