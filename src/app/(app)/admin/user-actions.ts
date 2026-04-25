@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { canApprove } from '@/lib/permissions';
 import { addApproval } from '@/lib/pending-actions-service';
+import { hashPassword, hashPin } from '@/lib/auth-service';
 import type { UserRole } from '@/lib/types';
 
 const sql = neon(process.env.DATABASE_URL!);
@@ -50,9 +51,10 @@ export async function createUser(_prevState: FormState, formData: FormData): Pro
     const existing = await sql`SELECT id FROM users WHERE LOWER(email) = LOWER(${email})`;
     if (existing.length > 0) return { message: 'A user with this email already exists.', success: false };
 
+    // New users set their own credentials on first login
     await sql`
-      INSERT INTO users (name, email, role, phone_number, approvals_required, is_active, group_id)
-      VALUES (${name}, ${email.toLowerCase()}, ${role}, ${phoneNumber ?? null}, ${approvalsRequired ?? 1}, true, ${groupId})
+      INSERT INTO users (name, email, role, phone_number, approvals_required, is_active, group_id, must_set_credentials)
+      VALUES (${name}, ${email.toLowerCase()}, ${role}, ${phoneNumber ?? null}, ${approvalsRequired ?? 1}, true, ${groupId}, true)
     `;
 
     revalidatePath('/admin');
@@ -71,6 +73,8 @@ const UpdateUserSchema = z.object({
   phoneNumber:       z.string().optional(),
   approvalsRequired: z.coerce.number().int().min(1).max(2).optional(),
   isActive:          z.enum(['true', 'false']).transform((v) => v === 'true'),
+  password:          z.string().min(8).or(z.literal('')).optional(),
+  pin:               z.string().length(5).regex(/^\d{5}$/).or(z.literal('')).optional(),
 });
 
 export async function updateUser(_prevState: FormState, formData: FormData): Promise<FormState> {
@@ -80,28 +84,43 @@ export async function updateUser(_prevState: FormState, formData: FormData): Pro
   const parsed = UpdateUserSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { message: 'Invalid data.', success: false };
 
-  const { id, name, role, phoneNumber, approvalsRequired, isActive } = parsed.data;
+  const { id, name, role, phoneNumber, approvalsRequired, isActive, password, pin } = parsed.data;
 
   // SUPER_ADMIN can reassign a user to a different group
   const isSuperAdmin = session.user.role === 'SUPER_ADMIN';
   const rawGroupId   = (formData.get('groupId') as string | null)?.trim() || null;
-  const newGroupId   = isSuperAdmin ? rawGroupId : undefined; // undefined = don't touch the column
+  const newGroupId   = isSuperAdmin ? rawGroupId : undefined;
+
+  // Hash new credentials only if provided (empty string = no change)
+  const newPasswordHash = password ? await hashPassword(password) : null;
+  const newPinHash      = pin      ? await hashPin(pin)           : null;
 
   try {
     if (newGroupId !== undefined) {
       await sql`
         UPDATE users
-        SET name = ${name}, role = ${role}, phone_number = ${phoneNumber ?? null},
-            approvals_required = ${approvalsRequired ?? 1}, is_active = ${isActive},
-            group_id = ${newGroupId}, updated_at = NOW()
+        SET name              = ${name},
+            role              = ${role},
+            phone_number      = ${phoneNumber ?? null},
+            approvals_required= ${approvalsRequired ?? 1},
+            is_active         = ${isActive},
+            group_id          = ${newGroupId},
+            password_hash     = COALESCE(${newPasswordHash}, password_hash),
+            pin_hash          = COALESCE(${newPinHash}, pin_hash),
+            updated_at        = NOW()
         WHERE id = ${id}
       `;
     } else {
       await sql`
         UPDATE users
-        SET name = ${name}, role = ${role}, phone_number = ${phoneNumber ?? null},
-            approvals_required = ${approvalsRequired ?? 1}, is_active = ${isActive},
-            updated_at = NOW()
+        SET name              = ${name},
+            role              = ${role},
+            phone_number      = ${phoneNumber ?? null},
+            approvals_required= ${approvalsRequired ?? 1},
+            is_active         = ${isActive},
+            password_hash     = COALESCE(${newPasswordHash}, password_hash),
+            pin_hash          = COALESCE(${newPinHash}, pin_hash),
+            updated_at        = NOW()
         WHERE id = ${id}
       `;
     }

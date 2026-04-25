@@ -408,6 +408,9 @@ async function insertInitialData() {
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20)`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS approvals_required INTEGER DEFAULT 1`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_hash VARCHAR(255)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS must_set_credentials BOOLEAN DEFAULT false`;
 
     // Multi-tenancy: group_id on every data table (idempotent)
     await sql`ALTER TABLE users            ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
@@ -434,9 +437,12 @@ async function insertInitialData() {
     // Fix users sequence so new inserts don't conflict with the demo row (id=1)
     await sql`SELECT setval(pg_get_serial_sequence('users','id'), COALESCE((SELECT MAX(id) FROM users), 1))`;
 
-    // Sync super-admin email/name from env vars so the owner can configure their own credentials
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminName  = process.env.ADMIN_NAME;
+    // Sync super-admin credentials from env vars
+    const adminEmail    = process.env.ADMIN_EMAIL;
+    const adminName     = process.env.ADMIN_NAME;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminPin      = process.env.ADMIN_PIN;
+
     if (adminEmail) {
       await sql`
         UPDATE users
@@ -445,6 +451,19 @@ async function insertInitialData() {
             updated_at = NOW()
         WHERE role = 'SUPER_ADMIN'
       `;
+    }
+
+    if (adminPassword) {
+      const bcrypt = await import('bcryptjs');
+      const hash = await bcrypt.hash(adminPassword, 12);
+      // Only set if not already set — avoids expensive re-hash on every cold start
+      await sql`UPDATE users SET password_hash = ${hash}, updated_at = NOW() WHERE role = 'SUPER_ADMIN' AND password_hash IS NULL`;
+    }
+
+    if (adminPin) {
+      const bcrypt = await import('bcryptjs');
+      const hash = await bcrypt.hash(adminPin, 10);
+      await sql`UPDATE users SET pin_hash = ${hash}, updated_at = NOW() WHERE role = 'SUPER_ADMIN' AND pin_hash IS NULL`;
     }
   } catch (error) {
     console.error("❌ Error inserting initial data:", error);

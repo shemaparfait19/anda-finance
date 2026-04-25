@@ -18,6 +18,9 @@ export const authConfig: NextAuthConfig = {
       // Always allow NextAuth internal routes and public API routes
       if (pathname.startsWith('/api/auth')) return true;
       if (pathname === '/api/send-otp') return true;
+      if (pathname === '/api/verify-credentials') return true;
+      if (pathname === '/api/check-login-status') return true;
+      if (pathname === '/api/setup-credentials') return true;
 
       // Redirect logged-in users away from the login page
       if (isLoggedIn && pathname === '/login') {

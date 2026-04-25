@@ -146,6 +146,9 @@ function CreateUserDialog({
                 </div>
               )}
             </div>
+            <div className="px-1 py-2 rounded-md bg-muted/50 text-[12px] text-muted-foreground">
+              The user will be prompted to create their own password and PIN on first login.
+            </div>
             <DialogFooter>
               <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
               <SubmitBtn label="Create User" loading="Creating…" />
@@ -223,6 +226,18 @@ function EditUserDialog({
                 <Label className="text-right">Phone</Label>
                 <div className="col-span-3">
                   <Input name="phoneNumber" defaultValue={user.phoneNumber ?? ''} />
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right text-xs leading-tight">New password</Label>
+                <div className="col-span-3">
+                  <Input name="password" type="password" placeholder="Leave blank to keep current" autoComplete="new-password" />
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right text-xs leading-tight">New PIN</Label>
+                <div className="col-span-3">
+                  <Input name="pin" type="password" inputMode="numeric" maxLength={5} placeholder="Leave blank to keep current" autoComplete="new-password" />
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">

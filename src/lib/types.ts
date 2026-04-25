@@ -149,6 +149,8 @@ export type AuthUser = {
   approvalsRequired: number;
   groupId: string | null;
   groupName: string | null;
+  passwordHash: string | null;
+  pinHash: string | null;
   lastLogin?: string;
   phoneNumber?: string;
   createdAt: string;

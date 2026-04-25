@@ -1,7 +1,7 @@
 import NextAuth, { type DefaultSession } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from '@/auth.config';
-import { getUserByEmail, validateOTP, updateUserLastLogin } from '@/lib/auth-service';
+import { getUserByEmail, verifyPassword, verifyPin, updateUserLastLogin } from '@/lib/auth-service';
 import type { UserRole } from '@/lib/types';
 
 // Extend NextAuth session/user types with our custom fields
@@ -31,21 +31,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
       credentials: {
-        email: { label: 'Email',    type: 'email' },
-        otp:   { label: 'OTP Code', type: 'text'  },
+        email:    { label: 'Email',    type: 'email'    },
+        password: { label: 'Password', type: 'password' },
+        pin:      { label: 'PIN',      type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.otp) return null;
+        if (!credentials?.email || !credentials?.password || !credentials?.pin) return null;
 
-        const email = String(credentials.email).toLowerCase().trim();
-        const otp   = String(credentials.otp).trim();
+        const email    = String(credentials.email).toLowerCase().trim();
+        const password = String(credentials.password);
+        const pin      = String(credentials.pin);
 
         try {
-          const isValid = await validateOTP(email, otp);
-          if (!isValid) return null;
-
           const user = await getUserByEmail(email);
           if (!user || !user.isActive) return null;
+
+          const passwordOk = await verifyPassword(password, user.passwordHash);
+          if (!passwordOk) return null;
+
+          const pinOk = await verifyPin(pin, user.pinHash);
+          if (!pinOk) return null;
 
           // Fire-and-forget last-login update — never block the sign-in
           updateUserLastLogin(user.id).catch(console.error);
