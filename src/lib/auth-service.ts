@@ -85,19 +85,23 @@ export async function updateUserLastLogin(userId: number): Promise<void> {
 
 export async function checkLoginStatus(email: string): Promise<'needs_setup' | 'inactive' | 'ready'> {
   const rows = await sql`
-    SELECT must_set_credentials, is_active FROM users
+    SELECT must_set_credentials, is_active, password_hash FROM users
     WHERE LOWER(email) = LOWER(${email})
     LIMIT 1
   `;
   if (rows.length === 0) return 'ready'; // don't reveal whether email exists
   if (!rows[0].is_active) return 'inactive';
-  return rows[0].must_set_credentials ? 'needs_setup' : 'ready';
+  // No password yet (existing account before password auth was added) → setup flow
+  if (!rows[0].password_hash || rows[0].must_set_credentials) return 'needs_setup';
+  return 'ready';
 }
 
 export async function setupCredentials(email: string, password: string, pin: string): Promise<boolean> {
   const rows = await sql`
     SELECT id FROM users
-    WHERE LOWER(email) = LOWER(${email}) AND must_set_credentials = true AND is_active = true
+    WHERE LOWER(email) = LOWER(${email})
+      AND (must_set_credentials = true OR password_hash IS NULL)
+      AND is_active = true
     LIMIT 1
   `;
   if (rows.length === 0) return false;
