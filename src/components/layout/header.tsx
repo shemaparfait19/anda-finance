@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -17,6 +18,7 @@ import { ThemeToggle }    from '@/components/layout/theme-toggle';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { LiveHeaderInfo }  from '@/components/layout/live-header-info';
 import { Breadcrumbs }     from '@/components/layout/breadcrumbs';
+import { ChangeCredentialsDialog } from '@/components/auth/change-credentials-dialog';
 import { roleLabel }       from '@/lib/permissions';
 import type { UserRole }   from '@/lib/types';
 
@@ -37,6 +39,7 @@ export default function Header() {
   const title    = getPageTitle(pathname);
   const { data: session } = useSession();
   const user = session?.user;
+  const [changePwOpen, setChangePwOpen] = useState(false);
 
   const handleLogout = async () => {
     await signOut({ redirect: false });
@@ -86,8 +89,9 @@ export default function Header() {
               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setChangePwOpen(true)}>
+              Change Password / PIN
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
@@ -98,6 +102,8 @@ export default function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <ChangeCredentialsDialog open={changePwOpen} onOpenChange={setChangePwOpen} />
     </header>
   );
 }

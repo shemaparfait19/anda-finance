@@ -214,9 +214,24 @@ export default function LoginForm({ callbackUrl }: LoginFormProps) {
     setError('');
     setLoading(true);
     try {
+      // Pre-validate PIN via a plain API call first — avoids signIn redirecting on error
+      const pinRes  = await fetch('/api/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), pin }),
+      });
+      const pinData = await pinRes.json();
+      if (!pinData.success) {
+        setError(pinData.message ?? 'Incorrect PIN. Please try again.');
+        setPin('');
+        verifyingRef.current = false;
+        return;
+      }
+
+      // PIN confirmed — now call signIn (we know it will succeed)
       const res = await signIn('credentials', { email, password, pin, redirect: false });
       if (!res?.ok || res?.error) {
-        setError('Incorrect PIN. Please try again.');
+        setError('Sign-in failed — please try again.');
         setPin('');
         verifyingRef.current = false;
       } else {

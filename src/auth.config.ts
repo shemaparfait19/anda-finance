@@ -21,6 +21,7 @@ export const authConfig: NextAuthConfig = {
       if (pathname === '/api/verify-credentials') return true;
       if (pathname === '/api/check-login-status') return true;
       if (pathname === '/api/setup-credentials') return true;
+      if (pathname === '/api/verify-pin') return true;
 
       // Redirect logged-in users away from the login page
       if (isLoggedIn && pathname === '/login') {
