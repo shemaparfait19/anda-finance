@@ -1,7 +1,7 @@
 import NextAuth, { type DefaultSession } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from '@/auth.config';
-import { getUserByEmail, consumePreAuthToken, verifyPin, updateUserLastLogin } from '@/lib/auth-service';
+import { getUserByEmail, verifyPassword, verifyPin, updateUserLastLogin } from '@/lib/auth-service';
 import type { UserRole } from '@/lib/types';
 
 // Extend NextAuth session/user types with our custom fields
@@ -38,17 +38,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password || !credentials?.pin) return null;
 
-        const email = String(credentials.email).toLowerCase().trim();
-        const token = String(credentials.password); // "password" field carries the pre-auth token
-        const pin   = String(credentials.pin);
+        const email    = String(credentials.email).toLowerCase().trim();
+        const password = String(credentials.password);
+        const pin      = String(credentials.pin);
 
         try {
-          // Consume the one-time pre-auth token issued by /api/verify-credentials
-          const tokenOk = await consumePreAuthToken(email, token);
-          if (!tokenOk) return null;
-
           const user = await getUserByEmail(email);
           if (!user || !user.isActive) return null;
+
+          const passwordOk = await verifyPassword(password, user.passwordHash);
+          if (!passwordOk) return null;
 
           const pinOk = await verifyPin(pin, user.pinHash);
           if (!pinOk) return null;
