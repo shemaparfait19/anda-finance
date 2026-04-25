@@ -134,21 +134,22 @@ export default function LoginForm({ callbackUrl }: LoginFormProps) {
   const router       = useRouter();
   const verifyingRef = useRef(false);
 
-  const [step,     setStep]     = useState<Step>('email');
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [pin,      setPin]      = useState('');
-  const [newPw,    setNewPw]    = useState('');
-  const [confirmPw,setConfirmPw]= useState('');
-  const [newPin,   setNewPin]   = useState('');
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
+  const [step,      setStep]      = useState<Step>('email');
+  const [email,     setEmail]     = useState('');
+  const [password,  setPassword]  = useState('');
+  const [authToken, setAuthToken] = useState(''); // pre-auth token from /api/verify-credentials
+  const [pin,       setPin]       = useState('');
+  const [newPw,     setNewPw]     = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [newPin,    setNewPin]    = useState('');
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState('');
 
   const goBack = (to: Step) => {
     setStep(to);
     setError('');
-    if (to === 'email') { setPassword(''); setPin(''); }
-    if (to === 'credentials') { setPin(''); }
+    if (to === 'email') { setPassword(''); setAuthToken(''); setPin(''); }
+    if (to === 'credentials') { setAuthToken(''); setPin(''); }
   };
 
   // ── Step 1: check email status ──────────────────────────────────────────────
@@ -194,6 +195,7 @@ export default function LoginForm({ callbackUrl }: LoginFormProps) {
       });
       const data = await res.json();
       if (data.success) {
+        setAuthToken(data.token); // store token, not the raw password
         setStep('pin');
       } else {
         setError(data.message ?? 'Invalid email or password.');
@@ -228,8 +230,8 @@ export default function LoginForm({ callbackUrl }: LoginFormProps) {
         return;
       }
 
-      // PIN confirmed — now call signIn (we know it will succeed)
-      const res = await signIn('credentials', { email, password, pin, redirect: false });
+      // PIN confirmed — now call signIn with the pre-auth token (we know it will succeed)
+      const res = await signIn('credentials', { email, password: authToken, pin, redirect: false });
       if (!res?.ok || res?.error) {
         setError('Sign-in failed — please try again.');
         setPin('');
@@ -244,7 +246,7 @@ export default function LoginForm({ callbackUrl }: LoginFormProps) {
     } finally {
       setLoading(false);
     }
-  }, [email, password, pin, callbackUrl, router]);
+  }, [email, authToken, pin, callbackUrl, router]);
 
   // Auto-submit on 5th PIN digit
   useEffect(() => {

@@ -411,6 +411,8 @@ async function insertInitialData() {
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255)`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_hash VARCHAR(255)`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS must_set_credentials BOOLEAN DEFAULT false`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS pre_auth_token VARCHAR(64)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS pre_auth_token_expires_at TIMESTAMP`;
 
     // Multi-tenancy: group_id on every data table (idempotent)
     await sql`ALTER TABLE users            ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;

@@ -83,6 +83,32 @@ export async function updateUserLastLogin(userId: number): Promise<void> {
   await sql`UPDATE users SET last_login = NOW() WHERE id = ${userId}`;
 }
 
+export async function createPreAuthToken(email: string): Promise<string> {
+  const token   = crypto.randomUUID().replace(/-/g, '');
+  const expires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+  await sql`
+    UPDATE users
+    SET pre_auth_token = ${token}, pre_auth_token_expires_at = ${expires.toISOString()}
+    WHERE LOWER(email) = LOWER(${email})
+  `;
+  return token;
+}
+
+export async function consumePreAuthToken(email: string, token: string): Promise<boolean> {
+  const rows = await sql`
+    SELECT id FROM users
+    WHERE LOWER(email) = LOWER(${email})
+      AND pre_auth_token = ${token}
+      AND pre_auth_token_expires_at > NOW()
+      AND is_active = true
+    LIMIT 1
+  `;
+  if (rows.length === 0) return false;
+  // Consume — one-time use
+  await sql`UPDATE users SET pre_auth_token = NULL, pre_auth_token_expires_at = NULL WHERE id = ${rows[0].id}`;
+  return true;
+}
+
 export async function checkLoginStatus(email: string): Promise<'needs_setup' | 'inactive' | 'ready'> {
   const rows = await sql`
     SELECT must_set_credentials, is_active, password_hash FROM users
