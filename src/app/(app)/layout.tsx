@@ -21,7 +21,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <SidebarInset>
           <Header />
           {/* pb-20 on mobile reserves space above the bottom nav */}
-          <main className="p-4 pb-24 md:p-6 md:pb-6 lg:p-8 max-w-screen-2xl">{children}</main>
+          <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6 lg:p-8 w-full max-w-screen-2xl">{children}</main>
         </SidebarInset>
         {/* Bottom nav: only on mobile/tablet */}
         <BottomNav />

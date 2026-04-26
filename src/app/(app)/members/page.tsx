@@ -38,39 +38,35 @@ export default async function MembersPage() {
 
   return (
     <Tabs defaultValue="all">
-      <div className="flex items-center">
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="inactive">Inactive</TabsTrigger>
-          <TabsTrigger value="temporary-inactive">Temporary Inactive</TabsTrigger>
-          <TabsTrigger value="dormant">Dormant</TabsTrigger>
-          <TabsTrigger value="closed">Closed</TabsTrigger>
-        </TabsList>
-        <div className="ml-auto flex items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="overflow-x-auto">
+          <TabsList className="w-max">
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="inactive">Inactive</TabsTrigger>
+            <TabsTrigger value="temporary-inactive" className="hidden sm:inline-flex">Temp. Inactive</TabsTrigger>
+            <TabsTrigger value="dormant">Dormant</TabsTrigger>
+            <TabsTrigger value="closed">Closed</TabsTrigger>
+          </TabsList>
+        </div>
+        <div className="flex items-center gap-2 sm:ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 gap-1">
                 <ListFilter className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Filter
-                </span>
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Filter</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Filter by</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem checked>
-                Has Loan
-              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked>Has Loan</DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem>No Loan</DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button size="sm" variant="outline" className="h-8 gap-1">
             <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Export
-            </span>
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Export</span>
           </Button>
           <AddMemberDialog />
         </div>

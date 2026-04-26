@@ -37,22 +37,24 @@ export default async function LoansPage() {
 
   return (
     <Tabs defaultValue="all">
-      <div className="flex items-center">
-        <TabsList>
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className={tab.isDestructive ? "text-destructive" : ""}
-            >
-              {tab.label}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="overflow-x-auto">
+          <TabsList className="w-max">
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className={tab.isDestructive ? "text-destructive" : ""}
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+            <TabsTrigger value="amortization" className="text-primary font-medium">
+              Amortization
             </TabsTrigger>
-          ))}
-          <TabsTrigger value="amortization" className="text-primary font-medium">
-            Amortization
-          </TabsTrigger>
-        </TabsList>
-        <div className="ml-auto flex items-center gap-2">
+          </TabsList>
+        </div>
+        <div className="flex items-center gap-2 sm:ml-auto">
           <NewLoanDialog members={members} />
         </div>
       </div>

@@ -56,7 +56,7 @@ export function BottomNav() {
               key={href}
               href={href}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 flex-1 h-full rounded-xl transition-all duration-200",
+                "flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -64,7 +64,7 @@ export function BottomNav() {
             >
               <div
                 className={cn(
-                  "flex items-center justify-center w-10 h-6 rounded-full transition-all duration-200",
+                  "flex items-center justify-center w-10 h-6 transition-all duration-200",
                   isActive && "bg-primary/10"
                 )}
               >
@@ -82,7 +82,7 @@ export function BottomNav() {
           <SheetTrigger asChild>
             <button
               className={cn(
-                "flex flex-col items-center justify-center gap-1 flex-1 h-full rounded-xl transition-all duration-200",
+                "flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200",
                 isMoreActive || open
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -90,7 +90,7 @@ export function BottomNav() {
             >
               <div
                 className={cn(
-                  "flex items-center justify-center w-10 h-6 rounded-full transition-all duration-200",
+                  "flex items-center justify-center w-10 h-6 transition-all duration-200",
                   (isMoreActive || open) && "bg-primary/10"
                 )}
               >
@@ -102,8 +102,8 @@ export function BottomNav() {
               <span className="text-[10px] font-medium">More</span>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-auto pb-8 rounded-t-2xl">
-            <div className="w-10 h-1 bg-muted rounded-full mx-auto mb-6" />
+          <SheetContent side="bottom" className="h-auto pb-8">
+            <div className="w-10 h-1 bg-muted mx-auto mb-6" />
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-3">
               More
             </p>
@@ -116,7 +116,7 @@ export function BottomNav() {
                     href={href}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border transition-all duration-200",
+                      "flex flex-col items-center justify-center gap-2 p-4 border transition-all duration-200",
                       isActive
                         ? "bg-primary/10 border-primary/20 text-primary"
                         : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"

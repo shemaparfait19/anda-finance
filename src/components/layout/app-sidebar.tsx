@@ -116,7 +116,7 @@ export default function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border p-2 space-y-2">
         {/* User card */}
-        <div className="flex items-center gap-3 p-2 rounded-md bg-sidebar-accent">
+        <div className="flex items-center gap-3 p-2 bg-sidebar-accent">
           <Avatar className="h-9 w-9 shrink-0">
             <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
               {initials(user?.name)}

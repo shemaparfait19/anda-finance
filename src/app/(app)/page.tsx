@@ -65,12 +65,11 @@ export default async function DashboardPage() {
   const pendingLoans = loans.filter((l) => l.status === "Pending");
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
-      <main className="flex flex-1 flex-col gap-4 md:gap-6">
+    <div className="flex flex-col gap-4 md:gap-6">
 
         {/* ── Alert banners ─────────────────────────────────────── */}
         {overdueLoans.length > 0 && (
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-900/40 dark:bg-orange-950/30 px-4 py-3">
+          <div className="flex flex-col gap-2 border border-orange-200 bg-orange-50 dark:border-orange-900/40 dark:bg-orange-950/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <AlertTriangle className="h-4 w-4 text-orange-500 shrink-0" />
               <p className="text-sm text-orange-800 dark:text-orange-300">
@@ -78,21 +77,21 @@ export default async function DashboardPage() {
                 {" "}— RWF {overdueTotal.toLocaleString()} at risk
               </p>
             </div>
-            <Button asChild size="sm" variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-800 dark:text-orange-400 shrink-0">
+            <Button asChild size="sm" variant="outline" className="self-start border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-800 dark:text-orange-400 sm:self-auto">
               <Link href="/loans">View Arrears</Link>
             </Button>
           </div>
         )}
 
         {pendingLoans.length > 0 && (
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-900/40 dark:bg-yellow-950/30 px-4 py-3">
+          <div className="flex flex-col gap-2 border border-yellow-200 bg-yellow-50 dark:border-yellow-900/40 dark:bg-yellow-950/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <Activity className="h-4 w-4 text-yellow-500 shrink-0" />
               <p className="text-sm text-yellow-800 dark:text-yellow-300">
                 <span className="font-semibold">{pendingLoans.length} loan application{pendingLoans.length > 1 ? "s" : ""} pending approval</span>
               </p>
             </div>
-            <Button asChild size="sm" variant="outline" className="border-yellow-300 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-800 dark:text-yellow-400 shrink-0">
+            <Button asChild size="sm" variant="outline" className="self-start border-yellow-300 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-800 dark:text-yellow-400 sm:self-auto">
               <Link href="/loans">Review</Link>
             </Button>
           </div>
@@ -233,7 +232,6 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-      </main>
     </div>
   );
 }
