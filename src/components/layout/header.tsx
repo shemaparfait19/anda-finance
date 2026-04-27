@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ThemeToggle }    from '@/components/layout/theme-toggle';
 import { NotificationBell } from '@/components/layout/notification-bell';
-import { LiveHeaderInfo }  from '@/components/layout/live-header-info';
 import { Breadcrumbs }     from '@/components/layout/breadcrumbs';
 import { ChangeCredentialsDialog } from '@/components/auth/change-credentials-dialog';
 import { roleLabel }       from '@/lib/permissions';
@@ -59,7 +58,6 @@ export default function Header() {
 
         <div className="flex-1" />
 
-        <LiveHeaderInfo />
         <ThemeToggle />
         <NotificationBell />
 
