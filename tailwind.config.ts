@@ -10,9 +10,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        headline: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        code: ["ui-monospace", "SFMono-Regular", "Consolas", "monospace"],
+        sans: ["var(--font-geist-sans)", "system-ui", "-apple-system", "sans-serif"],
+        body: ["var(--font-geist-sans)", "system-ui", "-apple-system", "sans-serif"],
+        headline: ["var(--font-geist-sans)", "system-ui", "-apple-system", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "ui-monospace", "Consolas", "monospace"],
+        code: ["var(--font-geist-mono)", "ui-monospace", "Consolas", "monospace"],
       },
       colors: {
         background: "hsl(var(--background))",

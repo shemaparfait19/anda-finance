@@ -35,14 +35,16 @@ export default async function SavingsPage() {
 
   return (
     <Tabs defaultValue="all">
-      <div className="flex items-center">
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="compulsory">Compulsory Saving account</TabsTrigger>
-          <TabsTrigger value="voluntary">Voluntary Saving Account</TabsTrigger>
-          <TabsTrigger value="internal">Internal Accounts</TabsTrigger>
-        </TabsList>
-        <div className="ml-auto flex items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="overflow-x-auto">
+          <TabsList className="w-max">
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="compulsory">Compulsory</TabsTrigger>
+            <TabsTrigger value="voluntary">Voluntary</TabsTrigger>
+            <TabsTrigger value="internal">Internal</TabsTrigger>
+          </TabsList>
+        </div>
+        <div className="flex items-center gap-2 sm:ml-auto">
           <NewWithdrawalDialog
             members={members}
             trigger={

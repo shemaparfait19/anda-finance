@@ -13,20 +13,19 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <div className="flex min-h-screen">
 
       {/* ── Left: brand panel ─────────────────────────────────────────── */}
-      <div className="relative hidden lg:flex lg:w-[52%] flex-col bg-[#0d1526] overflow-hidden">
+      <div className="relative hidden lg:flex lg:w-[52%] flex-col overflow-hidden bg-[#0d1526]">
 
-        {/* Dot-grid texture */}
+        {/* Photo backdrop — drop /public/login-bg.jpg to activate */}
         <div
-          className="pointer-events-none absolute inset-0"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px)',
-            backgroundSize: '26px 26px',
+            backgroundImage: "url('/login-bg.jpg'), linear-gradient(160deg, #0d1526 0%, #162040 100%)",
           }}
         />
-        {/* Edge fades so the grid doesn't feel harsh */}
-        <div className="pointer-events-none absolute inset-x-0 top-0    h-24 bg-gradient-to-b  from-[#0d1526] to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t  from-[#0d1526] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0  w-16 bg-gradient-to-l  from-[#0d1526] to-transparent" />
+        {/* Dark overlay keeps text readable over any photo */}
+        <div className="absolute inset-0 bg-[#0d1526]/65" />
+        {/* Bottom vignette */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0d1526] to-transparent" />
 
         {/* Content */}
         <div className="relative z-10 flex h-full flex-col p-12">
@@ -42,11 +41,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           {/* Statement */}
           <div className="flex flex-1 flex-col justify-center">
             <div className="max-w-[360px] space-y-5">
-              <div className="h-px w-10 bg-white/20" />
+              <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-white/35">
+                Cooperative Management System
+              </p>
               <h1 className="text-[2rem] font-bold leading-[1.25] text-white">
                 The financial backbone of Rwanda&apos;s cooperatives.
               </h1>
-              <p className="text-[13px] leading-relaxed text-white/40">
+              <p className="text-[13px] leading-relaxed text-white/50">
                 Savings groups, SACCOs, and microfinance institutions trust
                 ANDA Finance to manage members, process transactions, and keep
                 accurate records — every day.
@@ -55,7 +56,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
 
           {/* Footer line */}
-          <p className="text-[11px] text-white/20">
+          <p className="text-[11px] tracking-wide text-white/20">
             ANDA Finance · Rwanda · FY 2025–26
           </p>
 

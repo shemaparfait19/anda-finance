@@ -76,12 +76,14 @@ export default async function AccountingPage() {
       </div>
 
       <Tabs defaultValue="income">
-        <div className="flex items-center">
-          <TabsList>
-            <TabsTrigger value="income">Income</TabsTrigger>
-            <TabsTrigger value="expenses">Expenses</TabsTrigger>
-          </TabsList>
-          <div className="ml-auto flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="overflow-x-auto">
+            <TabsList className="w-max">
+              <TabsTrigger value="income">Income</TabsTrigger>
+              <TabsTrigger value="expenses">Expenses</TabsTrigger>
+            </TabsList>
+          </div>
+          <div className="flex items-center gap-2 sm:ml-auto">
             <AddEntryDialog />
           </div>
         </div>

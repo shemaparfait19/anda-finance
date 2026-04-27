@@ -64,8 +64,21 @@ export default async function DashboardPage() {
   const overdueTotal = overdueLoans.reduce((s, l) => s + l.balance, 0);
   const pendingLoans = loans.filter((l) => l.status === "Pending");
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const firstName = session?.user?.name?.split(" ")[0] ?? "there";
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
+  });
+
   return (
     <div className="flex flex-col gap-4 md:gap-6">
+
+        {/* ── Page greeting ─────────────────────────────────────── */}
+        <div>
+          <h2 className="text-xl font-semibold">{greeting}, {firstName}</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">{today}</p>
+        </div>
 
         {/* ── Alert banners ─────────────────────────────────────── */}
         {overdueLoans.length > 0 && (
