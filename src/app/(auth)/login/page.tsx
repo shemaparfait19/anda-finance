@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           }}
         />
         {/* Dark overlay keeps text readable over any photo */}
-        <div className="absolute inset-0 bg-[#0d1526]/65" />
+        <div className="absolute inset-0 bg-[#0d1526]/50" />
         {/* Bottom vignette */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0d1526] to-transparent" />
 
