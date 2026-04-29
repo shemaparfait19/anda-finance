@@ -58,6 +58,7 @@ const itAdminNavLinks: NavLink[] = [
 ];
 
 function getNavLinks(role?: UserRole | null): NavLink[] {
+  if (!role) return [];
   if (role === 'SUPER_ADMIN') return superAdminNavLinks;
   if (role === 'IT_ADMIN')    return itAdminNavLinks;
   return staffNavLinks;

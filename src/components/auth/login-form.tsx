@@ -13,6 +13,7 @@ type Step = 'email' | 'credentials' | 'pin' | 'setup';
 
 interface LoginFormProps {
   callbackUrl: string;
+  initialEmail?: string;
 }
 
 // ── 5-digit PIN boxes ─────────────────────────────────────────────────────────
@@ -130,12 +131,12 @@ function PasswordInput({ name, placeholder, value, onChange, disabled, hasError,
 
 // ── Main form ─────────────────────────────────────────────────────────────────
 
-export default function LoginForm({ callbackUrl }: LoginFormProps) {
+export default function LoginForm({ callbackUrl, initialEmail = '' }: LoginFormProps) {
   const router       = useRouter();
   const verifyingRef = useRef(false);
 
   const [step,      setStep]      = useState<Step>('email');
-  const [email,     setEmail]     = useState('');
+  const [email,     setEmail]     = useState(initialEmail);
   const [password,  setPassword]  = useState('');
   const [pin,       setPin]       = useState('');
   const [newPw,     setNewPw]     = useState('');

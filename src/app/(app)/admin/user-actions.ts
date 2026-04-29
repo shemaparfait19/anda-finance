@@ -7,6 +7,7 @@ import { auth } from '@/auth';
 import { canApprove } from '@/lib/permissions';
 import { addApproval } from '@/lib/pending-actions-service';
 import { hashPassword, hashPin } from '@/lib/auth-service';
+import { sendWelcomeEmail } from '@/lib/mailer';
 import type { UserRole } from '@/lib/types';
 
 const sql = neon(process.env.DATABASE_URL!);
@@ -58,6 +59,10 @@ export async function createUser(_prevState: FormState, formData: FormData): Pro
     `;
 
     revalidatePath('/admin');
+
+    // Send welcome email — best-effort, never block user creation
+    sendWelcomeEmail(name, email.toLowerCase()).catch(() => {});
+
     return { message: `User ${name} created successfully.`, success: true };
   } catch (err: any) {
     return { message: err.message ?? 'Failed to create user.', success: false };

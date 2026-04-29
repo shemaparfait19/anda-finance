@@ -2,12 +2,14 @@ import { Logo } from '@/components/icons';
 import LoginForm from '@/components/auth/login-form';
 
 interface LoginPageProps {
-  searchParams: Promise<{ callbackUrl?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; email?: string }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const params = await searchParams;
+  const params      = await searchParams;
   const callbackUrl = params.callbackUrl ?? '/';
+  const initialEmail = params.email ?? '';
+  const year        = new Date().getFullYear();
 
   return (
     <div className="flex min-h-screen">
@@ -40,24 +42,27 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
           {/* Statement */}
           <div className="flex flex-1 flex-col justify-center">
-            <div className="max-w-[360px] space-y-5">
+            <div className="max-w-[380px] space-y-6">
               <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-white/35">
-                Cooperative Management System
+                Core Banking System
               </p>
-              <h1 className="text-[2rem] font-bold leading-[1.25] text-white">
-                The financial backbone of Rwanda&apos;s cooperatives.
+              <h1 className="text-[2.15rem] font-bold leading-[1.2] text-white">
+                Powering the future{' '}
+                <span className="text-white/60 font-normal italic">of</span>{' '}
+                financial services.
               </h1>
-              <p className="text-[13px] leading-relaxed text-white/50">
-                Savings groups, SACCOs, and microfinance institutions trust
-                ANDA Finance to manage members, process transactions, and keep
-                accurate records — every day.
+              <p className="text-[13px] leading-[1.75] text-white/50">
+                SACCOs and microfinance institutions trust{' '}
+                <span className="text-white/75 font-medium">ANDA Finance CBS</span>{' '}
+                to manage members, streamline transactions, and keep accurate,
+                real&#8209;time financial records &mdash; every day.
               </p>
             </div>
           </div>
 
           {/* Footer line */}
           <p className="text-[11px] tracking-wide text-white/20">
-            ANDA Finance · Rwanda · FY 2025–26
+            ANDA Finance CBS &middot; {year}
           </p>
 
         </div>
@@ -72,7 +77,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <span className="text-sm font-semibold">ANDA Finance</span>
         </div>
 
-        <LoginForm callbackUrl={callbackUrl} />
+        <LoginForm callbackUrl={callbackUrl} initialEmail={initialEmail} />
 
       </div>
     </div>
