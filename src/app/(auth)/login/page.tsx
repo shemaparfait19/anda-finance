@@ -21,7 +21,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('/login-bg.jpg'), linear-gradient(160deg, #0d1526 0%, #162040 100%)",
+            backgroundImage: "url('/photo.jpeg'), linear-gradient(160deg, #0d1526 0%, #162040 100%)",
           }}
         />
         {/* Dark overlay keeps text readable over any photo */}
