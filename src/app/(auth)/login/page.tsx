@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Logo } from '@/components/icons';
 import LoginForm from '@/components/auth/login-form';
 
@@ -6,10 +7,10 @@ interface LoginPageProps {
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const params      = await searchParams;
-  const callbackUrl = params.callbackUrl ?? '/';
+  const params       = await searchParams;
+  const callbackUrl  = params.callbackUrl ?? '/';
   const initialEmail = params.email ?? '';
-  const year        = new Date().getFullYear();
+  const year         = new Date().getFullYear();
 
   return (
     <div className="flex min-h-screen">
@@ -17,15 +18,18 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       {/* ── Left: brand panel ─────────────────────────────────────────── */}
       <div className="relative hidden lg:flex lg:w-[52%] flex-col overflow-hidden bg-[#0d1526]">
 
-        {/* Photo backdrop — drop /public/login-bg.jpg to activate */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: "url('/photo.jpg'), linear-gradient(160deg, #0d1526 0%, #162040 100%)",
-          }}
+        {/* Background photo */}
+        <Image
+          src="/photo.jpg"
+          alt=""
+          fill
+          priority
+          className="object-cover object-center"
         />
-        {/* Dark overlay keeps text readable over any photo */}
+
+        {/* Dark overlay so text stays readable */}
         <div className="absolute inset-0 bg-[#0d1526]/50" />
+
         {/* Bottom vignette */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0d1526] to-transparent" />
 
