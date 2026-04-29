@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { Logo } from '@/components/icons';
 import LoginForm from '@/components/auth/login-form';
 
@@ -16,17 +15,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <div className="flex min-h-screen">
 
       {/* ── Left: brand panel ─────────────────────────────────────────── */}
-      <div className="relative hidden lg:flex lg:w-[52%] flex-col overflow-hidden bg-[#0d1526]">
-
-        {/* Background photo */}
-        <Image
-          src="/photo.jpg"
-          alt=""
-          fill
-          priority
-          className="object-cover object-center"
-        />
-
+      <div
+        className="relative hidden lg:flex lg:w-[52%] flex-col overflow-hidden bg-[#0d1526] bg-cover bg-center"
+        style={{ backgroundImage: "url('/photo.jpg')" }}
+      >
         {/* Dark overlay so text stays readable */}
         <div className="absolute inset-0 bg-[#0d1526]/50" />
 
