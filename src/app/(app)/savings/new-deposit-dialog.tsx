@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef, ReactNode, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { ArrowDownCircle, Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -186,26 +186,18 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
                 <form ref={formRef} action={formAction}>
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="memberId" className="text-right">
-                            MEMBER ID
-                            </Label>
+                            <Label className="text-right">Member</Label>
                             <div className='col-span-3'>
-                                <Input id="memberId" name="memberId" placeholder="Enter Member ID" autoComplete="off"
-                                onBlur={async (e) => {
-                                    const val = e.target.value.trim();
-                                    const display = document.getElementById('memberNameDisplay');
-                                    if (!val) { if (display) display.textContent = ''; return; }
-                                    display!.textContent = '...';
-                                    try {
-                                    const res = await fetch(`/api/members/lookup?memberId=${encodeURIComponent(val)}`);
-                                    const data = await res.json();
-                                    display!.textContent = data.name ? data.name : 'Not found';
-                                    } catch {
-                                    display!.textContent = 'Not found';
-                                    }
-                                }}
-                                />
-                                <div id="memberNameDisplay" className="text-xs text-muted-foreground mt-1"></div>
+                                <Select name="memberId" defaultValue={selectedMemberId}>
+                                    <SelectTrigger disabled={!!selectedMemberId}>
+                                        <SelectValue placeholder="Select a member" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {members.map(member => (
+                                            <SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 {state.fields?.memberId && <p className="text-sm text-destructive mt-1">{state.fields.memberId}</p>}
                             </div>
                         </div>
