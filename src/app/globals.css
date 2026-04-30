@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes row-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @layer base {
   :root {
     /* Backgrounds — very slightly warm white, not clinical grey */
@@ -42,7 +47,7 @@
     --chart-4: 43 74% 58%;
     --chart-5: 280 40% 50%;
 
-    --radius: 0px;
+    --radius: 0.3rem;
 
     /* Sidebar — deep charcoal, not electric blue */
     --sidebar-background: 222 18% 11%;
@@ -101,5 +106,30 @@
 
   textarea {
     @apply px-3 py-2;
+  }
+
+  /* Table row entrance animation */
+  tbody tr {
+    animation: row-in 0.22s ease-out both;
+  }
+
+  /* Stagger first 20 rows */
+  tbody tr:nth-child(1)  { animation-delay: 0ms; }
+  tbody tr:nth-child(2)  { animation-delay: 30ms; }
+  tbody tr:nth-child(3)  { animation-delay: 60ms; }
+  tbody tr:nth-child(4)  { animation-delay: 90ms; }
+  tbody tr:nth-child(5)  { animation-delay: 120ms; }
+  tbody tr:nth-child(6)  { animation-delay: 150ms; }
+  tbody tr:nth-child(7)  { animation-delay: 175ms; }
+  tbody tr:nth-child(8)  { animation-delay: 200ms; }
+  tbody tr:nth-child(9)  { animation-delay: 220ms; }
+  tbody tr:nth-child(10) { animation-delay: 240ms; }
+  tbody tr:nth-child(11) { animation-delay: 255ms; }
+  tbody tr:nth-child(12) { animation-delay: 265ms; }
+  tbody tr:nth-child(n+13) { animation-delay: 270ms; }
+
+  /* Smooth hover on table rows */
+  tbody tr {
+    transition: background-color 0.15s ease;
   }
 }
