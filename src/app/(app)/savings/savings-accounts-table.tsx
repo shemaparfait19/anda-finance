@@ -197,6 +197,7 @@ export default function SavingsAccountsTable({
           members={members.filter(
             (m) => m.id === dialogState.withdrawal.account?.memberId
           )}
+          accounts={accounts}
           selectedMemberId={dialogState.withdrawal.account.memberId}
           selectedAccountNumber={dialogState.withdrawal.account.accountNumber}
           open={dialogState.withdrawal.open}

@@ -47,6 +47,7 @@ export default async function SavingsPage() {
         <div className="flex items-center gap-2 sm:ml-auto">
           <NewWithdrawalDialog
             members={members}
+            accounts={savingsAccounts}
             trigger={
               <Button size="sm" variant="outline" className="h-8 gap-1">
                 <ArrowUpCircle className="h-3.5 w-3.5" />

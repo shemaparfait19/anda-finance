@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { makeWithdrawal } from './actions';
 import { useToast } from '@/hooks/use-toast';
-import type { Member } from '@/lib/types';
+import type { Member, SavingsAccount } from '@/lib/types';
 
 const initialState = {
   message: '',
@@ -40,6 +40,7 @@ function SubmitButton() {
 
 interface NewWithdrawalDialogProps {
     members: Member[];
+    accounts?: SavingsAccount[];
     selectedMemberId?: string;
     selectedAccountNumber?: string;
     open?: boolean;
@@ -47,8 +48,9 @@ interface NewWithdrawalDialogProps {
     trigger?: ReactNode;
 }
 
-export default function NewWithdrawalDialog({ members, selectedMemberId, selectedAccountNumber, open, onOpenChange, trigger }: NewWithdrawalDialogProps) {
+export default function NewWithdrawalDialog({ members, accounts = [], selectedMemberId, selectedAccountNumber, open, onOpenChange, trigger }: NewWithdrawalDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const [pickedMemberId, setPickedMemberId] = useState(selectedMemberId ?? '');
   const [state, formAction] = useActionState(makeWithdrawal, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -79,8 +81,9 @@ export default function NewWithdrawalDialog({ members, selectedMemberId, selecte
    useEffect(() => {
     if (!currentOpen) {
       formRef.current?.reset();
+      setPickedMemberId(selectedMemberId ?? '');
     }
-   }, [currentOpen]);
+   }, [currentOpen, selectedMemberId]);
 
 
   return (
@@ -96,10 +99,15 @@ export default function NewWithdrawalDialog({ members, selectedMemberId, selecte
             </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="memberId" className="text-right">Member</Label>
+                    <Label className="text-right">Member</Label>
                     <div className='col-span-3'>
-                        <Select name="memberId" defaultValue={selectedMemberId}>
-                            <SelectTrigger disabled={!!selectedMemberId}>
+                        <Select
+                            name="memberId"
+                            defaultValue={selectedMemberId}
+                            onValueChange={setPickedMemberId}
+                            disabled={!!selectedMemberId}
+                        >
+                            <SelectTrigger>
                                 <SelectValue placeholder="Select a member" />
                             </SelectTrigger>
                             <SelectContent>
@@ -112,9 +120,38 @@ export default function NewWithdrawalDialog({ members, selectedMemberId, selecte
                     </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="account" className="text-right">Account</Label>
+                    <Label className="text-right">Account</Label>
                     <div className='col-span-3'>
-                        <Input id="account" name="account" defaultValue={selectedAccountNumber ?? ""} placeholder="e.g. BIF00501" autoComplete="off" />
+                        {(() => {
+                            const memberAccounts = accounts.filter(a => a.memberId === pickedMemberId);
+                            if (selectedAccountNumber) {
+                                return <Input name="account" defaultValue={selectedAccountNumber} disabled />;
+                            }
+                            if (memberAccounts.length > 1) {
+                                return (
+                                    <Select name="account">
+                                        <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
+                                        <SelectContent>
+                                            {memberAccounts.map(a => (
+                                                <SelectItem key={a.id} value={a.accountNumber}>
+                                                    {a.accountNumber}{a.accountName ? ` — ${a.accountName}` : ''}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                );
+                            }
+                            return (
+                                <Input
+                                    name="account"
+                                    value={memberAccounts.length === 1 ? memberAccounts[0].accountNumber : undefined}
+                                    defaultValue={memberAccounts.length === 1 ? memberAccounts[0].accountNumber : ''}
+                                    placeholder="e.g. BIF00501"
+                                    autoComplete="off"
+                                    readOnly={memberAccounts.length === 1}
+                                />
+                            );
+                        })()}
                     </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">

@@ -4,68 +4,85 @@
 
 @layer base {
   :root {
-    --background: 220 20% 96%;
-    --foreground: 222 47% 11%;
+    /* Backgrounds — very slightly warm white, not clinical grey */
+    --background: 210 18% 96%;
+    --foreground: 220 30% 12%;
+
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 220 30% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 232 54% 37%;
+    --popover-foreground: 220 30% 12%;
+
+    /* Primary — toned-down slate-blue, less electric */
+    --primary: 220 42% 34%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 220 16% 93%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 220 16% 93%;
-    --muted-foreground: 220 10% 52%;
-    --accent: 16 88% 52%;
+
+    --secondary: 210 14% 92%;
+    --secondary-foreground: 220 30% 12%;
+
+    --muted: 210 14% 92%;
+    --muted-foreground: 215 12% 48%;
+
+    /* Accent — warm amber-orange, used sparingly */
+    --accent: 24 82% 50%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+
+    --destructive: 0 80% 58%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 16% 90%;
-    --input: 220 16% 90%;
-    --ring: 232 54% 37%;
-    --chart-1: 232 54% 37%;
-    --chart-2: 16 88% 52%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+
+    /* Borders — slightly warm, not pure grey */
+    --border: 216 14% 86%;
+    --input: 216 14% 86%;
+    --ring: 220 42% 34%;
+
+    /* Charts */
+    --chart-1: 220 42% 34%;
+    --chart-2: 24 82% 50%;
+    --chart-3: 168 44% 30%;
+    --chart-4: 43 74% 58%;
+    --chart-5: 280 40% 50%;
+
     --radius: 0px;
-    --sidebar-background: 232 54% 32%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 232 54% 32%;
-    --sidebar-accent: 232 54% 42%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 232 54% 27%;
-    --sidebar-ring: 16 88% 52%;
+
+    /* Sidebar — deep charcoal, not electric blue */
+    --sidebar-background: 222 18% 11%;
+    --sidebar-foreground: 210 14% 88%;
+    --sidebar-primary: 210 14% 88%;
+    --sidebar-primary-foreground: 222 18% 11%;
+    --sidebar-accent: 222 16% 19%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 222 16% 16%;
+    --sidebar-ring: 24 82% 50%;
   }
+
   .dark {
     --background: 224 20% 8%;
     --foreground: 210 40% 96%;
-    --card: 224 20% 11%;
+    --card: 224 18% 11%;
     --card-foreground: 210 40% 96%;
-    --popover: 224 20% 11%;
+    --popover: 224 18% 11%;
     --popover-foreground: 210 40% 96%;
-    --primary: 232 70% 65%;
+    --primary: 220 55% 62%;
     --primary-foreground: 224 20% 8%;
-    --secondary: 224 16% 18%;
+    --secondary: 224 14% 18%;
     --secondary-foreground: 210 40% 96%;
-    --muted: 224 16% 18%;
-    --muted-foreground: 215 16% 55%;
-    --accent: 16 88% 55%;
+    --muted: 224 14% 18%;
+    --muted-foreground: 215 14% 52%;
+    --accent: 24 82% 55%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --destructive: 0 68% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 224 16% 18%;
-    --input: 224 16% 18%;
-    --ring: 232 70% 65%;
+    --border: 224 14% 18%;
+    --input: 224 14% 18%;
+    --ring: 220 55% 62%;
     --sidebar-background: 224 20% 7%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 0% 95%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 0 0% 90%;
     --sidebar-primary-foreground: 224 20% 7%;
-    --sidebar-accent: 224 16% 15%;
+    --sidebar-accent: 224 16% 14%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 224 16% 14%;
-    --sidebar-ring: 16 88% 52%;
+    --sidebar-border: 224 16% 13%;
+    --sidebar-ring: 24 82% 52%;
   }
 }
 
@@ -75,5 +92,14 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Slightly more breathing room on all form inputs */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]) {
+    @apply px-3 py-2;
+  }
+
+  textarea {
+    @apply px-3 py-2;
   }
 }

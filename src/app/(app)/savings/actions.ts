@@ -27,6 +27,12 @@ async function handleTransaction(
     formData: FormData
 ): Promise<FormState> {
     try {
+        // Verify session and group isolation before touching any data
+        const session = await auth();
+        if (!session?.user) return { message: 'Not authenticated.', success: false };
+        const groupId = (session.user as any).groupId as string | null;
+        if (!groupId) return { message: 'Your account is not associated with a group.', success: false };
+
         const rawData = Object.fromEntries(formData);
         const parsed = TransactionSchema.safeParse(rawData);
 
@@ -43,14 +49,17 @@ async function handleTransaction(
         const { memberId, amount, account, reason } = parsed.data;
         const transactionAmount = type === 'Deposit' ? amount : -amount;
 
-        // Try to find member by memberId field (e.g., BIF001)
         const member = await getMemberById(memberId);
         if (!member) {
-            return { 
-                message: `Member ID '${memberId}' not found in the system. Please verify the Member ID is correct.`, 
+            return {
+                message: `Member not found or does not belong to your group.`,
                 fields: { memberId: 'Member not found' },
-                success: false 
+                success: false
             };
+        }
+        // Hard stop: never touch a member from a different group
+        if ((member as any).groupId && (member as any).groupId !== groupId) {
+            return { message: 'Access denied.', success: false };
         }
 
         if (type === 'Withdrawal' && member.savingsBalance < amount) {
@@ -126,6 +135,11 @@ export async function makeWithdrawal(prevState: FormState, formData: FormData): 
 }
 
 export async function processBulkDeposit(data: any[]) {
+    const session = await auth();
+    if (!session?.user) return { success: false, message: 'Not authenticated.', results: [] };
+    const groupId = (session.user as any).groupId as string | null;
+    if (!groupId) return { success: false, message: 'Your account is not associated with a group.', results: [] };
+
     try {
         let successCount = 0;
         let errors: string[] = [];
