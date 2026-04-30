@@ -545,9 +545,13 @@ export default function LogsTable({
     return rows;
   }, [transactions, query, groupFilter, typeFilter, dateFrom, dateTo, txnSort]);
 
+  // Both TabsContent panels stay mounted (Radix hides via CSS), so each table
+  // must always receive its own typed rows — never share pagedRows between them.
+  const pagedAuditRows = filteredAudit.slice((page - 1) * pageSize, page * pageSize);
+  const pagedTxnRows   = filteredTxns.slice((page - 1) * pageSize, page * pageSize);
+
   const activeRows = tab === "audit" ? filteredAudit : filteredTxns;
   const totalPages = Math.max(1, Math.ceil(activeRows.length / pageSize));
-  const pagedRows = activeRows.slice((page - 1) * pageSize, page * pageSize);
 
   const handleSort = (col: string) => {
     if (tab === "audit") setAuditSort((s) => nextSort(col, s));
@@ -730,10 +734,10 @@ export default function LogsTable({
           </DropdownMenu>
         </div>
 
-        {/* Tables */}
+        {/* Tables — each tab gets its own typed rows */}
         <TabsContent value="audit" className="mt-0">
           <AuditTable
-            rows={pagedRows as AuditRow[]}
+            rows={pagedAuditRows}
             visible={visAudit}
             sort={auditSort}
             onSort={handleSort}
@@ -741,7 +745,7 @@ export default function LogsTable({
         </TabsContent>
         <TabsContent value="transactions" className="mt-0">
           <TxnTable
-            rows={pagedRows as TxnRow[]}
+            rows={pagedTxnRows}
             visible={visTxn}
             sort={txnSort}
             onSort={handleSort}
