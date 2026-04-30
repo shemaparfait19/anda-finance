@@ -68,10 +68,12 @@ export default function SavingsAccountsTable({
   };
 
   const handleCloseDialog = (type: "deposit" | "withdrawal" | "statement") => {
-    setDialogState((prev) => ({
-      ...prev,
-      [type]: { open: false, account: null },
-    }));
+    // First just close (let Radix run its exit animation + cleanup)
+    setDialogState((prev) => ({ ...prev, [type]: { ...prev[type], open: false } }));
+    // Then unmount after animation so the overlay is properly removed
+    setTimeout(() => {
+      setDialogState((prev) => ({ ...prev, [type]: { open: false, account: null } }));
+    }, 200);
   };
 
   return (
@@ -155,17 +157,17 @@ export default function SavingsAccountsTable({
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem
-                      onSelect={() => handleOpenDialog("statement", account)}
+                      onSelect={() => setTimeout(() => handleOpenDialog("statement", account), 0)}
                     >
                       View Statement
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onSelect={() => handleOpenDialog("deposit", account)}
+                      onSelect={() => setTimeout(() => handleOpenDialog("deposit", account), 0)}
                     >
                       Make Deposit
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onSelect={() => handleOpenDialog("withdrawal", account)}
+                      onSelect={() => setTimeout(() => handleOpenDialog("withdrawal", account), 0)}
                     >
                       Make Withdrawal
                     </DropdownMenuItem>
