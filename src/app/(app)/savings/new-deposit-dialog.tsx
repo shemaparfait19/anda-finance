@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { makeDeposit, processBulkDeposit } from './actions';
 import { useToast } from '@/hooks/use-toast';
-import type { Member } from '@/lib/types';
+import type { Member, SavingsAccount } from '@/lib/types';
 import * as XLSX from 'xlsx';
 import BulkUploadResultsDialog from './bulk-upload-results-dialog';
 
@@ -43,18 +43,21 @@ function SubmitButton() {
 
 interface NewDepositDialogProps {
     members: Member[];
+    accounts?: SavingsAccount[];
     selectedMemberId?: string;
+    selectedAccountNumber?: string;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
     trigger?: ReactNode;
 }
 
-export default function NewDepositDialog({ members, selectedMemberId, open, onOpenChange, trigger }: NewDepositDialogProps) {
+export default function NewDepositDialog({ members, accounts = [], selectedMemberId, selectedAccountNumber, open, onOpenChange, trigger }: NewDepositDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [state, formAction] = useActionState(makeDeposit, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const [depositType, setDepositType] = useState("single"); // Changed to state for dropdown
+  const [depositType, setDepositType] = useState("single");
+  const [pickedMemberId, setPickedMemberId] = useState(selectedMemberId ?? '');
   const [bulkFile, setBulkFile] = useState<File | null>(null);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   
@@ -97,8 +100,9 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
       formRef.current?.reset();
       setBulkFile(null);
       setDepositType("single");
+      setPickedMemberId(selectedMemberId ?? '');
     }
-   }, [currentOpen]);
+   }, [currentOpen, selectedMemberId]);
 
    const handleBulkUpload = async () => {
      if (!bulkFile) {
@@ -188,8 +192,13 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label className="text-right">Member</Label>
                             <div className='col-span-3'>
-                                <Select name="memberId" defaultValue={selectedMemberId}>
-                                    <SelectTrigger disabled={!!selectedMemberId}>
+                                <Select
+                                    name="memberId"
+                                    defaultValue={selectedMemberId}
+                                    onValueChange={setPickedMemberId}
+                                    disabled={!!selectedMemberId}
+                                >
+                                    <SelectTrigger>
                                         <SelectValue placeholder="Select a member" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -202,11 +211,38 @@ export default function NewDepositDialog({ members, selectedMemberId, open, onOp
                             </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="account" className="text-right">
-                            Account
-                            </Label>
+                            <Label className="text-right">Account</Label>
                             <div className='col-span-3'>
-                                <Input id="account" name="account" placeholder="e.g. BIF00501" autoComplete="off" />
+                                {(() => {
+                                    const memberAccounts = accounts.filter(a => a.memberId === pickedMemberId);
+                                    if (selectedAccountNumber) {
+                                        return <Input name="account" defaultValue={selectedAccountNumber} disabled />;
+                                    }
+                                    if (memberAccounts.length > 1) {
+                                        return (
+                                            <Select name="account">
+                                                <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
+                                                <SelectContent>
+                                                    {memberAccounts.map(a => (
+                                                        <SelectItem key={a.id} value={a.accountNumber}>
+                                                            {a.accountNumber}{a.accountName ? ` — ${a.accountName}` : ''}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        );
+                                    }
+                                    return (
+                                        <Input
+                                            name="account"
+                                            value={memberAccounts.length === 1 ? memberAccounts[0].accountNumber : undefined}
+                                            defaultValue={memberAccounts.length === 1 ? memberAccounts[0].accountNumber : ''}
+                                            placeholder="e.g. BIF00501"
+                                            autoComplete="off"
+                                            readOnly={memberAccounts.length === 1}
+                                        />
+                                    );
+                                })()}
                             </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">

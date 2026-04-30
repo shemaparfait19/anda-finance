@@ -58,6 +58,7 @@ export default async function SavingsPage() {
           />
           <NewDepositDialog
             members={members}
+            accounts={savingsAccounts}
             trigger={
               <Button size="sm" className="h-8 gap-1">
                 <ArrowDownCircle className="h-3.5 w-3.5" />

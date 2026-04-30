@@ -30,6 +30,7 @@ interface SavingsAccountsTableProps {
   members: Member[];
 }
 
+
 export default function SavingsAccountsTable({
   accounts,
   members,
@@ -181,7 +182,9 @@ export default function SavingsAccountsTable({
           members={members.filter(
             (m) => m.id === dialogState.deposit.account?.memberId
           )}
+          accounts={accounts}
           selectedMemberId={dialogState.deposit.account.memberId}
+          selectedAccountNumber={dialogState.deposit.account.accountNumber}
           open={dialogState.deposit.open}
           onOpenChange={(open) => !open && handleCloseDialog("deposit")}
         />
