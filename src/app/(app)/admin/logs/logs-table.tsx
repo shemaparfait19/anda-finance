@@ -559,7 +559,6 @@ export default function LogsTable({
     resetPage();
   };
 
-  const currentSort = tab === "audit" ? auditSort : txnSort;
   const visibleCols = tab === "audit" ? visAudit : visTxn;
   const columns = tab === "audit" ? AUDIT_COLS : TXN_COLS;
 
@@ -593,64 +592,109 @@ export default function LogsTable({
           resetPage();
         }}
       >
-        {/* Tab bar */}
-        <div className="flex items-center gap-3 flex-wrap mb-4">
-          <TabsList>
-            <TabsTrigger value="audit">
+        {/* ── Tab bar + right controls in one row ── */}
+        <div className="flex items-center gap-2 flex-wrap mb-3">
+          <TabsList className="h-9">
+            <TabsTrigger value="audit" className="gap-1.5 px-3">
               Audit Logs
-              <span className="ml-1.5 text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-sm">
+              <span className="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-[10px] font-semibold w-5 h-5 shrink-0">
                 {auditLogs.length}
               </span>
             </TabsTrigger>
-            <TabsTrigger value="transactions">
+            <TabsTrigger value="transactions" className="gap-1.5 px-3">
               Transactions
-              <span className="ml-1.5 text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-sm">
+              <span className="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-[10px] font-semibold w-5 h-5 shrink-0">
                 {transactions.length}
               </span>
             </TabsTrigger>
           </TabsList>
+
+          <div className="flex-1" />
+
+          {/* Rows per page */}
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => { setPageSize(Number(v)); resetPage(); }}
+          >
+            <SelectTrigger className="h-8 text-xs w-[130px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZES.map((n) => (
+                <SelectItem key={n} value={String(n)} className="text-xs">
+                  Show {n} rows
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Manage columns */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                <Columns className="h-3.5 w-3.5" />
+                Manage Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel className="text-xs">Toggle columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {columns.map((c) => (
+                <DropdownMenuCheckboxItem
+                  key={c.key}
+                  checked={visibleCols.has(c.key)}
+                  onCheckedChange={(v) => toggleCol(c.key, v)}
+                  className="text-xs"
+                >
+                  {c.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {/* Toolbar */}
-        <div className="flex items-center gap-2 flex-wrap border rounded-md px-3 py-2 bg-muted/20 mb-3">
+        {/* ── Filter row ── */}
+        <div className="flex items-center gap-2 flex-wrap mb-3">
           {/* Search */}
-          <div className="relative min-w-[160px] max-w-[220px] flex-1">
+          <div className="relative w-[200px]">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               value={query}
               onChange={(e) => { setQuery(e.target.value); resetPage(); }}
               placeholder="Search…"
-              className="pl-8 h-8 text-sm"
+              className="pl-8 h-8 text-sm w-full"
             />
           </div>
 
-          {/* Date from */}
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => { setDateFrom(e.target.value); resetPage(); }}
-            className="h-8 text-sm w-[136px]"
-          />
-          <span className="text-muted-foreground text-xs">–</span>
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => { setDateTo(e.target.value); resetPage(); }}
-            className="h-8 text-sm w-[136px]"
-          />
+          {/* Date range — single bordered pill */}
+          <div className="flex items-center gap-1 border rounded-md px-2 h-8 bg-background text-sm">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => { setDateFrom(e.target.value); resetPage(); }}
+              className="border-none outline-none bg-transparent text-xs w-[112px] text-foreground"
+            />
+            <span className="text-muted-foreground text-xs px-0.5">–</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => { setDateTo(e.target.value); resetPage(); }}
+              className="border-none outline-none bg-transparent text-xs w-[112px] text-foreground"
+            />
+          </div>
 
           {/* Group filter */}
           <Select
             value={groupFilter}
             onValueChange={(v) => { setGroupFilter(v); resetPage(); }}
           >
-            <SelectTrigger className="h-8 text-sm w-[150px]">
+            <SelectTrigger className="h-8 text-xs w-[140px]">
               <SelectValue placeholder="All Groups" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Groups</SelectItem>
+              <SelectItem value="all" className="text-xs">All Groups</SelectItem>
               {groups.map((g) => (
-                <SelectItem key={g.id} value={g.name}>
+                <SelectItem key={g.id} value={g.name} className="text-xs">
                   {g.name}
                 </SelectItem>
               ))}
@@ -663,75 +707,29 @@ export default function LogsTable({
               value={typeFilter}
               onValueChange={(v) => { setTypeFilter(v); resetPage(); }}
             >
-              <SelectTrigger className="h-8 text-sm w-[160px]">
+              <SelectTrigger className="h-8 text-xs w-[150px]">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="all" className="text-xs">All Types</SelectItem>
                 {txnTypes.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
+                  <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           )}
 
-          {/* Clear filters */}
+          {/* Clear */}
           {hasFilters && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 gap-1 text-muted-foreground text-xs"
+              className="h-8 gap-1 text-muted-foreground text-xs px-2"
               onClick={clearFilters}
             >
-              <X className="h-3 w-3" /> Clear
+              <X className="h-3 w-3" /> Clear filters
             </Button>
           )}
-
-          <div className="flex-1" />
-
-          {/* Rows per page */}
-          <Select
-            value={String(pageSize)}
-            onValueChange={(v) => { setPageSize(Number(v)); resetPage(); }}
-          >
-            <SelectTrigger className="h-8 text-sm w-[118px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PAGE_SIZES.map((n) => (
-                <SelectItem key={n} value={String(n)}>
-                  Show {n} rows
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Manage columns */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm">
-                <Columns className="h-3.5 w-3.5" />
-                Columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel className="text-xs">
-                Toggle columns
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {columns.map((c) => (
-                <DropdownMenuCheckboxItem
-                  key={c.key}
-                  checked={visibleCols.has(c.key)}
-                  onCheckedChange={(v) => toggleCol(c.key, v)}
-                >
-                  {c.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         {/* Tables — each tab gets its own typed rows */}
