@@ -17,6 +17,7 @@ import {
   Wallet,
   CreditCard,
   LogOut,
+  ScrollText,
 } from 'lucide-react';
 
 import {
@@ -49,7 +50,8 @@ const staffNavLinks: NavLink[] = [
 
 // Navigation for SUPER_ADMIN — system owner, no cooperative data
 const superAdminNavLinks: NavLink[] = [
-  { href: '/admin', label: 'Control Panel', icon: Shield },
+  { href: '/admin',       label: 'Control Panel', icon: Shield },
+  { href: '/admin/logs',  label: 'Activity Logs', icon: ScrollText },
 ];
 
 // Navigation for IT_ADMIN — settings only

@@ -978,6 +978,93 @@ export async function addAuditLog(
   }
 }
 
+// Super Admin: all audit logs across every group
+export async function getSuperAdminAuditLogs(): Promise<
+  (AuditLog & { groupName: string })[]
+> {
+  try {
+    await ensureInitialized();
+    const session = await auth();
+    if ((session?.user as any)?.role !== "SUPER_ADMIN") return [];
+
+    const result = await sql`
+      SELECT
+        a.id, a.timestamp, a.user_name, a.user_avatar_id, a.action, a.details,
+        COALESCE(g.name, 'System') AS group_name
+      FROM audit_logs a
+      LEFT JOIN groups g ON a.group_id = g.id
+      ORDER BY a.timestamp DESC
+      LIMIT 1000
+    `;
+    return result.map((row) => ({
+      id: row.id,
+      timestamp: row.timestamp,
+      user: { name: row.user_name, avatarId: row.user_avatar_id },
+      action: row.action,
+      details: row.details,
+      groupName: row.group_name,
+    }));
+  } catch (error) {
+    handleDatabaseError(error, "getSuperAdminAuditLogs");
+    return [];
+  }
+}
+
+// Super Admin: all transactions across every group
+export async function getSuperAdminTransactions(): Promise<
+  (Transaction & { groupName: string })[]
+> {
+  try {
+    await ensureInitialized();
+    const session = await auth();
+    if ((session?.user as any)?.role !== "SUPER_ADMIN") return [];
+
+    const result = await sql`
+      SELECT
+        t.id, t.member_name, t.member_avatar_id, t.type, t.amount,
+        t.date, t.status, t.reason, t.account_number,
+        COALESCE(g.name, 'Unknown') AS group_name
+      FROM transactions t
+      LEFT JOIN groups g ON t.group_id = g.id
+      ORDER BY t.created_at DESC
+      LIMIT 1000
+    `;
+    return result.map((row) => ({
+      id: row.id,
+      member: { name: row.member_name, avatarId: row.member_avatar_id },
+      type: row.type,
+      amount: Number(row.amount),
+      date:
+        row.date instanceof Date
+          ? row.date.toISOString().split("T")[0]
+          : row.date,
+      status: row.status,
+      reason: row.reason ?? undefined,
+      groupName: row.group_name,
+    }));
+  } catch (error) {
+    handleDatabaseError(error, "getSuperAdminTransactions");
+    return [];
+  }
+}
+
+// Super Admin: list of all groups for filters
+export async function getSuperAdminGroups(): Promise<
+  { id: string; name: string }[]
+> {
+  try {
+    await ensureInitialized();
+    const session = await auth();
+    if ((session?.user as any)?.role !== "SUPER_ADMIN") return [];
+
+    const result = await sql`SELECT id, name FROM groups ORDER BY name`;
+    return result.map((row) => ({ id: row.id, name: row.name }));
+  } catch (error) {
+    handleDatabaseError(error, "getSuperAdminGroups");
+    return [];
+  }
+}
+
 // Users
 export async function getUsers(): Promise<User[]> {
   try {
