@@ -18,11 +18,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <head>
-        {/* Prevent dark-mode flash before React hydrates */}
+        {/* Apply dark mode only when the user has explicitly chosen it — never follow OS preference */}
         <script dangerouslySetInnerHTML={{ __html: `
           try {
-            const t = localStorage.getItem('theme');
-            if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (localStorage.getItem('theme') === 'dark') {
               document.documentElement.classList.add('dark');
             }
           } catch(_) {}

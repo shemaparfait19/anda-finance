@@ -87,11 +87,11 @@ export default function AppSidebar() {
   };
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 p-2">
-          <Logo className="w-8 h-8 text-primary-foreground" />
-          <h1 className="font-headline text-lg font-semibold text-primary-foreground">
+          <Logo className="w-8 h-8 text-primary-foreground shrink-0" />
+          <h1 className="font-headline text-lg font-semibold text-primary-foreground group-data-[collapsible=icon]:hidden">
             ANDA Finance
           </h1>
         </div>
@@ -118,14 +118,14 @@ export default function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-2 space-y-2">
-        {/* User card */}
-        <div className="flex items-center gap-3 p-2 bg-sidebar-accent">
+        {/* User card — collapses to avatar-only when sidebar is icon mode */}
+        <div className="flex items-center gap-3 p-2 bg-sidebar-accent rounded-md group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-1">
           <Avatar className="h-9 w-9 shrink-0">
             <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
               {initials(user?.name)}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col min-w-0">
+          <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-semibold text-sidebar-accent-foreground truncate">
               {user?.name ?? '…'}
             </span>
@@ -141,13 +141,13 @@ export default function AppSidebar() {
           <button
             onClick={handleLogout}
             title="Sign out"
-            className="ml-auto shrink-0 text-sidebar-accent-foreground/60 hover:text-sidebar-accent-foreground transition-colors"
+            className="ml-auto shrink-0 text-sidebar-accent-foreground/60 hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:hidden"
           >
             <LogOut className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="px-2 pb-1 flex items-center justify-between">
+        <div className="px-2 pb-1 flex items-center justify-between group-data-[collapsible=icon]:hidden">
           <span className="text-[10px] text-sidebar-foreground/40 font-mono">ANDA Finance v1.0</span>
           <span className="text-[10px] text-sidebar-foreground/40">FY 2025–26</span>
         </div>
