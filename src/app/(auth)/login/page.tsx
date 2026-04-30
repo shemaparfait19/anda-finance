@@ -44,10 +44,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               financial services.
             </h1>
             <p className="text-[13px] leading-[1.75] text-white/65">
-              SACCOs and microfinance institutions trust{' '}
+              Savings groups, SACCOs, investment funds, and microfinance institutions trust{' '}
               <span className="text-white font-medium">ANDA Finance CBS</span>{' '}
-              to manage members, streamline transactions, and keep accurate,
-              real&#8209;time financial records &mdash; every day.
+              to manage members, process &amp; streamline transactions, and keep accurate,
+              real-time financial records—every day.
             </p>
           </div>
 
