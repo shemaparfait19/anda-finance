@@ -99,11 +99,6 @@
     @apply bg-background text-foreground;
   }
 
-  /* Slightly more breathing room on all form inputs */
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]) {
-    @apply px-3 py-2;
-  }
-
   textarea {
     @apply px-3 py-2;
   }
