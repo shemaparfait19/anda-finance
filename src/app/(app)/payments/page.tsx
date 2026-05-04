@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import PaymentsTable from "./payments-table";
 import NewDepositDialog from "@/app/(app)/savings/new-deposit-dialog";
 import NewWithdrawalDialog from "@/app/(app)/savings/new-withdrawal-dialog";
+import LoadMirrorAccountDialog from "./load-mirror-account-dialog";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,7 @@ export default async function PaymentsPage() {
     <div className="space-y-6">
       {/* Action buttons */}
       <div className="flex items-center gap-2 justify-end">
+        <LoadMirrorAccountDialog />
         <NewWithdrawalDialog
           members={members}
           accounts={accounts}

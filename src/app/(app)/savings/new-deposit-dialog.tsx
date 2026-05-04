@@ -18,7 +18,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { makeDeposit, processBulkDeposit } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import type { Member, SavingsAccount } from '@/lib/types';
@@ -57,9 +56,15 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [depositType, setDepositType] = useState("single");
-  const [pickedMemberId, setPickedMemberId] = useState(selectedMemberId ?? '');
+  const [creditAccountNo, setCreditAccountNo] = useState(selectedAccountNumber ?? '');
   const [bulkFile, setBulkFile] = useState<File | null>(null);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
+
+  // Look up account + member from typed account number
+  const matchedAccount = accounts.find(
+    a => a.accountNumber.toLowerCase() === creditAccountNo.trim().toLowerCase()
+  );
+  const matchedMemberId = matchedAccount?.memberId ?? (selectedMemberId ?? '');
   
   // Results dialog state
   const [resultsDialogOpen, setResultsDialogOpen] = useState(false);
@@ -100,9 +105,9 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
       formRef.current?.reset();
       setBulkFile(null);
       setDepositType("single");
-      setPickedMemberId(selectedMemberId ?? '');
+      setCreditAccountNo(selectedAccountNumber ?? '');
     }
-   }, [currentOpen, selectedMemberId]);
+   }, [currentOpen, selectedAccountNumber]);
 
    const handleBulkUpload = async () => {
      if (!bulkFile) {
@@ -212,59 +217,37 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
                                 {state.fields?.amount && <p className="text-sm text-destructive mt-1">{state.fields.amount}</p>}
                             </div>
                         </div>
-                        {/* Credit Member Account */}
+                        {/* Credit Account Number */}
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right text-xs leading-tight">
-                                Credit<br/>Member Acct
+                            <Label htmlFor="creditAcctNo" className="text-right text-xs leading-tight">
+                                Credit<br/>Account No.
                             </Label>
-                            <div className='col-span-3 space-y-2'>
-                                <Select
-                                    name="memberId"
-                                    defaultValue={selectedMemberId}
-                                    onValueChange={setPickedMemberId}
-                                    disabled={!!selectedMemberId}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select member" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {members.map(member => (
-                                            <SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {state.fields?.memberId && <p className="text-sm text-destructive">{state.fields.memberId}</p>}
-                                {/* Account within the member */}
-                                {(() => {
-                                    const memberAccounts = accounts.filter(a => a.memberId === pickedMemberId);
-                                    if (selectedAccountNumber) {
-                                        return <Input name="account" defaultValue={selectedAccountNumber} disabled />;
-                                    }
-                                    if (memberAccounts.length > 1) {
-                                        return (
-                                            <Select name="account">
-                                                <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
-                                                <SelectContent>
-                                                    {memberAccounts.map(a => (
-                                                        <SelectItem key={a.id} value={a.accountNumber}>
-                                                            {a.accountNumber}{a.accountName ? ` — ${a.accountName}` : ''}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        );
-                                    }
-                                    return (
-                                        <Input
-                                            name="account"
-                                            value={memberAccounts.length === 1 ? memberAccounts[0].accountNumber : undefined}
-                                            defaultValue={memberAccounts.length === 1 ? memberAccounts[0].accountNumber : ''}
-                                            placeholder="Account number"
-                                            autoComplete="off"
-                                            readOnly={memberAccounts.length === 1}
-                                        />
-                                    );
-                                })()}
+                            <div className='col-span-3 space-y-1.5'>
+                                {/* Hidden fields consumed by the server action */}
+                                <input type="hidden" name="memberId" value={matchedMemberId} />
+                                <input type="hidden" name="account" value={matchedAccount?.accountNumber ?? creditAccountNo.trim()} />
+                                <Input
+                                    id="creditAcctNo"
+                                    placeholder="Enter account number"
+                                    autoComplete="off"
+                                    value={creditAccountNo}
+                                    onChange={e => setCreditAccountNo(e.target.value)}
+                                    disabled={!!selectedAccountNumber}
+                                />
+                                {/* Auto-fetched account / member name */}
+                                {creditAccountNo.trim() && (
+                                    matchedAccount ? (
+                                        <p className="text-xs text-green-600 dark:text-green-400 font-medium px-1">
+                                            {matchedAccount.memberName ?? 'Unknown member'}
+                                            {matchedAccount.accountName ? ` — ${matchedAccount.accountName}` : ''}
+                                        </p>
+                                    ) : (
+                                        <p className="text-xs text-destructive px-1">Account not found</p>
+                                    )
+                                )}
+                                {state.fields?.memberId && (
+                                    <p className="text-sm text-destructive">{state.fields.memberId}</p>
+                                )}
                             </div>
                         </div>
                         {/* Reason */}

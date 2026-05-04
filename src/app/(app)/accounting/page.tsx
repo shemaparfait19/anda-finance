@@ -8,7 +8,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCashbook } from "@/lib/data-service";
 import AddEntryDialog from "./add-entry-dialog";
-import LoadInternalAccountDialog from "./load-internal-account-dialog";
 import CashbookTable from "./cashbook-table";
 import ExpenseBreakdownChart from "./expense-breakdown-chart";
 
@@ -85,7 +84,6 @@ export default async function AccountingPage() {
             </TabsList>
           </div>
           <div className="flex items-center gap-2 sm:ml-auto">
-            <LoadInternalAccountDialog />
             <AddEntryDialog />
           </div>
         </div>

@@ -96,6 +96,7 @@ export async function updateCashbookEntry(
 
 const LoadInternalSchema = z.object({
   transactionType: z.string().min(1, 'Transaction type is required.'),
+  accountNumber: z.string().optional(),
   amount: z.coerce.number().positive('Amount must be positive.'),
   paymentMethod: z.string().optional(),
   description: z.string().optional(),
@@ -115,24 +116,36 @@ export async function loadInternalAccount(
       return { message: 'Invalid form data.', fields, success: false };
     }
 
-    const { transactionType, amount, paymentMethod, description } = parsed.data;
+    const { transactionType, accountNumber, amount, paymentMethod, description } = parsed.data;
+
+    // Generate a short trace ID: TYPE-XXXXXXXX
+    const typeCode = transactionType.replace(/\s+/g, '').toUpperCase().slice(0, 10);
+    const shortId  = Date.now().toString(36).toUpperCase();
+    const traceId  = `${typeCode}-${shortId}`;
+
+    // Format: TYPE-TxnID[-Description]
+    const tracedDescription = description
+      ? `${traceId}-${description}`
+      : traceId;
 
     // Record as cashbook income entry
     await addCashbookEntryToDb('income', {
       date: new Date().toISOString().split('T')[0],
-      description: [transactionType, description].filter(Boolean).join(' — '),
+      description: tracedDescription,
       category: transactionType,
       amount,
       paymentMethod,
+      reference: accountNumber ?? undefined,
     });
 
     // Credit the general pool account if configured
     await updateGeneralPoolBalance(amount);
 
     revalidatePath('/accounting');
+    revalidatePath('/payments');
     revalidatePath('/');
     return {
-      message: `RWF ${amount.toLocaleString()} loaded via ${paymentMethod ?? 'unspecified method'}.`,
+      message: `RWF ${amount.toLocaleString()} loaded. Trace ID: ${traceId}`,
       success: true,
     };
   } catch (e) {
