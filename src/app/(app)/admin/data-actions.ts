@@ -3,7 +3,31 @@
 import { neon } from '@neondatabase/serverless';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
+import { setGeneralPoolAccount } from '@/lib/data-service';
 import type { UserRole } from '@/lib/types';
+
+export async function configureGeneralPool(
+  accountId: string | null
+): Promise<{ success: boolean; message: string }> {
+  const session = await auth();
+  const role = session?.user?.role as UserRole | undefined;
+
+  if (role !== 'IT_ADMIN' && role !== 'ADMIN_FULL' && role !== 'SUPER_ADMIN') {
+    return { success: false, message: 'Unauthorized.' };
+  }
+
+  try {
+    await setGeneralPoolAccount(accountId);
+    return {
+      success: true,
+      message: accountId
+        ? 'General Pool Account configured successfully.'
+        : 'General Pool Account cleared.',
+    };
+  } catch (e: any) {
+    return { success: false, message: e?.message ?? 'Failed to configure pool account.' };
+  }
+}
 
 const sql = neon(process.env.DATABASE_URL!);
 

@@ -2,7 +2,12 @@
 'use server';
 
 import { z } from 'zod';
-import { addCashbookEntry as addCashbookEntryToDb, updateCashbookEntry as updateCashbookEntryInDb, deleteCashbookEntry as deleteCashbookEntryFromDb } from '@/lib/data-service';
+import {
+  addCashbookEntry as addCashbookEntryToDb,
+  updateCashbookEntry as updateCashbookEntryInDb,
+  deleteCashbookEntry as deleteCashbookEntryFromDb,
+  updateGeneralPoolBalance,
+} from '@/lib/data-service';
 import { revalidatePath } from 'next/cache';
 
 const EntrySchema = z.object({
@@ -87,6 +92,53 @@ export async function updateCashbookEntry(
         const error = e as Error;
         return { message: error.message || 'An unexpected error occurred.', success: false };
     }
+}
+
+const LoadInternalSchema = z.object({
+  transactionType: z.string().min(1, 'Transaction type is required.'),
+  amount: z.coerce.number().positive('Amount must be positive.'),
+  paymentMethod: z.string().optional(),
+  description: z.string().optional(),
+});
+
+export async function loadInternalAccount(
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  try {
+    const parsed = LoadInternalSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) {
+      const fields: Record<string, string> = {};
+      for (const key in parsed.error.format()) {
+        if (key !== '_errors') fields[key] = (parsed.error.format() as any)[key]?._errors.join(', ');
+      }
+      return { message: 'Invalid form data.', fields, success: false };
+    }
+
+    const { transactionType, amount, paymentMethod, description } = parsed.data;
+
+    // Record as cashbook income entry
+    await addCashbookEntryToDb('income', {
+      date: new Date().toISOString().split('T')[0],
+      description: [transactionType, description].filter(Boolean).join(' — '),
+      category: transactionType,
+      amount,
+      paymentMethod,
+    });
+
+    // Credit the general pool account if configured
+    await updateGeneralPoolBalance(amount);
+
+    revalidatePath('/accounting');
+    revalidatePath('/');
+    return {
+      message: `RWF ${amount.toLocaleString()} loaded via ${paymentMethod ?? 'unspecified method'}.`,
+      success: true,
+    };
+  } catch (e) {
+    const error = e as Error;
+    return { message: error.message || 'An unexpected error occurred.', success: false };
+  }
 }
 
 export async function deleteCashbookEntry(type: 'income' | 'expenses', id: string): Promise<{ success: boolean; message: string; }> {

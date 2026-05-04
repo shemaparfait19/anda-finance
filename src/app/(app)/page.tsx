@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getMembers, getTransactions, getDashboardStats, getLoans } from "@/lib/data-service";
+import { getMembers, getTransactions, getDashboardStats, getLoans, getGeneralPoolAccount } from "@/lib/data-service";
 import { MemberAvatar } from "@/components/member-avatar";
 import SavingsVsLoansChart from "@/components/charts/savings-vs-loans-chart";
 
@@ -49,14 +49,17 @@ export default async function DashboardPage() {
     redirect('/admin');
   }
 
-  const [members, transactions, stats, loans] = await Promise.all([
+  const [members, transactions, stats, loans, poolAccount] = await Promise.all([
     getMembers(),
     getTransactions(),
     getDashboardStats(),
     getLoans(),
+    getGeneralPoolAccount(),
   ]);
 
-  const totalSavings = members.reduce((acc, m) => acc + m.savingsBalance, 0);
+  const totalSavings = poolAccount
+    ? poolAccount.balance
+    : members.reduce((acc, m) => acc + m.savingsBalance, 0);
   const totalLoans = members.reduce((acc, m) => acc + m.loanBalance, 0);
   const activeMembers = members.filter((m) => m.status === "Active").length;
 
@@ -114,7 +117,9 @@ export default async function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="border-l-4 border-l-primary">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {poolAccount ? (poolAccount.accountName ?? poolAccount.accountNumber) : 'Total Savings'}
+              </CardTitle>
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>

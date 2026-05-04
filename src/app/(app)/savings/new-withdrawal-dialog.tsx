@@ -98,9 +98,12 @@ export default function NewWithdrawalDialog({ members, accounts = [], selectedMe
             </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+                {/* Debit Member Account */}
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Member</Label>
-                    <div className='col-span-3'>
+                    <Label className="text-right text-xs leading-tight">
+                        Debit<br/>Member Acct
+                    </Label>
+                    <div className='col-span-3 space-y-2'>
                         <Select
                             name="memberId"
                             defaultValue={selectedMemberId}
@@ -108,7 +111,7 @@ export default function NewWithdrawalDialog({ members, accounts = [], selectedMe
                             disabled={!!selectedMemberId}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a member" />
+                                <SelectValue placeholder="Select member" />
                             </SelectTrigger>
                             <SelectContent>
                                 {members.map(member => (
@@ -116,12 +119,7 @@ export default function NewWithdrawalDialog({ members, accounts = [], selectedMe
                                 ))}
                             </SelectContent>
                         </Select>
-                        {state.fields?.memberId && <p className="text-sm text-destructive mt-1">{state.fields.memberId}</p>}
-                    </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Account</Label>
-                    <div className='col-span-3'>
+                        {state.fields?.memberId && <p className="text-sm text-destructive">{state.fields.memberId}</p>}
                         {(() => {
                             const memberAccounts = accounts.filter(a => a.memberId === pickedMemberId);
                             if (selectedAccountNumber) {
@@ -146,7 +144,7 @@ export default function NewWithdrawalDialog({ members, accounts = [], selectedMe
                                     name="account"
                                     value={memberAccounts.length === 1 ? memberAccounts[0].accountNumber : undefined}
                                     defaultValue={memberAccounts.length === 1 ? memberAccounts[0].accountNumber : ''}
-                                    placeholder="e.g. BIF00501"
+                                    placeholder="Account number"
                                     autoComplete="off"
                                     readOnly={memberAccounts.length === 1}
                                 />
@@ -154,6 +152,7 @@ export default function NewWithdrawalDialog({ members, accounts = [], selectedMe
                         })()}
                     </div>
                 </div>
+                {/* Amount */}
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="amount" className="text-right">Amount</Label>
                     <div className='col-span-3'>
@@ -161,6 +160,22 @@ export default function NewWithdrawalDialog({ members, accounts = [], selectedMe
                         {state.fields?.amount && <p className="text-sm text-destructive mt-1">{state.fields.amount}</p>}
                     </div>
                 </div>
+                {/* Credit Account / Wallet */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="creditWallet" className="text-right text-xs leading-tight">
+                        Credit Acct /<br/>Wallet
+                    </Label>
+                    <div className='col-span-3'>
+                        <Input
+                            id="creditWallet"
+                            name="creditWallet"
+                            placeholder="e.g. Cash, Mobile Money, Bank A/C"
+                            autoComplete="off"
+                        />
+                        <p className="text-[11px] text-muted-foreground mt-1">Where funds are being paid out to</p>
+                    </div>
+                </div>
+                {/* Reason */}
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="reason" className="text-right">Reason</Label>
                     <div className='col-span-3'>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Loader2, Trash2, DatabaseZap } from 'lucide-react';
 import { Button }  from '@/components/ui/button';
 import {
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,
@@ -9,20 +9,33 @@ import {
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import { Input }   from '@/components/ui/input';
 import { Label }   from '@/components/ui/label';
+import { Badge }   from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { clearDemoData } from './data-actions';
+import { clearDemoData, configureGeneralPool } from './data-actions';
+import type { SavingsAccount } from '@/lib/types';
 
 interface SettingsPageProps {
   canClearData?: boolean;
+  internalAccounts?: SavingsAccount[];
+  currentPoolAccountId?: string | null;
 }
 
-export default function SettingsPage({ canClearData = false }: SettingsPageProps) {
+export default function SettingsPage({
+  canClearData = false,
+  internalAccounts = [],
+  currentPoolAccountId = null,
+}: SettingsPageProps) {
   const { toast }  = useToast();
   const [open,     setOpen]     = useState(false);
   const [confirm,  setConfirm]  = useState('');
   const [loading,  setLoading]  = useState(false);
+  const [poolId,   setPoolId]   = useState<string>(currentPoolAccountId ?? 'none');
+  const [poolSaving, setPoolSaving] = useState(false);
 
   const handleClear = async () => {
     setLoading(true);
@@ -37,8 +50,69 @@ export default function SettingsPage({ canClearData = false }: SettingsPageProps
     });
   };
 
+  const handleSavePool = async () => {
+    setPoolSaving(true);
+    const result = await configureGeneralPool(poolId === 'none' ? null : poolId);
+    setPoolSaving(false);
+    toast({
+      title: result.success ? 'Saved' : 'Error',
+      description: result.message,
+      variant: result.success ? 'default' : 'destructive',
+    });
+  };
+
   return (
     <div className="space-y-6">
+      {/* General Pool Account */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DatabaseZap className="h-4 w-4 text-primary" />
+            General Pool Account
+          </CardTitle>
+          <CardDescription>
+            Designate one Internal savings account as the General Pool. Its balance will appear
+            as <strong>Total Savings</strong> on the dashboard and will be automatically credited
+            or debited whenever a member deposit or withdrawal is recorded.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {internalAccounts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No Internal savings accounts found. Create an account of type&nbsp;
+              <Badge variant="outline">Internal</Badge> in the Savings section first.
+            </p>
+          ) : (
+            <div className="grid gap-2 max-w-sm">
+              <Label>Select Internal Account</Label>
+              <Select value={poolId} onValueChange={setPoolId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose account…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— None —</SelectItem>
+                  {internalAccounts.map(a => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.accountNumber}{a.accountName ? ` — ${a.accountName}` : ''}
+                      {' '}(RWF {a.balance.toLocaleString()})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Only <Badge variant="outline" className="text-[10px] px-1 py-0">Internal</Badge> accounts are eligible.
+              </p>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="border-t px-6 py-4">
+          <Button onClick={handleSavePool} disabled={poolSaving || internalAccounts.length === 0}>
+            {poolSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Pool Configuration
+          </Button>
+        </CardFooter>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>System Settings</CardTitle>

@@ -9,6 +9,7 @@ import { auth }           from '@/auth';
 import { canApprove }     from '@/lib/permissions';
 import { getPendingActions } from '@/lib/pending-actions-service';
 import { initializeDatabase } from '@/lib/database';
+import { getSavingsAccounts, getGeneralPoolAccount } from '@/lib/data-service';
 import type { User, UserRole } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -94,7 +95,18 @@ export default async function AdminPage() {
 
   // ── IT_ADMIN — settings only ────────────────────────────────────────────────
   if (isITAdmin) {
-    return <SettingsPage canClearData={false} />;
+    const [allAccounts, poolAccount] = await Promise.all([
+      getSavingsAccounts(),
+      getGeneralPoolAccount(),
+    ]);
+    const internalAccounts = allAccounts.filter(a => a.type === 'Internal');
+    return (
+      <SettingsPage
+        canClearData={false}
+        internalAccounts={internalAccounts}
+        currentPoolAccountId={poolAccount?.id ?? null}
+      />
+    );
   }
 
   // ── SUPER_ADMIN — system control panel ─────────────────────────────────────

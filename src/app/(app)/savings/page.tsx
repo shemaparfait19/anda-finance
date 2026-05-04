@@ -1,5 +1,3 @@
-import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
-
 import { getSavingsAccounts, getMembers } from "@/lib/data-service";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -12,8 +10,6 @@ import {
 } from "@/components/ui/card";
 import SavingsAccountsTable from "./savings-accounts-table";
 import type { SavingsAccount } from "@/lib/types";
-import NewDepositDialog from "./new-deposit-dialog";
-import NewWithdrawalDialog from "./new-withdrawal-dialog";
 import CreateAccountDialog from "./create-account-dialog";
 
 // Force dynamic rendering to access environment variables
@@ -45,30 +41,6 @@ export default async function SavingsPage() {
           </TabsList>
         </div>
         <div className="flex items-center gap-2 sm:ml-auto">
-          <NewWithdrawalDialog
-            members={members}
-            accounts={savingsAccounts}
-            trigger={
-              <Button size="sm" variant="outline" className="h-8 gap-1">
-                <ArrowUpCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  New Withdrawal
-                </span>
-              </Button>
-            }
-          />
-          <NewDepositDialog
-            members={members}
-            accounts={savingsAccounts}
-            trigger={
-              <Button size="sm" className="h-8 gap-1">
-                <ArrowDownCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  New Deposit
-                </span>
-              </Button>
-            }
-          />
           <CreateAccountDialog members={members} trigger={<Button size="sm" variant="secondary">Create Account</Button>} />
         </div>
       </div>

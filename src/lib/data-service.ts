@@ -391,6 +391,70 @@ export async function getSavingsAccounts(): Promise<SavingsAccount[]> {
   }
 }
 
+// General Pool Account — IT-configurable account that mirrors total member savings
+export async function getGeneralPoolAccount(): Promise<SavingsAccount | null> {
+  try {
+    await ensureInitialized();
+    const groupId = await getGroupId();
+    const result = await sql`
+      SELECT id, member_id as "memberId", member_name as "memberName",
+             account_number as "accountNumber", type, balance,
+             account_name as "accountName", open_date as "openDate", is_general_pool as "isGeneralPool"
+      FROM savings_accounts
+      WHERE group_id = ${groupId} AND is_general_pool = true
+      LIMIT 1
+    `;
+    if (result.length === 0) return null;
+    const row = result[0];
+    return {
+      id: row.id,
+      memberId: row.memberId || undefined,
+      memberName: row.memberName || undefined,
+      accountNumber: row.accountNumber,
+      type: row.type,
+      balance: Number(row.balance),
+      accountName: row.accountName || undefined,
+      openDate: row.openDate instanceof Date ? row.openDate.toISOString().split("T")[0] : row.openDate,
+    } as SavingsAccount;
+  } catch (error) {
+    handleDatabaseError(error, "getGeneralPoolAccount");
+    return null;
+  }
+}
+
+export async function setGeneralPoolAccount(accountId: string | null): Promise<void> {
+  try {
+    await ensureInitialized();
+    const groupId = await getGroupId();
+    // Unset any existing pool account for this group
+    await sql`UPDATE savings_accounts SET is_general_pool = false WHERE group_id = ${groupId}`;
+    // Set the new one (if provided)
+    if (accountId) {
+      await sql`UPDATE savings_accounts SET is_general_pool = true WHERE id = ${accountId} AND group_id = ${groupId}`;
+    }
+    revalidatePath("/");
+    revalidatePath("/admin");
+  } catch (error) {
+    handleDatabaseError(error, "setGeneralPoolAccount");
+    throw error;
+  }
+}
+
+export async function updateGeneralPoolBalance(delta: number): Promise<void> {
+  try {
+    await ensureInitialized();
+    const groupId = await getGroupId();
+    await sql`
+      UPDATE savings_accounts
+      SET balance = balance + ${delta}, updated_at = CURRENT_TIMESTAMP
+      WHERE group_id = ${groupId} AND is_general_pool = true
+    `;
+  } catch (error) {
+    // Non-fatal: pool sync failure should not block the main transaction
+    console.error("[pool] Failed to update general pool balance:", error);
+  }
+}
+
 export async function updateSavingsAccount(
   memberId: string,
   amount: number,

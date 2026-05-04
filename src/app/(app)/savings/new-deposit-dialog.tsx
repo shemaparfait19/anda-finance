@@ -189,9 +189,35 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
             {depositType === "single" ? (
                 <form ref={formRef} action={formAction}>
                     <div className="grid gap-4 py-4">
+                        {/* Debit Account Number (source — informational) */}
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right">Member</Label>
+                            <Label htmlFor="debitAcct" className="text-right text-xs leading-tight">
+                                Debit<br/>Account No.
+                            </Label>
                             <div className='col-span-3'>
+                                <Input
+                                    id="debitAcct"
+                                    name="debitAccountNumber"
+                                    placeholder="Source account / cash reference"
+                                    autoComplete="off"
+                                />
+                                <p className="text-[11px] text-muted-foreground mt-1">Where the money is coming from</p>
+                            </div>
+                        </div>
+                        {/* Amount */}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="amount" className="text-right">Amount</Label>
+                            <div className='col-span-3'>
+                                <Input id="amount" name="amount" type="number" placeholder='RWF 0' className="w-full" />
+                                {state.fields?.amount && <p className="text-sm text-destructive mt-1">{state.fields.amount}</p>}
+                            </div>
+                        </div>
+                        {/* Credit Member Account */}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right text-xs leading-tight">
+                                Credit<br/>Member Acct
+                            </Label>
+                            <div className='col-span-3 space-y-2'>
                                 <Select
                                     name="memberId"
                                     defaultValue={selectedMemberId}
@@ -199,7 +225,7 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
                                     disabled={!!selectedMemberId}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select a member" />
+                                        <SelectValue placeholder="Select member" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {members.map(member => (
@@ -207,12 +233,8 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {state.fields?.memberId && <p className="text-sm text-destructive mt-1">{state.fields.memberId}</p>}
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right">Account</Label>
-                            <div className='col-span-3'>
+                                {state.fields?.memberId && <p className="text-sm text-destructive">{state.fields.memberId}</p>}
+                                {/* Account within the member */}
                                 {(() => {
                                     const memberAccounts = accounts.filter(a => a.memberId === pickedMemberId);
                                     if (selectedAccountNumber) {
@@ -237,7 +259,7 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
                                             name="account"
                                             value={memberAccounts.length === 1 ? memberAccounts[0].accountNumber : undefined}
                                             defaultValue={memberAccounts.length === 1 ? memberAccounts[0].accountNumber : ''}
-                                            placeholder="e.g. BIF00501"
+                                            placeholder="Account number"
                                             autoComplete="off"
                                             readOnly={memberAccounts.length === 1}
                                         />
@@ -245,25 +267,16 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
                                 })()}
                             </div>
                         </div>
+                        {/* Reason */}
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="amount" className="text-right">
-                            Amount
-                            </Label>
-                            <div className='col-span-3'>
-                                <Input id="amount" name="amount" type="number" placeholder='RWF 0' className="w-full" />
-                                {state.fields?.amount && <p className="text-sm text-destructive mt-1">{state.fields.amount}</p>}
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="reason" className="text-right">
-                            Reason
-                            </Label>
+                            <Label htmlFor="reason" className="text-right">Reason</Label>
                             <div className='col-span-3'>
                                 <Input id="reason" name="reason" placeholder="Reason for deposit" />
                             </div>
                         </div>
                     </div>
                     <DialogFooter>
+                        <DialogClose asChild><Button variant="outline" type="button">Cancel</Button></DialogClose>
                         <SubmitButton />
                     </DialogFooter>
                 </form>

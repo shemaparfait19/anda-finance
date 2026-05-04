@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getPaymentLedger } from "@/lib/data-service";
+import { getPaymentLedger, getMembers, getSavingsAccounts } from "@/lib/data-service";
 import {
   Card,
   CardContent,
@@ -8,12 +8,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ArrowDownCircle, ArrowUpCircle, Banknote, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import PaymentsTable from "./payments-table";
+import NewDepositDialog from "@/app/(app)/savings/new-deposit-dialog";
+import NewWithdrawalDialog from "@/app/(app)/savings/new-withdrawal-dialog";
 
 export const dynamic = "force-dynamic";
 
 export default async function PaymentsPage() {
-  const transactions = await getPaymentLedger();
+  const [transactions, members, accounts] = await Promise.all([
+    getPaymentLedger(),
+    getMembers(),
+    getSavingsAccounts(),
+  ]);
 
   const totalDeposits = transactions
     .filter((t) => t.type === "Deposit")
@@ -33,6 +40,30 @@ export default async function PaymentsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Action buttons */}
+      <div className="flex items-center gap-2 justify-end">
+        <NewWithdrawalDialog
+          members={members}
+          accounts={accounts}
+          trigger={
+            <Button size="sm" variant="outline" className="h-8 gap-1">
+              <ArrowUpCircle className="h-3.5 w-3.5" />
+              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">New Withdrawal</span>
+            </Button>
+          }
+        />
+        <NewDepositDialog
+          members={members}
+          accounts={accounts}
+          trigger={
+            <Button size="sm" className="h-8 gap-1">
+              <ArrowDownCircle className="h-3.5 w-3.5" />
+              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">New Deposit</span>
+            </Button>
+          }
+        />
+      </div>
+
       {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

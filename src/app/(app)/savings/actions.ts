@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { getMemberById, updateMember, updateSavingsAccount, addTransaction } from '@/lib/data-service';
+import { getMemberById, updateMember, updateSavingsAccount, addTransaction, updateGeneralPoolBalance } from '@/lib/data-service';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { requiresApproval } from '@/lib/permissions';
@@ -80,6 +80,9 @@ async function handleTransaction(
             amount: amount,
             date: new Date().toISOString().split('T')[0],
         }, account ?? undefined, reason ?? undefined);
+
+        // Keep General Pool in sync (non-fatal)
+        await updateGeneralPoolBalance(transactionAmount);
 
         revalidatePath('/savings');
         revalidatePath('/'); // For dashboard totals

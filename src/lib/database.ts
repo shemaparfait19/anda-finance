@@ -429,6 +429,9 @@ async function insertInitialData() {
     await sql`ALTER TABLE journal_entries  ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
     await sql`ALTER TABLE pending_actions  ADD COLUMN IF NOT EXISTS group_id VARCHAR(50)`;
 
+    // General Pool Account flag
+    await sql`ALTER TABLE savings_accounts ADD COLUMN IF NOT EXISTS is_general_pool BOOLEAN DEFAULT FALSE`;
+
     // Migrate old role names to new format
     await sql`UPDATE users SET role = 'SUPER_ADMIN' WHERE role = 'Admin'`;
     await sql`UPDATE users SET role = 'ADMIN_FULL'    WHERE role = 'Manager'`;
