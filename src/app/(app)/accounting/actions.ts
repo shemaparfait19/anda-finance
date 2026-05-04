@@ -118,15 +118,11 @@ export async function loadInternalAccount(
 
     const { transactionType, accountNumber, amount, paymentMethod, description } = parsed.data;
 
-    // Generate a short trace ID: TYPE-XXXXXXXX
-    const typeCode = transactionType.replace(/\s+/g, '').toUpperCase().slice(0, 10);
-    const shortId  = Date.now().toString(36).toUpperCase();
-    const traceId  = `${typeCode}-${shortId}`;
-
-    // Format: TYPE-TxnID[-Description]
+    // Auto-generate short transaction ID, format: TYPE-TxnID-Description
+    const txnId = Date.now().toString(36).toUpperCase();
     const tracedDescription = description
-      ? `${traceId}-${description}`
-      : traceId;
+      ? `${transactionType}-${txnId}-${description}`
+      : `${transactionType}-${txnId}`;
 
     // Record as cashbook income entry
     await addCashbookEntryToDb('income', {
@@ -145,7 +141,7 @@ export async function loadInternalAccount(
     revalidatePath('/payments');
     revalidatePath('/');
     return {
-      message: `RWF ${amount.toLocaleString()} loaded. Trace ID: ${traceId}`,
+      message: `RWF ${amount.toLocaleString()} loaded. ID: ${transactionType}-${txnId}`,
       success: true,
     };
   } catch (e) {
