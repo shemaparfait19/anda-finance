@@ -455,6 +455,22 @@ export async function updateGeneralPoolBalance(delta: number): Promise<void> {
   }
 }
 
+export async function creditSavingsAccountByNumber(accountNumber: string, delta: number): Promise<boolean> {
+  try {
+    await ensureInitialized();
+    const groupId = await getGroupId();
+    const result = await sql`
+      UPDATE savings_accounts
+      SET balance = balance + ${delta}, updated_at = CURRENT_TIMESTAMP
+      WHERE group_id = ${groupId} AND account_number = ${accountNumber}
+    `;
+    return (result as any).rowCount > 0;
+  } catch (error) {
+    console.error("[pool] Failed to credit savings account by number:", error);
+    return false;
+  }
+}
+
 export async function updateSavingsAccount(
   memberId: string,
   amount: number,

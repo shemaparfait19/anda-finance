@@ -7,6 +7,7 @@ import {
   updateCashbookEntry as updateCashbookEntryInDb,
   deleteCashbookEntry as deleteCashbookEntryFromDb,
   updateGeneralPoolBalance,
+  creditSavingsAccountByNumber,
 } from '@/lib/data-service';
 import { revalidatePath } from 'next/cache';
 
@@ -134,11 +135,19 @@ export async function loadInternalAccount(
       reference: accountNumber ?? undefined,
     });
 
-    // Credit the general pool account if configured
-    await updateGeneralPoolBalance(amount);
+    // Credit the specified account by number; fall back to general pool if none given
+    if (accountNumber) {
+      const credited = await creditSavingsAccountByNumber(accountNumber, amount);
+      if (!credited) {
+        return { message: `Account number "${accountNumber}" not found in your group.`, success: false };
+      }
+    } else {
+      await updateGeneralPoolBalance(amount);
+    }
 
     revalidatePath('/accounting');
     revalidatePath('/payments');
+    revalidatePath('/savings');
     revalidatePath('/');
     return {
       message: `RWF ${amount.toLocaleString()} loaded. ID: ${transactionType}-${txnId}`,

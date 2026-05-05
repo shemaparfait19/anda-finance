@@ -30,10 +30,10 @@ const initialState = {
   success: false,
 };
 
-function SubmitButton() {
+function SubmitButton({ blocked }: { blocked?: boolean }) {
     const { pending } = useFormStatus();
     return (
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending || blocked}>
             {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Submit Deposit
         </Button>
@@ -64,6 +64,7 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
   const matchedAccount = accounts.find(
     a => a.accountNumber.toLowerCase() === creditAccountNo.trim().toLowerCase()
   );
+  const isInternalAccount = matchedAccount?.type === 'Internal';
   const matchedMemberId = matchedAccount?.memberId ?? (selectedMemberId ?? '');
   
   // Results dialog state
@@ -236,17 +237,18 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
                                 />
                                 {/* Auto-fetched account / member name */}
                                 {creditAccountNo.trim() && (
-                                    matchedAccount ? (
+                                    !matchedAccount ? (
+                                        <p className="text-xs text-destructive px-1">Account not found</p>
+                                    ) : isInternalAccount ? (
+                                        <p className="text-xs text-amber-600 dark:text-amber-400 font-medium px-1">
+                                            Internal account — use <strong>Load Mirror Account</strong> to credit this account
+                                        </p>
+                                    ) : (
                                         <p className="text-xs text-green-600 dark:text-green-400 font-medium px-1">
                                             {matchedAccount.memberName ?? 'Unknown member'}
                                             {matchedAccount.accountName ? ` — ${matchedAccount.accountName}` : ''}
                                         </p>
-                                    ) : (
-                                        <p className="text-xs text-destructive px-1">Account not found</p>
                                     )
-                                )}
-                                {state.fields?.memberId && (
-                                    <p className="text-sm text-destructive">{state.fields.memberId}</p>
                                 )}
                             </div>
                         </div>
@@ -260,7 +262,7 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
                     </div>
                     <DialogFooter>
                         <DialogClose asChild><Button variant="outline" type="button">Cancel</Button></DialogClose>
-                        <SubmitButton />
+                        <SubmitButton blocked={isInternalAccount} />
                     </DialogFooter>
                 </form>
             ) : (
