@@ -117,12 +117,12 @@ export default function AboutPage() {
         className="relative flex items-center bg-[#0d1526] bg-cover bg-top px-5 sm:px-8 py-24 md:py-32 min-h-[88vh]"
         style={{ backgroundImage: "url('https://www.shutterstock.com/image-photo/happy-employee-woman-smartphone-office-600nw-2614190487.jpg')" }}
       >
-        {/* Layer 1 — overall navy tint that merges image into brand colour */}
-        <div className="absolute inset-0" style={{ background: 'rgba(13,21,38,0.60)' }} />
-        {/* Layer 2 — gradient: solid navy on left (text area) fading to transparent right */}
+        {/* Layer 1 — light navy tint across the whole image */}
+        <div className="absolute inset-0" style={{ background: 'rgba(13,21,38,0.35)' }} />
+        {/* Layer 2 — gradient: solid navy on left for text readability, clear on right */}
         <div
           className="absolute inset-0"
-          style={{ background: 'linear-gradient(100deg, #0d1526 38%, rgba(13,21,38,0.15) 100%)' }}
+          style={{ background: 'linear-gradient(100deg, rgba(13,21,38,0.82) 30%, rgba(13,21,38,0.05) 100%)' }}
         />
 
         <div className="relative z-10 max-w-5xl mx-auto w-full">
