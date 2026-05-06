@@ -48,103 +48,145 @@ async function downloadPDF(reportType: string, data: ReportData): Promise<void> 
   const autoTable = (await import("jspdf-autotable")).default;
 
   const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const today = new Date().toLocaleDateString();
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+  const M = 18;
+  const statementDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const reportLabel = REPORT_TYPES.find((r) => r.id === reportType)?.name ?? reportType;
 
-  doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
-  doc.text("ANDA Finance", pageWidth / 2, 18, { align: "center" });
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Generated: ${today}`, pageWidth / 2, 26, { align: "center" });
+  let y = 18;
+
+  // Org header
+  doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(0, 0, 0);
+  doc.text("ANDA FINANCE", M, y);
+  y += 5;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+  doc.text("Savings & Microfinance Institution", M, y);
+  y += 4;
+  doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.6);
+  doc.line(M, y, W - M, y);
+  y += 6;
+
+  doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0);
+  doc.text(reportLabel.toUpperCase(), W / 2, y, { align: "center" });
+  y += 9;
+
+  const plainHead = { fillColor: false as any, textColor: [0,0,0] as [number,number,number], fontStyle: "bold" as const, fontSize: 8,
+    cellPadding: { top:2, bottom:3, left:2, right:2 }, lineWidth: { bottom: 0.5 } as any, lineColor: [0,0,0] as [number,number,number] };
+  const plainBody = { fontSize: 8, cellPadding: { top:2, bottom:2, left:2, right:2 }, textColor: [0,0,0] as [number,number,number],
+    lineWidth: { bottom: 0.2 } as any, lineColor: [210,210,210] as [number,number,number] };
 
   if (data.type === "member_statement") {
-    const { member, accounts, transactions, loans } = data;
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "bold");
-    doc.text("Member Statement", pageWidth / 2, 36, { align: "center" });
+    const { member, accounts, transactions } = data;
 
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Name: ${member.name}`, 14, 48);
-    doc.text(`Member ID: ${member.memberId}`, 14, 55);
-    doc.text(`Status: ${member.status}`, 14, 62);
-    doc.text(`Join Date: ${new Date(member.joinDate).toLocaleDateString()}`, 14, 69);
-    doc.text(`Savings Balance: RWF ${member.savingsBalance.toLocaleString()}`, 14, 76);
-    doc.text(`Loan Balance: RWF ${member.loanBalance.toLocaleString()}`, 14, 83);
+    // Info grid
+    const col2 = W / 2 + 4;
+    const infoItems: [string, string, number, number][] = [
+      ["Member Name",   member.name,                                         M,    y],
+      ["Member ID",     member.memberId,                                     col2, y],
+      ["Status",        member.status,                                       M,    y + 9],
+      ["Join Date",     new Date(member.joinDate).toLocaleDateString('en-GB'), col2, y + 9],
+      ["Savings",       `RWF ${member.savingsBalance.toLocaleString()}`,     M,    y + 18],
+      ["Loan Balance",  `RWF ${member.loanBalance.toLocaleString()}`,        col2, y + 18],
+    ];
+    infoItems.forEach(([label, value, x, iy]) => {
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
+      doc.text(label, x, iy);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(0, 0, 0);
+      doc.text(value, x, iy + 4);
+    });
+    y += 27;
+
+    doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.3);
+    doc.line(M, y, W - M, y);
+    y += 5;
 
     if (accounts.length > 0) {
-      doc.setFont("helvetica", "bold");
-      doc.text("Savings Accounts", 14, 95);
       autoTable(doc, {
-        startY: 99,
+        startY: y,
         head: [["Account No.", "Type", "Name", "Balance (RWF)"]],
         body: accounts.map((a: any) => [a.accountNumber, a.type, a.accountName || "-", Number(a.balance).toLocaleString()]),
-        theme: "grid",
-        headStyles: { fillColor: [42, 120, 134] },
+        theme: "plain", margin: { left: M, right: M },
+        headStyles: plainHead, bodyStyles: plainBody,
+        alternateRowStyles: { fillColor: [248,248,248] },
+        columnStyles: { 3: { halign: "right" } },
       });
+      y = (doc as any).lastAutoTable.finalY + 8;
     }
 
-    const afterAccounts = (doc as any).lastAutoTable?.finalY ?? 100;
     if (transactions.length > 0) {
-      doc.setFont("helvetica", "bold");
-      doc.text("Recent Transactions", 14, afterAccounts + 10);
       autoTable(doc, {
-        startY: afterAccounts + 14,
+        startY: y,
         head: [["Date", "Type", "Amount (RWF)", "Status"]],
         body: transactions.slice(0, 30).map((t: any) => [t.date, t.type, Number(t.amount).toLocaleString(), t.status]),
-        theme: "grid",
-        headStyles: { fillColor: [42, 120, 134] },
+        theme: "plain", margin: { left: M, right: M },
+        headStyles: plainHead, bodyStyles: plainBody,
+        alternateRowStyles: { fillColor: [248,248,248] },
+        columnStyles: { 2: { halign: "right" } },
       });
     }
   } else if (data.type === "group_summary") {
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "bold");
-    doc.text("Group Summary Report", pageWidth / 2, 36, { align: "center" });
+    doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.3);
+    doc.line(M, y, W - M, y);
+    y += 5;
     autoTable(doc, {
-      startY: 44,
+      startY: y,
       head: [["Name", "Member ID", "Status", "Savings (RWF)", "Loan Balance (RWF)"]],
       body: data.members.map((m: any) => [m.name, m.memberId, m.status, m.savingsBalance.toLocaleString(), m.loanBalance.toLocaleString()]),
-      theme: "grid",
-      headStyles: { fillColor: [42, 120, 134] },
+      theme: "plain", margin: { left: M, right: M },
+      headStyles: plainHead, bodyStyles: plainBody,
+      alternateRowStyles: { fillColor: [248,248,248] },
+      columnStyles: { 3: { halign: "right" }, 4: { halign: "right" } },
     });
   } else if (data.type === "loan_portfolio") {
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "bold");
-    doc.text("Loan Portfolio Report", pageWidth / 2, 36, { align: "center" });
+    doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.3);
+    doc.line(M, y, W - M, y);
+    y += 5;
     autoTable(doc, {
-      startY: 44,
+      startY: y,
       head: [["Loan ID", "Member", "Principal (RWF)", "Balance (RWF)", "Rate %", "Status", "Due Date"]],
       body: data.loans.map((l: any) => [l.loanId, l.memberName, l.principal.toLocaleString(), l.balance.toLocaleString(), l.interestRate, l.status, l.dueDate]),
-      theme: "grid",
-      headStyles: { fillColor: [42, 120, 134] },
+      theme: "plain", margin: { left: M, right: M },
+      headStyles: plainHead, bodyStyles: plainBody,
+      alternateRowStyles: { fillColor: [248,248,248] },
+      columnStyles: { 2: { halign: "right" }, 3: { halign: "right" } },
     });
   } else if (data.type === "savings_report") {
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "bold");
-    doc.text("Savings Report", pageWidth / 2, 36, { align: "center" });
+    doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.3);
+    doc.line(M, y, W - M, y);
+    y += 5;
     autoTable(doc, {
-      startY: 44,
+      startY: y,
       head: [["Account No.", "Member", "Type", "Name", "Balance (RWF)", "Open Date"]],
       body: data.accounts.map((a: any) => [a.accountNumber, a.memberName || "Internal", a.type, a.accountName || "-", Number(a.balance).toLocaleString(), a.openDate]),
-      theme: "grid",
-      headStyles: { fillColor: [42, 120, 134] },
+      theme: "plain", margin: { left: M, right: M },
+      headStyles: plainHead, bodyStyles: plainBody,
+      alternateRowStyles: { fillColor: [248,248,248] },
+      columnStyles: { 4: { halign: "right" } },
     });
   } else if (data.type === "arrears_list") {
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "bold");
-    doc.text("Loan Arrears List", pageWidth / 2, 36, { align: "center" });
+    doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.3);
+    doc.line(M, y, W - M, y);
+    y += 5;
     autoTable(doc, {
-      startY: 44,
+      startY: y,
       head: [["Loan ID", "Member", "Principal (RWF)", "Balance (RWF)", "Status", "Due Date"]],
       body: data.loans.map((l: any) => [l.loanId, l.memberName, l.principal.toLocaleString(), l.balance.toLocaleString(), l.status, l.dueDate]),
-      theme: "grid",
-      headStyles: { fillColor: [180, 30, 30] },
+      theme: "plain", margin: { left: M, right: M },
+      headStyles: plainHead, bodyStyles: plainBody,
+      alternateRowStyles: { fillColor: [248,248,248] },
+      columnStyles: { 2: { halign: "right" }, 3: { halign: "right" } },
     });
   }
 
-  const reportLabel = REPORT_TYPES.find((r) => r.id === reportType)?.name ?? reportType;
-  doc.save(`ANDA_${reportLabel.replace(/\s+/g, "_")}_${today.replace(/\//g, "-")}.pdf`);
+  // Footer
+  doc.setFont("helvetica", "italic"); doc.setFontSize(7); doc.setTextColor(150,150,150);
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.2);
+  doc.line(M, H - 14, W - M, H - 14);
+  doc.text(`This is a system-generated report.  ·  ANDA FINANCE  ·  Generated: ${statementDate}`, W/2, H - 9, { align: "center" });
+
+  const today = new Date().toISOString().split("T")[0];
+  doc.save(`ANDA_${reportLabel.replace(/\s+/g, "_")}_${today}.pdf`);
 }
 
 function buildRows(reportType: string, data: ReportData): { headers: string[]; rows: any[][] } {

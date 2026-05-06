@@ -70,44 +70,72 @@ export function MemberFinalBalance({ data }: Props) {
 
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const W = doc.internal.pageSize.getWidth();
-    const margin = 14;
+    const H = doc.internal.pageSize.getHeight();
+    const M = 18;
+    let y = 18;
 
-    // Header
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text(ORGANIZATION_NAME, W / 2, 14, { align: "center" });
-    doc.setFontSize(11);
-    doc.text("MEMBER'S FINAL BALANCE", W / 2, 21, { align: "center" });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`Account Name: ${data.memberName}`, margin, 30);
-    doc.text(`Account No: ${data.accountNumber}`, W / 2, 30);
-    doc.text(`Member ID: ${data.memberId}`, margin, 36);
-    doc.text(`Date: ${data.statementDate}`, W / 2, 36);
+    // Org header
+    doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(0, 0, 0);
+    doc.text(ORGANIZATION_NAME, M, y);
+    y += 5;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+    doc.text("Savings & Microfinance Institution", M, y);
+    y += 4;
+    doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.6);
+    doc.line(M, y, W - M, y);
+    y += 6;
 
-    let y = 44;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0);
+    doc.text("MEMBER'S FINAL BALANCE", W / 2, y, { align: "center" });
+    y += 9;
+
+    // Info grid
+    const col2 = W / 2 + 4;
+    const infoItems: [string, string, number, number][] = [
+      ["Account Name",   data.memberName,    M,    y],
+      ["Account No.",    data.accountNumber, col2, y],
+      ["Member ID",      data.memberId,      M,    y + 9],
+      ["Statement Date", data.statementDate, col2, y + 9],
+    ];
+    infoItems.forEach(([label, value, x, iy]) => {
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
+      doc.text(label, x, iy);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(0, 0, 0);
+      doc.text(value, x, iy + 4);
+    });
+    y += 18;
+
+    doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.3);
+    doc.line(M, y, W - M, y);
+    y += 5;
+
+    const plainHead = { fillColor: false as any, textColor: [0,0,0] as [number,number,number], fontStyle: "bold" as const, fontSize: 8,
+      cellPadding: { top:2, bottom:3, left:2, right:2 }, lineWidth: { bottom: 0.5 } as any, lineColor: [0,0,0] as [number,number,number] };
+    const plainBody = { fontSize: 8, cellPadding: { top:2, bottom:2, left:2, right:2 }, textColor: [0,0,0] as [number,number,number],
+      lineWidth: { bottom: 0.2 } as any, lineColor: [210,210,210] as [number,number,number] };
 
     // Savings section
     autoTable(doc, {
       startY: y,
       head: [["SAVINGS / INTERESTS", "Amount (RWF)", "Shares", "Total Shares"]],
       body: [
-        ["Total Saved (Principle Amount)", fmt(data.principal), fmtShares(data.principalShares), ""],
+        ["Total Saved (Principal Amount)", fmt(data.principal), fmtShares(data.principalShares), ""],
         ["Interest Gained (Amount)", fmt(data.interest), fmtShares(data.interestShares), ""],
-        ["Total (Principle Amount and Interests)", fmt(data.total), fmtShares(data.totalShares), fmtShares(data.totalShares)],
-        [`Total Savings Amount (Open to Loan at ${LOAN_INTEREST_RATE}%)`, fmt(data.loanEligibility), "", ""],
+        ["Total (Principal + Interests)", fmt(data.total), fmtShares(data.totalShares), fmtShares(data.totalShares)],
+        [`Eligible for Loan (at ${LOAN_INTEREST_RATE}%)`, fmt(data.loanEligibility), "", ""],
       ],
-      theme: "grid",
-      headStyles: { fillColor: [42, 120, 134], textColor: 255, fontStyle: "bold", fontSize: 8 },
-      bodyStyles: { fontSize: 8 },
-      columnStyles: { 0: { cellWidth: 90 }, 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right", fontStyle: "bold" } },
+      theme: "plain",
+      margin: { left: M, right: M },
+      headStyles: plainHead,
+      bodyStyles: plainBody,
+      alternateRowStyles: { fillColor: [248,248,248] },
+      columnStyles: { 0: { cellWidth: "auto" }, 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right", fontStyle: "bold" } },
       didParseCell: (hookData) => {
-        if (hookData.row.index === 2) hookData.cell.styles.fontStyle = "bold";
-        if (hookData.row.index === 3) hookData.cell.styles.fillColor = [255, 243, 224];
+        if (hookData.row.index === 2) { hookData.cell.styles.fontStyle = "bold"; hookData.cell.styles.fillColor = [235,235,235]; (hookData.cell.styles as any).lineWidth = { top: 0.5 }; hookData.cell.styles.lineColor = [0,0,0]; }
       },
     });
 
-    y = (doc as any).lastAutoTable.finalY + 6;
+    y = (doc as any).lastAutoTable.finalY + 8;
 
     // Loans section
     const loanBody = data.loans.length > 0
@@ -121,17 +149,19 @@ export function MemberFinalBalance({ data }: Props) {
         ...loanBody,
         ["Total Current Loans", "", fmt(data.totalCurrentLoans), "", ""],
       ],
-      theme: "grid",
-      headStyles: { fillColor: [85, 85, 85], textColor: 255, fontStyle: "bold", fontSize: 8 },
-      bodyStyles: { fontSize: 8 },
-      columnStyles: { 0: { cellWidth: 80 }, 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "center" } },
+      theme: "plain",
+      margin: { left: M, right: M },
+      headStyles: plainHead,
+      bodyStyles: plainBody,
+      alternateRowStyles: { fillColor: [248,248,248] },
+      columnStyles: { 0: { cellWidth: "auto" }, 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "center" } },
       didParseCell: (hookData) => {
         const isLastRow = hookData.row.index === loanBody.length;
-        if (isLastRow) hookData.cell.styles.fontStyle = "bold";
+        if (isLastRow) { hookData.cell.styles.fontStyle = "bold"; hookData.cell.styles.fillColor = [235,235,235]; (hookData.cell.styles as any).lineWidth = { top: 0.5 }; hookData.cell.styles.lineColor = [0,0,0]; }
       },
     });
 
-    y = (doc as any).lastAutoTable.finalY + 6;
+    y = (doc as any).lastAutoTable.finalY + 8;
 
     // Final settlement section
     const activeLoansForSettlement = data.loans.filter(
@@ -139,15 +169,14 @@ export function MemberFinalBalance({ data }: Props) {
     );
 
     const settlementBody: any[] = [
-      ["Total Savings (Principle Amount and Interests)", fmt(data.total)],
-      ...activeLoansForSettlement.map((l) => [`Less: Loan (${l.label})`, `(${fmt(l.balance)})`]),
+      ["Total Savings (Principal + Interests)", fmt(data.total)],
+      ...activeLoansForSettlement.map((l) => [`  Less: Loan (${l.label})`, `(${fmt(l.balance)})`]),
     ];
-
     if (data.exitFee > 0) {
-      settlementBody.push([`Exit Fee (${data.exitFeeRate}%) from Total Savings`, `(${fmt(data.exitFee)})`]);
+      settlementBody.push([`  Exit Fee (${data.exitFeeRate}%) from Total Savings`, `(${fmt(data.exitFee)})`]);
     }
-
-    settlementBody.push(["Unpaid Account Charges (Related to Loan)", "0"]);
+    settlementBody.push(["  Unpaid Account Charges (Related to Loan)", "0"]);
+    const totalRowIdx = settlementBody.length;
     settlementBody.push(["TOTAL TO BE REFUNDED", fmt(data.totalToBeRefunded)]);
     settlementBody.push(["Net Closing Balance", "0"]);
 
@@ -155,35 +184,23 @@ export function MemberFinalBalance({ data }: Props) {
       startY: y,
       head: [["FINAL SETTLEMENT", "Amount (RWF)"]],
       body: settlementBody,
-      theme: "grid",
-      headStyles: { fillColor: [26, 122, 74], textColor: 255, fontStyle: "bold", fontSize: 8 },
-      bodyStyles: { fontSize: 8 },
-      columnStyles: { 0: { cellWidth: 130, fontStyle: "bold" }, 1: { halign: "right", fontStyle: "bold" } },
+      theme: "plain",
+      margin: { left: M, right: M },
+      headStyles: plainHead,
+      bodyStyles: plainBody,
+      alternateRowStyles: { fillColor: [248,248,248] },
+      columnStyles: { 0: { cellWidth: "auto", fontStyle: "bold" }, 1: { halign: "right", fontStyle: "bold" } },
       didParseCell: (hookData) => {
-        const refundRowIndex = settlementBody.length - 2;
-        const zeroRowIndex = settlementBody.length - 1;
-        if (hookData.row.index === refundRowIndex) {
-          hookData.cell.styles.fillColor = [26, 122, 74];
-          hookData.cell.styles.textColor = [255, 255, 255];
-          hookData.cell.styles.fontStyle = "bold";
-          hookData.cell.styles.fontSize = 10;
-        }
-        if (hookData.row.index === zeroRowIndex) {
-          hookData.cell.styles.fillColor = [85, 85, 85];
-          hookData.cell.styles.textColor = [255, 255, 255];
-          hookData.cell.styles.fontStyle = "bold";
-        }
+        if (hookData.row.index === totalRowIdx) { hookData.cell.styles.fontStyle = "bold"; hookData.cell.styles.fillColor = [235,235,235]; hookData.cell.styles.fontSize = 9; (hookData.cell.styles as any).lineWidth = { top: 0.5 }; hookData.cell.styles.lineColor = [0,0,0]; }
+        if (hookData.row.index === totalRowIdx + 1) { hookData.cell.styles.fontStyle = "bold"; hookData.cell.styles.fillColor = [235,235,235]; }
       },
     });
 
-    // Total shares badge
-    doc.setFillColor(42, 120, 134);
-    doc.roundedRect(W - margin - 40, 40, 40, 12, 2, 2, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255);
-    doc.text(`${fmtShares(data.totalShares)} shares`, W - margin - 20, 48, { align: "center" });
-    doc.setTextColor(0, 0, 0);
+    // Footer
+    doc.setFont("helvetica", "italic"); doc.setFontSize(7); doc.setTextColor(150,150,150);
+    doc.setDrawColor(200,200,200); doc.setLineWidth(0.2);
+    doc.line(M, H - 14, W - M, H - 14);
+    doc.text(`System-generated exit statement · ${ORGANIZATION_NAME} · Generated: ${data.statementDate}`, W/2, H - 9, { align: "center" });
 
     doc.save(`ANDA_FinalBalance_${data.memberId}_${new Date().toISOString().split("T")[0]}.pdf`);
   };

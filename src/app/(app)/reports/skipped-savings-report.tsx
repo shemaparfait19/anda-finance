@@ -48,26 +48,38 @@ async function downloadPDF(month: string, rows: SkippedSavingsRow[], groupName?:
   const { jsPDF } = await import("jspdf");
   const autoTable = (await import("jspdf-autotable")).default;
   const doc = new jsPDF({ orientation: "landscape" });
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+  const M = 18;
   const label = monthLabel(month);
-  const pageW = doc.internal.pageSize.getWidth();
+  const statementDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  let y = 18;
 
-  // Title block
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.text("SKIPPED SAVINGS", pageW / 2, 15, { align: "center" });
-  let y = 22;
-  if (groupName) {
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(groupName, pageW / 2, y, { align: "center" });
-    y += 7;
-  }
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Period: ${label}`, pageW / 2, y, { align: "center" });
+  // Org header
+  doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(0, 0, 0);
+  doc.text(groupName ?? "ANDA FINANCE", M, y);
+  y += 5;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+  doc.text("Savings & Microfinance Institution", M, y);
+  y += 4;
+  doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.6);
+  doc.line(M, y, W - M, y);
+  y += 6;
+
+  doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0);
+  doc.text("SKIPPED SAVINGS REPORT", W / 2, y, { align: "center" });
+  y += 6;
+
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+  doc.text(`Period: ${label}`, W / 2, y, { align: "center" });
+  y += 7;
+
+  doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.3);
+  doc.line(M, y, W - M, y);
+  y += 5;
 
   autoTable(doc, {
-    startY: y + 6,
+    startY: y,
     theme: "plain",
     head: [["No", "Names", "Phone Contact", `Monthly SHARE(S) (RWF)`, "Other Individual Savings (RWF)"]],
     body: rows.map((r) => [
@@ -77,38 +89,24 @@ async function downloadPDF(month: string, rows: SkippedSavingsRow[], groupName?:
       r.paidShares > 0 ? r.paidShares.toLocaleString() : "0",
       r.paidOther  > 0 ? r.paidOther.toLocaleString()  : "0",
     ]),
-    styles: {
-      fontSize: 9,
-      cellPadding: { top: 3, right: 4, bottom: 3, left: 4 },
-      textColor: [30, 30, 30],
-      lineColor: [180, 180, 180],
-      lineWidth: 0.1,
-    },
-    headStyles: {
-      fillColor: [34, 85, 34],
-      textColor: [255, 255, 255],
-      fontStyle: "bold",
-      lineColor: [34, 85, 34],
-      lineWidth: 0,
-    },
-    alternateRowStyles: {
-      fillColor: [248, 248, 248],
-    },
+    margin: { left: M, right: M },
+    headStyles: { fillColor: false as any, textColor: [0,0,0] as [number,number,number], fontStyle: "bold" as const, fontSize: 8,
+      cellPadding: { top:2, bottom:3, left:2, right:2 }, lineWidth: { bottom: 0.5 } as any, lineColor: [0,0,0] as [number,number,number] },
+    bodyStyles: { fontSize: 8, cellPadding: { top:2, bottom:2, left:2, right:2 }, textColor: [0,0,0] as [number,number,number],
+      lineWidth: { bottom: 0.2 } as any, lineColor: [210,210,210] as [number,number,number] },
+    alternateRowStyles: { fillColor: [248,248,248] },
     columnStyles: {
       0: { cellWidth: 12, halign: "center" },
       3: { halign: "right" },
       4: { halign: "right" },
     },
-    // Draw a simple bottom border under each row instead of full cell boxes
-    didDrawCell: (data: any) => {
-      if (data.section === "body") {
-        const { doc: d, cell } = data;
-        d.setDrawColor(200, 200, 200);
-        d.setLineWidth(0.1);
-        d.line(cell.x, cell.y + cell.height, cell.x + cell.width, cell.y + cell.height);
-      }
-    },
   });
+
+  // Footer
+  doc.setFont("helvetica", "italic"); doc.setFontSize(7); doc.setTextColor(150,150,150);
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.2);
+  doc.line(M, H - 14, W - M, H - 14);
+  doc.text(`System-generated skipped savings report · ANDA FINANCE · Generated: ${statementDate}`, W/2, H - 9, { align: "center" });
 
   doc.save(`skipped-savings-${month}.pdf`);
 }

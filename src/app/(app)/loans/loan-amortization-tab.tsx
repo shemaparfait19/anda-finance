@@ -156,101 +156,95 @@ export default function LoanAmortizationTab({ members }: Props) {
 
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     const W = doc.internal.pageSize.getWidth();
-    const M = 14;
+    const H = doc.internal.pageSize.getHeight();
+    const M = 18;
+    const statementDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    let y = 18;
 
-    // Header
-    doc.setFillColor(42, 120, 134);
-    doc.rect(0, 0, W, 28, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(255, 255, 255);
-    doc.text(ORGANIZATION_NAME, W / 2, 11, { align: "center" });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(210, 235, 238);
-    doc.text("LOAN AMORTIZATION SCHEDULE", W / 2, 20, { align: "center" });
+    // Org header
+    doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(0, 0, 0);
+    doc.text(ORGANIZATION_NAME, M, y);
+    y += 5;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+    doc.text("Savings & Microfinance Institution", M, y);
+    y += 4;
+    doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.6);
+    doc.line(M, y, W - M, y);
+    y += 6;
 
-    // Meta
-    doc.setFillColor(248, 249, 250);
-    doc.rect(0, 28, W, 20, "F");
-    doc.setFontSize(8.5);
-    doc.setTextColor(30, 30, 30);
-    doc.setFont("helvetica", "normal");
-    const metaItems = [
-      [`Member: `, selectedMember?.name ?? "—"],
-      [`Loan Amount: `, `RWF ${fmt(amount)}`],
-      [`Term: `, termLabel],
-      [`Monthly Instalment: `, `RWF ${fmt(schedule.monthlyInstalment)}`],
-      [`Effective Rate: `, `${(effectiveMonthlyRate * 100).toFixed(2)}% / month`],
-      [`Total Interest: `, `RWF ${fmt(schedule.totalInterest)}`],
+    doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0);
+    doc.text("LOAN AMORTIZATION SCHEDULE", W / 2, y, { align: "center" });
+    y += 9;
+
+    // Info grid (3 columns for landscape)
+    const colW3 = (W - M * 2) / 3;
+    const metaItems: [string, string][] = [
+      ["Member",            selectedMember?.name ?? "—"],
+      ["Loan Amount",       `RWF ${fmt(amount)}`],
+      ["Term",              termLabel],
+      ["Monthly Instalment",`RWF ${fmt(schedule.monthlyInstalment)}`],
+      ["Effective Rate",    `${(effectiveMonthlyRate * 100).toFixed(2)}% / month`],
+      ["Total Interest",    `RWF ${fmt(schedule.totalInterest)}`],
     ];
-    const colW = (W - M * 2) / 3;
     metaItems.forEach(([label, value], i) => {
-      const col = Math.floor(i / 2);
-      const row = i % 2;
-      const x = M + col * colW;
-      const y = 35 + row * 7;
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(100, 100, 100);
-      doc.text(label, x, y);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(30, 30, 30);
-      doc.text(value, x + doc.getTextWidth(label) + 1, y);
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      const x = M + col * colW3;
+      const iy = y + row * 11;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
+      doc.text(label, x, iy);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(0, 0, 0);
+      doc.text(value, x, iy + 4);
     });
+    y += 22;
 
-    // Table
+    doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.3);
+    doc.line(M, y, W - M, y);
+    y += 5;
+
     const body = schedule.rows.map((r, i) => [
-      `${i + 1}`,
-      r.date,
-      fmt(r.openingBalance),
-      fmt(r.instalment),
-      fmt(r.principalPortion),
-      fmt(r.interest),
-      fmt(r.closingBalance),
+      `${i + 1}`, r.date, fmt(r.openingBalance), fmt(r.instalment),
+      fmt(r.principalPortion), fmt(r.interest), fmt(r.closingBalance),
     ]);
     body.push([
-      "",
-      `TOTAL (${termLabel})`,
-      fmt(amount),
+      "", `TOTAL (${termLabel})`, fmt(amount),
       fmt(schedule.rows.reduce((s, r) => s + r.instalment, 0)),
-      fmt(amount),
-      fmt(schedule.totalInterest),
-      "0",
+      fmt(amount), fmt(schedule.totalInterest), "0",
     ]);
 
     autoTable(doc, {
-      startY: 52,
-      head: [["#", "Date", "Principle Amount", "Instalment", "Amount", "Interests", "Remaining Loan"]],
+      startY: y,
+      head: [["#", "Date", "Principal Amount", "Instalment", "Principal Portion", "Interest", "Remaining Balance"]],
       body,
-      theme: "grid",
+      theme: "plain",
       margin: { left: M, right: M },
-      headStyles: { fillColor: [42, 120, 134], textColor: 255, fontStyle: "bold", fontSize: 8, cellPadding: 2.5 },
-      bodyStyles: { fontSize: 8, cellPadding: 2.5, textColor: [40, 40, 40] },
+      headStyles: { fillColor: false as any, textColor: [0,0,0] as [number,number,number], fontStyle: "bold" as const, fontSize: 8,
+        cellPadding: { top:2, bottom:3, left:2, right:2 }, lineWidth: { bottom: 0.5 } as any, lineColor: [0,0,0] as [number,number,number] },
+      bodyStyles: { fontSize: 8, cellPadding: { top:2, bottom:2, left:2, right:2 }, textColor: [0,0,0] as [number,number,number],
+        lineWidth: { bottom: 0.2 } as any, lineColor: [210,210,210] as [number,number,number] },
+      alternateRowStyles: { fillColor: [248,248,248] },
       columnStyles: {
         0: { cellWidth: 8, halign: "center" },
         1: { cellWidth: 22 },
-        2: { halign: "right", cellWidth: 32 },
+        2: { halign: "right", cellWidth: 34 },
         3: { halign: "right", cellWidth: 28 },
         4: { halign: "right", cellWidth: 28 },
         5: { halign: "right", cellWidth: 28 },
-        6: { halign: "right", cellWidth: 32, fontStyle: "bold" },
+        6: { halign: "right", cellWidth: 34, fontStyle: "bold" },
       },
       didParseCell: (hookData) => {
         if (hookData.row.index === body.length - 1) {
-          hookData.cell.styles.fontStyle = "bold";
-          hookData.cell.styles.fillColor = [255, 249, 196];
+          hookData.cell.styles.fontStyle = "bold"; hookData.cell.styles.fillColor = [235,235,235];
+          (hookData.cell.styles as any).lineWidth = { top: 0.5 }; hookData.cell.styles.lineColor = [0,0,0];
         }
       },
     });
 
-    const footerY = (doc as any).lastAutoTable.finalY + 8;
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(7);
-    doc.setTextColor(150, 150, 150);
-    doc.text(
-      `System-generated amortization schedule · ${ORGANIZATION_NAME} · Generated ${new Date().toLocaleDateString()}`,
-      W / 2, footerY, { align: "center" }
-    );
+    // Footer
+    doc.setFont("helvetica", "italic"); doc.setFontSize(7); doc.setTextColor(150,150,150);
+    doc.setDrawColor(200,200,200); doc.setLineWidth(0.2);
+    doc.line(M, H - 14, W - M, H - 14);
+    doc.text(`System-generated amortization schedule · ${ORGANIZATION_NAME} · Generated: ${statementDate}`, W/2, H - 9, { align: "center" });
 
     doc.save(`${ORGANIZATION_NAME.replace(/\s+/g, "_")}_Amortization_${new Date().toISOString().split("T")[0]}.pdf`);
   };
