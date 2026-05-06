@@ -8,6 +8,7 @@ import {
   deleteCashbookEntry as deleteCashbookEntryFromDb,
   updateGeneralPoolBalance,
   creditSavingsAccountByNumber,
+  addTransaction,
 } from '@/lib/data-service';
 import { revalidatePath } from 'next/cache';
 
@@ -135,15 +136,27 @@ export async function loadInternalAccount(
       ? `${transactionType}-${txnId}-${description}`
       : `${transactionType}-${txnId}`;
 
+    const today = new Date().toISOString().split('T')[0];
+
     // Record as cashbook income entry
     await addCashbookEntryToDb('income', {
-      date: new Date().toISOString().split('T')[0],
+      date: today,
       description: tracedDescription,
       category: transactionType,
       amount,
       paymentMethod,
       reference: accountNumber ?? undefined,
     });
+
+    // Also write a savings transaction so the account statement shows this load
+    if (accountNumber) {
+      await addTransaction({
+        member: { name: transactionType, avatarId: '' },
+        type: 'Deposit',
+        amount,
+        date: today,
+      }, accountNumber, tracedDescription);
+    }
 
     revalidatePath('/accounting');
     revalidatePath('/payments');

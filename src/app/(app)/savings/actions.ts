@@ -12,6 +12,7 @@ const TransactionSchema = z.object({
     memberId: z.string().optional(),
     amount: z.coerce.number().positive('Amount must be a positive number.'),
     account: z.string().optional(),
+    debitAccountNumber: z.string().optional(),
     reason: z.string().optional(),
 });
 
@@ -46,8 +47,9 @@ async function handleTransaction(
             return { message: 'Invalid form data. Please check all required fields.', fields, success: false };
         }
 
-        const { memberId, amount, account, reason } = parsed.data;
+        const { memberId, amount, account, debitAccountNumber, reason } = parsed.data;
         const transactionAmount = type === 'Deposit' ? amount : -amount;
+        const today = new Date().toISOString().split('T')[0];
 
         // ── Internal account path (no member) ────────────────────────────────
         if (!memberId && account) {
@@ -62,7 +64,7 @@ async function handleTransaction(
                 member: { name: 'Internal Account', avatarId: '' },
                 type: 'Deposit',
                 amount,
-                date: new Date().toISOString().split('T')[0],
+                date: today,
             }, account, reason ?? undefined);
             revalidatePath('/savings');
             revalidatePath('/');
@@ -103,8 +105,22 @@ async function handleTransaction(
             member: { name: member.name, avatarId: member.avatarId },
             type: type,
             amount: amount,
-            date: new Date().toISOString().split('T')[0],
+            date: today,
         }, account ?? undefined, reason ?? undefined);
+
+        // 4. If a debit account was specified and exists in the system, debit it and
+        //    record the matching withdrawal on its statement (double-entry).
+        if (type === 'Deposit' && debitAccountNumber?.trim()) {
+            const debited = await creditSavingsAccountByNumber(debitAccountNumber.trim(), -amount);
+            if (debited) {
+                await addTransaction({
+                    member: { name: member.name, avatarId: member.avatarId },
+                    type: 'Withdrawal',
+                    amount,
+                    date: today,
+                }, debitAccountNumber.trim(), `Transfer to ${account ?? member.memberId}${reason ? ` — ${reason}` : ''}`);
+            }
+        }
 
         // Keep General Pool in sync (non-fatal)
         await updateGeneralPoolBalance(transactionAmount);
