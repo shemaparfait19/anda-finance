@@ -27,17 +27,17 @@ const FEATURES = [
   {
     id: '04',
     title: 'Payments & Transfers',
-    desc: 'Process inter-account transfers, load mirror accounts, and maintain a full cashbook of every financial movement.',
+    desc: 'Process payments, manage inter-account movements, and maintain a complete, accurate record of all financial transactions.',
   },
   {
     id: '05',
     title: 'Reports & Statements',
-    desc: 'Export member statements, group summaries, loan portfolios, and arrears lists as PDF, Excel, or CSV — on demand.',
+    desc: 'Generate and export member statements, group summaries, loan portfolios, and arrears reports whenever you need them.',
   },
   {
     id: '06',
     title: 'Audit & Compliance',
-    desc: 'Every action is logged with a timestamp, user attribution, and optional maker/checker approval before it takes effect.',
+    desc: 'All activity within the system is tracked and recorded, with built-in controls that keep operations accurate and accountable.',
   },
 ];
 
@@ -68,23 +68,23 @@ const FAQS = [
   },
   {
     q: 'Is it secure?',
-    a: 'Yes. Every login requires both a password and a 5-digit PIN, giving you two-factor authentication by default. Every user action is recorded in a tamper-evident audit log, and role-based permissions control exactly what each person can see or do.',
+    a: 'Yes. ANDA Finance uses multi-factor authentication and role-based access controls to ensure only authorised users can access sensitive data. All activity is logged and fully traceable by your administrators.',
   },
   {
-    q: 'Can multiple groups use the same platform?',
-    a: 'Yes. ANDA Finance is a multi-tenant system. Each group operates in a fully isolated environment — members, accounts, and transactions are never visible across organisations.',
+    q: 'Can multiple organisations use the same platform?',
+    a: 'Yes. Each organisation on ANDA Finance operates in a fully private, separated environment. Members, accounts, and transactions are never shared or visible between organisations.',
   },
   {
     q: 'What currency and language does it support?',
-    a: 'ANDA Finance is configured for Rwandan Francs (RWF) and English. The platform is designed to be adaptable to other currencies and locales as your needs grow.',
+    a: 'ANDA Finance is configured for Rwandan Francs (RWF) and English. The platform is built to be adaptable to other currencies and locales as your needs grow.',
   },
   {
-    q: 'How are loans managed from application to closure?',
-    a: 'Loans move through a full lifecycle: application → approval (with optional maker/checker review) → disbursement → repayment tracking → automatic closure. Amortization schedules are generated based on the loan amount, term, and interest rate.',
+    q: 'How are loans managed?',
+    a: 'Loans are managed end-to-end — from application and approval through to disbursement, repayment tracking, and closure. Repayment schedules are generated automatically, and all activity is recorded in real time.',
   },
   {
     q: 'How do I get access?',
-    a: 'Contact your group administrator — they manage user accounts and onboarding. Once your account is created, you will receive a setup link to create your password and 5-digit PIN.',
+    a: 'Contact your group administrator — they manage user accounts and onboarding. Once your account is set up, you will receive instructions to create your login credentials.',
   },
 ];
 
