@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { getMemberById, updateMember, updateSavingsAccount, addTransaction, updateGeneralPoolBalance } from '@/lib/data-service';
+import { getMemberById, updateMember, updateSavingsAccount, addTransaction, updateGeneralPoolBalance, creditSavingsAccountByNumber } from '@/lib/data-service';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { requiresApproval } from '@/lib/permissions';
@@ -9,7 +9,7 @@ import { createPendingAction } from '@/lib/pending-actions-service';
 import type { Member, UserRole } from '@/lib/types';
 
 const TransactionSchema = z.object({
-    memberId: z.string().min(1, 'Member is required.'),
+    memberId: z.string().optional(),
     amount: z.coerce.number().positive('Amount must be a positive number.'),
     account: z.string().optional(),
     reason: z.string().optional(),
@@ -48,6 +48,31 @@ async function handleTransaction(
 
         const { memberId, amount, account, reason } = parsed.data;
         const transactionAmount = type === 'Deposit' ? amount : -amount;
+
+        // ── Internal account path (no member) ────────────────────────────────
+        if (!memberId && account) {
+            if (type === 'Withdrawal') {
+                return { message: 'Withdrawals from internal accounts are not supported here.', success: false };
+            }
+            const credited = await creditSavingsAccountByNumber(account, amount);
+            if (!credited) {
+                return { message: `Account "${account}" not found in your group.`, success: false };
+            }
+            await addTransaction({
+                member: { name: 'Internal Account', avatarId: undefined },
+                type: 'Deposit',
+                amount,
+                date: new Date().toISOString().split('T')[0],
+            }, account, reason ?? undefined);
+            revalidatePath('/savings');
+            revalidatePath('/');
+            return { message: `Deposit of RWF ${amount.toLocaleString()} to ${account} successful.`, success: true };
+        }
+
+        // ── Member account path ───────────────────────────────────────────────
+        if (!memberId) {
+            return { message: 'Member is required.', fields: { memberId: 'Member is required.' }, success: false };
+        }
 
         const member = await getMemberById(memberId);
         if (!member) {

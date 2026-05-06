@@ -463,8 +463,9 @@ export async function creditSavingsAccountByNumber(accountNumber: string, delta:
       UPDATE savings_accounts
       SET balance = balance + ${delta}, updated_at = CURRENT_TIMESTAMP
       WHERE group_id = ${groupId} AND account_number = ${accountNumber}
+      RETURNING id
     `;
-    return (result as any).rowCount > 0;
+    return result.length > 0;
   } catch (error) {
     console.error("[pool] Failed to credit savings account by number:", error);
     return false;

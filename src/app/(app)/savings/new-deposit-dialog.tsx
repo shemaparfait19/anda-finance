@@ -241,7 +241,7 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
                                         <p className="text-xs text-destructive px-1">Account not found</p>
                                     ) : isInternalAccount ? (
                                         <p className="text-xs text-amber-600 dark:text-amber-400 font-medium px-1">
-                                            Internal account — use <strong>Load Mirror Account</strong> to credit this account
+                                            Internal account — {matchedAccount?.accountName ?? matchedAccount?.accountNumber}
                                         </p>
                                     ) : (
                                         <p className="text-xs text-green-600 dark:text-green-400 font-medium px-1">
@@ -262,7 +262,7 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
                     </div>
                     <DialogFooter>
                         <DialogClose asChild><Button variant="outline" type="button">Cancel</Button></DialogClose>
-                        <SubmitButton blocked={isInternalAccount} />
+                        <SubmitButton />
                     </DialogFooter>
                 </form>
             ) : (

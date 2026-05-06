@@ -119,6 +119,16 @@ export async function loadInternalAccount(
 
     const { transactionType, accountNumber, amount, paymentMethod, description } = parsed.data;
 
+    // Credit the specified account first — fail early before writing cashbook
+    if (accountNumber) {
+      const credited = await creditSavingsAccountByNumber(accountNumber, amount);
+      if (!credited) {
+        return { message: `Account number "${accountNumber}" not found in your group.`, success: false };
+      }
+    } else {
+      await updateGeneralPoolBalance(amount);
+    }
+
     // Auto-generate short transaction ID, format: TYPE-TxnID-Description
     const txnId = Date.now().toString(36).toUpperCase();
     const tracedDescription = description
@@ -134,16 +144,6 @@ export async function loadInternalAccount(
       paymentMethod,
       reference: accountNumber ?? undefined,
     });
-
-    // Credit the specified account by number; fall back to general pool if none given
-    if (accountNumber) {
-      const credited = await creditSavingsAccountByNumber(accountNumber, amount);
-      if (!credited) {
-        return { message: `Account number "${accountNumber}" not found in your group.`, success: false };
-      }
-    } else {
-      await updateGeneralPoolBalance(amount);
-    }
 
     revalidatePath('/accounting');
     revalidatePath('/payments');

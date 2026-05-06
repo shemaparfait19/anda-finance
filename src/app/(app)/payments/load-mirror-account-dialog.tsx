@@ -129,9 +129,6 @@ export default function LoadMirrorAccountDialog() {
               <Label htmlFor="mirror-desc" className="text-right text-sm">Description</Label>
               <div className="col-span-3">
                 <Input id="mirror-desc" name="description" placeholder="Purpose or reference" />
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  Saved as TYPE-TxnID-Description for tracing
-                </p>
               </div>
             </div>
           </div>
