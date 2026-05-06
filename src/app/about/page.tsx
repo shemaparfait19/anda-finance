@@ -114,13 +114,18 @@ export default function AboutPage() {
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
       <section
-        className="relative px-5 sm:px-8 pt-20 pb-24 md:pt-28 md:pb-32 bg-[#0d1526] bg-cover bg-center"
+        className="relative flex items-center bg-[#0d1526] bg-cover bg-top px-5 sm:px-8 py-24 md:py-32 min-h-[88vh]"
         style={{ backgroundImage: "url('https://www.shutterstock.com/image-photo/happy-employee-woman-smartphone-office-600nw-2614190487.jpg')" }}
       >
-        {/* Dark overlay so text stays fully readable */}
-        <div className="absolute inset-0 bg-[#0d1526]/78" />
+        {/* Layer 1 — overall navy tint that merges image into brand colour */}
+        <div className="absolute inset-0" style={{ background: 'rgba(13,21,38,0.60)' }} />
+        {/* Layer 2 — gradient: solid navy on left (text area) fading to transparent right */}
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(100deg, #0d1526 38%, rgba(13,21,38,0.15) 100%)' }}
+        />
 
-        <div className="relative z-10 max-w-5xl mx-auto">
+        <div className="relative z-10 max-w-5xl mx-auto w-full">
           <p className="text-[10px] font-semibold tracking-[0.22em] uppercase text-white/40 mb-7">
             Core Banking System
           </p>
