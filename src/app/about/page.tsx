@@ -113,28 +113,34 @@ export default function AboutPage() {
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
-      <section className="bg-[#0d1526] px-5 sm:px-8 pt-20 pb-24 md:pt-28 md:pb-32">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-[10px] font-semibold tracking-[0.22em] uppercase text-white/30 mb-7">
+      <section
+        className="relative px-5 sm:px-8 pt-20 pb-24 md:pt-28 md:pb-32 bg-[#0d1526] bg-cover bg-center"
+        style={{ backgroundImage: "url('https://www.shutterstock.com/image-photo/happy-employee-woman-smartphone-office-600nw-2614190487.jpg')" }}
+      >
+        {/* Dark overlay so text stays fully readable */}
+        <div className="absolute inset-0 bg-[#0d1526]/78" />
+
+        <div className="relative z-10 max-w-5xl mx-auto">
+          <p className="text-[10px] font-semibold tracking-[0.22em] uppercase text-white/40 mb-7">
             Core Banking System
           </p>
           <h1 className="text-[2.4rem] md:text-[3.2rem] font-bold text-white leading-[1.08] tracking-tight mb-6 max-w-2xl">
             Built for the financial work that keeps your group running.
           </h1>
-          <p className="text-[16px] md:text-[17px] leading-[1.78] text-white/55 max-w-lg mb-10">
+          <p className="text-[16px] md:text-[17px] leading-[1.78] text-white/60 max-w-lg mb-10">
             ANDA Finance is a full-featured Core Banking System for savings groups, SACCOs, and microfinance institutions.
             Manage members, process transactions, track loans, and generate reports — all in one place.
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 bg-white text-[#0d1526] px-5 py-2.5 rounded text-[13px] font-semibold hover:bg-white/92 transition-colors"
+              className="inline-flex items-center gap-2 bg-white text-[#0d1526] px-5 py-2.5 rounded text-[13px] font-semibold hover:bg-white/90 transition-colors"
             >
               Sign In to your account
             </Link>
             <a
               href="#features"
-              className="text-[13px] text-white/45 hover:text-white/75 transition-colors"
+              className="text-[13px] text-white/50 hover:text-white/80 transition-colors"
             >
               See what&apos;s included ↓
             </a>
