@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import NextTopLoader from "nextjs-toploader";
+import { SplashScreen } from "@/components/splash-screen";
 
 export const metadata: Metadata = {
   title: "ANDA Finance System",
@@ -28,6 +29,7 @@ export default function RootLayout({
         `}} />
       </head>
       <body className="font-sans antialiased">
+        <SplashScreen />
         <NextTopLoader color="#e05c2a" height={2} showSpinner={false} />
         {children}
         <Toaster />

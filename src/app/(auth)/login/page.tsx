@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Logo } from '@/components/icons';
 import LoginForm from '@/components/auth/login-form';
 
@@ -67,6 +68,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
 
           <LoginForm callbackUrl={callbackUrl} initialEmail={initialEmail} />
+
+          <div className="mt-8 text-center">
+            <Link
+              href="/about"
+              className="text-[11.5px] text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors tracking-wide"
+            >
+              What is ANDA Finance? →
+            </Link>
+          </div>
         </div>
 
       </div>

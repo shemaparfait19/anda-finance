@@ -23,6 +23,9 @@ export const authConfig: NextAuthConfig = {
       if (pathname === '/api/setup-credentials') return true;
       if (pathname === '/api/verify-pin') return true;
 
+      // Public marketing page — no auth required
+      if (pathname === '/about') return true;
+
       // Redirect logged-in users away from the login page
       if (isLoggedIn && pathname === '/login') {
         return Response.redirect(new URL('/', nextUrl));
