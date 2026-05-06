@@ -25,6 +25,9 @@ export default function RootLayout({
             if (localStorage.getItem('theme') === 'dark') {
               document.documentElement.classList.add('dark');
             }
+            if (sessionStorage.getItem('af-splash')) {
+              document.documentElement.classList.add('splash-done');
+            }
           } catch(_) {}
         `}} />
       </head>

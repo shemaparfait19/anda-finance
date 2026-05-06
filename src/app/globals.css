@@ -12,9 +12,9 @@
   to   { transform: scaleX(1); }
 }
 
-@keyframes splash-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Suppress splash instantly on return visits — set by inline script before React renders */
+html.splash-done .af-splash-overlay {
+  display: none !important;
 }
 
 @layer base {

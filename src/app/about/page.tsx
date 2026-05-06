@@ -95,19 +95,19 @@ export default function AboutPage() {
     <div className="min-h-screen bg-white">
 
       {/* ── NAV ─────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 bg-[#0d1526]/96 backdrop-blur-sm border-b border-white/5">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-15 flex items-center justify-between" style={{ height: '3.75rem' }}>
-          <Link href="/about" className="flex items-center gap-2.5 group">
-            <Logo className="h-5 w-5 text-white/80 group-hover:text-white transition-colors" />
-            <span className="text-[14px] font-semibold tracking-tight text-white/80 group-hover:text-white transition-colors">
+      <nav className="sticky top-0 z-50 bg-[#0d1526] border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 flex items-center justify-between h-14">
+          <Link href="/about" className="flex items-center gap-2.5">
+            <Logo className="h-5 w-5 text-white" />
+            <span className="text-[14px] font-semibold tracking-tight text-white">
               ANDA Finance
             </span>
           </Link>
           <Link
             href="/login"
-            className="flex items-center gap-1 text-[13px] font-medium text-white/50 hover:text-white transition-colors"
+            className="rounded border border-white/20 px-4 py-1.5 text-[12.5px] font-medium text-white hover:bg-white/8 transition-colors"
           >
-            Sign In <span className="ml-0.5 opacity-60">→</span>
+            Sign In →
           </Link>
         </div>
       </nav>

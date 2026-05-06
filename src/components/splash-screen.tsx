@@ -3,68 +3,60 @@
 import { useEffect, useRef, useState } from 'react';
 import { Logo } from '@/components/icons';
 
-type Phase = 'none' | 'visible' | 'fading';
+type Phase = 'visible' | 'fading' | 'gone';
 
 export function SplashScreen() {
-  const [phase, setPhase] = useState<Phase>('none');
-  const phaseRef = useRef<Phase>('none');
+  // Start visible so the overlay covers the page during SSR/initial paint.
+  // The CSS class html.splash-done hides it instantly on return visits (set by
+  // the inline script in layout.tsx before React renders).
+  const [phase, setPhase] = useState<Phase>('visible');
+  const phaseRef = useRef<Phase>('visible');
   phaseRef.current = phase;
 
   useEffect(() => {
-    try {
-      if (sessionStorage.getItem('af-splash')) return;
-      sessionStorage.setItem('af-splash', '1');
-    } catch {
+    let alreadyShown = false;
+    try { alreadyShown = !!sessionStorage.getItem('af-splash'); } catch { /* */ }
+
+    if (alreadyShown) {
+      setPhase('gone');
       return;
     }
-    setPhase('visible');
-    const t = setTimeout(() => setPhase('fading'), 2100);
+
+    try { sessionStorage.setItem('af-splash', '1'); } catch { /* */ }
+    const t = setTimeout(() => setPhase('fading'), 2000);
     return () => clearTimeout(t);
   }, []);
 
-  if (phase === 'none') return null;
+  if (phase === 'gone') return null;
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#0d1526] pointer-events-none"
+      // af-splash-overlay is targeted by globals.css to hide instantly on return visits
+      className="af-splash-overlay fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#0d1526] pointer-events-none"
       style={{
         opacity: phase === 'fading' ? 0 : 1,
-        transition: 'opacity 550ms ease-in',
+        transition: phase === 'fading' ? 'opacity 500ms ease-in' : 'none',
       }}
       onTransitionEnd={() => {
-        if (phaseRef.current === 'fading') setPhase('none');
+        if (phaseRef.current === 'fading') setPhase('gone');
       }}
     >
-      <div
-        className="flex flex-col items-center gap-7"
-        style={{ animation: 'splash-in 0.5s ease-out both' }}
-      >
-        {/* Logo ring */}
-        <div className="relative">
-          <div className="absolute -inset-5 rounded-full bg-white/4 blur-2xl" />
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
-            <Logo className="h-8 w-8 text-white" />
-          </div>
-        </div>
+      <div className="flex flex-col items-center gap-6">
+        <Logo className="h-10 w-10 text-white" />
 
-        {/* Name */}
-        <div className="text-center space-y-2">
-          <p className="text-[10px] font-medium tracking-[0.22em] uppercase text-white/30">
-            Welcome to
-          </p>
-          <h1 className="text-[2rem] font-bold tracking-tight text-white leading-none">
+        <div className="text-center">
+          <h1 className="text-[1.75rem] font-bold tracking-tight text-white">
             ANDA Finance
           </h1>
-          <p className="text-[11px] tracking-[0.18em] uppercase text-white/35">
+          <p className="mt-1 text-[11px] font-medium tracking-[0.2em] uppercase text-white/40">
             Core Banking System
           </p>
         </div>
 
-        {/* Loading bar */}
-        <div className="mt-1 h-px w-28 overflow-hidden rounded-full bg-white/10">
+        <div className="mt-2 h-px w-24 overflow-hidden bg-white/10">
           <div
-            className="h-full origin-left rounded-full bg-white/40"
-            style={{ animation: 'splash-fill 1.9s ease-out forwards' }}
+            className="h-full origin-left bg-white/35"
+            style={{ animation: 'splash-fill 1.8s ease-out forwards' }}
           />
         </div>
       </div>
