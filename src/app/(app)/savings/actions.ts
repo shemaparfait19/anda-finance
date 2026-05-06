@@ -59,7 +59,7 @@ async function handleTransaction(
                 return { message: `Account "${account}" not found in your group.`, success: false };
             }
             await addTransaction({
-                member: { name: 'Internal Account', avatarId: undefined },
+                member: { name: 'Internal Account', avatarId: '' },
                 type: 'Deposit',
                 amount,
                 date: new Date().toISOString().split('T')[0],
