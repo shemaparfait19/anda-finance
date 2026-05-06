@@ -76,7 +76,8 @@ export default function NewWithdrawalDialog({ members, accounts = [], selectedMe
         });
       }
     }
-   }, [state, toast, setCurrentOpen]);
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [state]);
    
    useEffect(() => {
     if (!currentOpen) {

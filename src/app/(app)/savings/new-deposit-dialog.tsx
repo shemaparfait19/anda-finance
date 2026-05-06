@@ -99,7 +99,8 @@ export default function NewDepositDialog({ members, accounts = [], selectedMembe
         });
       }
     }
-   }, [state, toast, setCurrentOpen]);
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [state]);
    
    useEffect(() => {
     if (!currentOpen) {

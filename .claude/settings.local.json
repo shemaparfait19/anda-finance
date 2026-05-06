@@ -7,7 +7,8 @@
       "Bash(npx tsc *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(node -e \"require.resolve\\('@radix-ui/react-visually-hidden'\\)\")"
     ]
   }
 }
