@@ -23,9 +23,6 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
 
-    // Request push permission and subscribe
-    subscribeToPush();
-
     // Already installed as PWA — don't show banner
     if (isInstalledPWA()) return;
     // User already dismissed the banner
@@ -114,46 +111,6 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-async function subscribeToPush() {
-  try {
-    if (!('PushManager' in window)) return;
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') return;
-
-    const reg = await navigator.serviceWorker.ready;
-    const existing = await reg.pushManager.getSubscription();
-    if (existing) {
-      await sendSubToServer(existing);
-      return;
-    }
-
-    const keyRes = await fetch('/api/push/vapid-public-key');
-    if (!keyRes.ok) return;
-    const { key } = await keyRes.json();
-
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(key),
-    });
-    await sendSubToServer(sub);
-  } catch {}
-}
-
-async function sendSubToServer(sub: PushSubscription) {
-  const json = sub.toJSON();
-  await fetch('/api/push/subscribe', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(json),
-  });
-}
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const raw = atob(base64);
-  return new Uint8Array([...raw].map((c) => c.charCodeAt(0)));
-}
 
 // ── Icons ──────────────────────────────────────────────────────────────────────
 
