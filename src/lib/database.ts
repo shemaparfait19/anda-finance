@@ -442,6 +442,37 @@ async function insertInitialData() {
     // Fix users sequence so new inserts don't conflict with the demo row (id=1)
     await sql`SELECT setval(pg_get_serial_sequence('users','id'), COALESCE((SELECT MAX(id) FROM users), 1))`;
 
+    // Member portal tables
+    await sql`
+      CREATE TABLE IF NOT EXISTS member_pins (
+        member_id  VARCHAR(50) PRIMARY KEY,
+        pin_hash   TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS member_invite_tokens (
+        token      TEXT PRIMARY KEY,
+        member_id  VARCHAR(50) NOT NULL,
+        group_id   TEXT NOT NULL,
+        used       BOOLEAN DEFAULT FALSE,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS member_push_subscriptions (
+        id          SERIAL PRIMARY KEY,
+        member_id   VARCHAR(50) NOT NULL,
+        endpoint    TEXT NOT NULL,
+        p256dh      TEXT NOT NULL,
+        auth        TEXT NOT NULL,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (member_id, endpoint)
+      )
+    `;
+
     // Sync super-admin credentials from env vars
     const adminEmail    = process.env.ADMIN_EMAIL;
     const adminName     = process.env.ADMIN_NAME;

@@ -9,6 +9,7 @@ import { SplashScreen } from "@/components/splash-screen";
 export const metadata: Metadata = {
   title: "ANDA Finance System",
   description: "Core Banking System for saving & lending groups",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

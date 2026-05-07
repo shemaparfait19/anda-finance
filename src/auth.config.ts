@@ -26,6 +26,11 @@ export const authConfig: NextAuthConfig = {
       // Public marketing page — no auth required
       if (pathname === '/about') return true;
 
+      // Member portal — handled by its own auth (af_member cookie)
+      if (pathname.startsWith('/member')) return true;
+      if (pathname.startsWith('/api/member')) return true;
+      if (pathname.startsWith('/api/push')) return true;
+
       // Redirect logged-in users away from the login page
       if (isLoggedIn && pathname === '/login') {
         return Response.redirect(new URL('/', nextUrl));

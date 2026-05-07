@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { getMemberById, updateMember, updateSavingsAccount, addTransaction, updateGeneralPoolBalance, creditSavingsAccountByNumber } from '@/lib/data-service';
+import { sendMemberPushNotification } from '@/lib/push-notifications';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { requiresApproval } from '@/lib/permissions';
@@ -124,6 +125,16 @@ async function handleTransaction(
 
         // Keep General Pool in sync (non-fatal)
         await updateGeneralPoolBalance(transactionAmount);
+
+        // Push notification to member on deposit (non-fatal — fire and forget)
+        if (type === 'Deposit') {
+            sendMemberPushNotification(
+                member.id,
+                'Deposit Credited',
+                `RWF ${amount.toLocaleString()} deposited${account ? ` to ${account}` : ''}`,
+                '/member/savings'
+            ).catch(() => {});
+        }
 
         revalidatePath('/savings');
         revalidatePath('/'); // For dashboard totals

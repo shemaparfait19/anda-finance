@@ -31,6 +31,31 @@ export default function MemberActions({ member }: { member: Member }) {
   const [isReactivateDialogOpen, setReactivateDialogOpen] = useState(false);
   const [isCloseMembershipDialogOpen, setCloseMembershipDialogOpen] = useState(false);
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
+
+  const handleSendPortalInvite = async () => {
+    setIsSendingInvite(true);
+    try {
+      const res = await fetch('/api/member/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId: member.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ variant: 'destructive', title: 'Error', description: data.error || 'Failed to send invite.' });
+      } else if (data.emailSent) {
+        toast({ title: 'Invite Sent', description: `Portal invite emailed to ${member.name}.` });
+      } else {
+        // No email configured — show the link
+        navigator.clipboard?.writeText(data.inviteUrl).catch(() => {});
+        toast({ title: 'Invite Link Created', description: `Link copied to clipboard (no email configured): ${data.inviteUrl}` });
+      }
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Network error.' });
+    }
+    setIsSendingInvite(false);
+  };
 
   const handleDeactivate = async (reason: string) => {
     startDeactivationTransition(async () => {
@@ -129,6 +154,12 @@ export default function MemberActions({ member }: { member: Member }) {
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setEditDialogOpen(true)}>
               Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={handleSendPortalInvite}
+              disabled={isSendingInvite || !member.email}
+            >
+              {isSendingInvite ? 'Sending…' : 'Send Portal Invite'}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

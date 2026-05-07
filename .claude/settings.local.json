@@ -8,7 +8,29 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(node -e \"require.resolve\\('@radix-ui/react-visually-hidden'\\)\")"
+      "Bash(node -e \"require.resolve\\('@radix-ui/react-visually-hidden'\\)\")",
+      "Bash(Get-ChildItem -Path \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\public\" -Recurse)",
+      "Bash(Select-Object FullName)",
+      "Bash(ConvertTo-Json -AsArray)",
+      "PowerShell(if \\(Test-Path \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\.env.local\"\\) { Get-Content \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\.env.local\" | ForEach-Object { \\($_ -split '='\\)[0] } } else { \"No .env.local\" })",
+      "PowerShell(if \\(Test-Path \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\.env\"\\) { Get-Content \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\.env\" | ForEach-Object { \\($_ -split '='\\)[0] } })",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\public\\\\icons\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\api\\\\member\\\\auth\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\api\\\\member\\\\setup-pin\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\api\\\\member\\\\me\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\api\\\\member\\\\logout\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\api\\\\member\\\\invite\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\api\\\\push\\\\subscribe\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\api\\\\push\\\\notify\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\api\\\\push\\\\vapid-public-key\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\member\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\member\\\\login\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\member\\\\setup\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\member\\\\dashboard\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\member\\\\savings\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\member\\\\loans\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\member\\\\loans\\\\apply\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\ZGM\\\\project-2\\\\anda-finance\\\\src\\\\app\\\\member\\\\profile\")"
     ]
   }
 }
