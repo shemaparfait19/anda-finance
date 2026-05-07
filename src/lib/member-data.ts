@@ -166,7 +166,7 @@ export async function getMemberByEmail(email: string, groupId: string): Promise<
            next_of_kin_relationship as "nextOfKinRelationship",
            monthly_contribution as "monthlyContribution",
            share_amount as "shareAmount", number_of_shares as "numberOfShares",
-           date_of_birth as "dateOfBirth"
+           date_of_birth as "dateOfBirth", group_id as "groupId"
     FROM members
     WHERE LOWER(email) = LOWER(${email}) AND group_id = ${groupId}
     LIMIT 1
@@ -179,7 +179,31 @@ export async function getMemberByEmail(email: string, groupId: string): Promise<
     monthlyContribution: rows[0].monthlyContribution ? Number(rows[0].monthlyContribution) : null,
     shareAmount: rows[0].shareAmount ? Number(rows[0].shareAmount) : null,
     numberOfShares: rows[0].numberOfShares ? Number(rows[0].numberOfShares) : null,
-    groupId,
+  } as MemberPortalMember;
+}
+
+// Lookup by email alone — for login when group is not known (returning user, cleared storage)
+export async function getMemberByEmailAny(email: string): Promise<MemberPortalMember | null> {
+  // Join with member_pins to only return members who have set up portal access
+  const rows = await sql`
+    SELECT m.id, m.name, m.first_name as "firstName", m.last_name as "lastName",
+           m.member_id as "memberCode", m.email, m.phone_number as "phoneNumber",
+           m.savings_balance as "savingsBalance", m.loan_balance as "loanBalance",
+           m.status, m.avatar_id as "avatarId", m.join_date as "joinDate",
+           m.group_id as "groupId"
+    FROM members m
+    INNER JOIN member_pins mp ON mp.member_id = m.id
+    WHERE LOWER(m.email) = LOWER(${email})
+    LIMIT 1
+  `;
+  if (!rows[0]) return null;
+  return {
+    ...(rows[0] as any),
+    savingsBalance: Number(rows[0].savingsBalance),
+    loanBalance: Number(rows[0].loanBalance),
+    monthlyContribution: null,
+    shareAmount: null,
+    numberOfShares: null,
   } as MemberPortalMember;
 }
 

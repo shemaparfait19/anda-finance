@@ -1,30 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getMemberByEmail,
+  getMemberByEmailAny,
   verifyMemberPin,
   memberHasPin,
   ensureMemberPortalTables,
-  getGroupName,
 } from '@/lib/member-data';
 import { createMemberToken, setMemberCookieHeader } from '@/lib/member-auth';
 
 export async function POST(req: NextRequest) {
   try {
     const { email, pin, groupId } = await req.json();
-    if (!email || !pin || !groupId) {
-      return NextResponse.json({ error: 'Email, PIN, and group are required.' }, { status: 400 });
+    if (!email || !pin) {
+      return NextResponse.json({ error: 'Email and PIN are required.' }, { status: 400 });
     }
 
     await ensureMemberPortalTables();
 
-    const member = await getMemberByEmail(email, groupId);
+    // Look up member — use groupId if provided, otherwise find by email from any group
+    const member = groupId
+      ? await getMemberByEmail(email, groupId)
+      : await getMemberByEmailAny(email);
+
     if (!member) {
-      return NextResponse.json({ error: 'Member not found.' }, { status: 404 });
+      // If they have no PIN set yet, guide them to the invite
+      const noPin = true;
+      return NextResponse.json(
+        { error: 'No portal access found for this email. Please use your invite link to set up access.', code: 'NO_MEMBER' },
+        { status: 404 }
+      );
     }
 
     const hasPin = await memberHasPin(member.id);
     if (!hasPin) {
-      return NextResponse.json({ error: 'PIN not set. Please use your invite link to set up access.', code: 'NO_PIN' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'PIN not set up yet. Please use your invite link to create your PIN.', code: 'NO_PIN' },
+        { status: 403 }
+      );
     }
 
     const valid = await verifyMemberPin(member.id, pin);
@@ -35,11 +47,16 @@ export async function POST(req: NextRequest) {
     const token = createMemberToken({
       memberId: member.id,
       memberCode: member.memberCode,
-      groupId,
+      groupId: member.groupId,
       name: member.name,
     });
 
-    const res = NextResponse.json({ success: true, name: member.name });
+    const res = NextResponse.json({
+      success: true,
+      name: member.name,
+      groupId: member.groupId,
+      email: member.email,
+    });
     res.headers.set('Set-Cookie', setMemberCookieHeader(token));
     return res;
   } catch (e: any) {

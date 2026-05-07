@@ -6,36 +6,23 @@ import { useRouter } from 'next/navigation';
 export default function MemberLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [groupId, setGroupId] = useState('');
   const [pin, setPin] = useState('');
-  const [step, setStep] = useState<'loading' | 'no-group' | 'email' | 'pin'>('loading');
+  const [step, setStep] = useState<'email' | 'pin'>('email');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Pre-fill email from URL param or localStorage (set after first setup)
     const params = new URLSearchParams(window.location.search);
-    const g = params.get('g') || localStorage.getItem('af_member_group') || '';
     const e = params.get('email') || localStorage.getItem('af_member_email') || '';
-
-    if (g) {
-      setGroupId(g);
-      if (g) localStorage.setItem('af_member_group', g);
-    }
     if (e) {
       setEmail(e);
-      if (e) localStorage.setItem('af_member_email', e);
-    }
-
-    if (!g) {
-      setStep('no-group');
-    } else if (e) {
-      setStep('pin'); // email already known — go straight to PIN
-    } else {
-      setStep('email');
+      setStep('pin'); // skip straight to PIN
     }
   }, []);
 
   function handlePinKey(digit: string) {
+    if (loading) return;
     if (pin.length < 6) {
       const next = pin + digit;
       setPin(next);
@@ -52,22 +39,22 @@ export default function MemberLoginPage() {
     setLoading(true);
     setError('');
     try {
+      const storedGroup = localStorage.getItem('af_member_group') || undefined;
       const res = await fetch('/api/member/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, pin: pinCode, groupId }),
+        body: JSON.stringify({ email, pin: pinCode, groupId: storedGroup }),
       });
       const data = await res.json();
       if (!res.ok) {
-        if (data.code === 'NO_PIN') {
-          setError('You haven\'t set up your PIN yet. Please use the invite link from your email.');
-        } else {
-          setError(data.error || 'Incorrect PIN.');
-        }
+        setError(data.error || 'Login failed.');
         setPin('');
         setLoading(false);
         return;
       }
+      // Refresh stored values in case they came from a new device
+      if (data.groupId) localStorage.setItem('af_member_group', data.groupId);
+      if (data.email) localStorage.setItem('af_member_email', data.email);
       router.replace('/member/dashboard');
     } catch {
       setError('Network error. Please try again.');
@@ -79,17 +66,9 @@ export default function MemberLoginPage() {
   function handleEmailNext(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) { setError('Please enter your email address.'); return; }
-    localStorage.setItem('af_member_email', email);
+    localStorage.setItem('af_member_email', email.trim());
     setError('');
     setStep('pin');
-  }
-
-  if (step === 'loading') {
-    return (
-      <div className="min-h-screen bg-[#0d1526] flex items-center justify-center">
-        <div className="h-6 w-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-      </div>
-    );
   }
 
   return (
@@ -105,27 +84,10 @@ export default function MemberLoginPage() {
           <p className="text-[12px] text-white/40 mt-1 tracking-wide uppercase">Member Portal</p>
         </div>
 
-        {/* No group context — member needs to use invite link */}
-        {step === 'no-group' && (
-          <div className="text-center">
-            <div className="h-14 w-14 rounded-full bg-white/6 flex items-center justify-center mx-auto mb-5">
-              <span className="text-2xl">✉</span>
-            </div>
-            <h2 className="text-[16px] font-semibold text-white mb-2">Check your email</h2>
-            <p className="text-[13px] text-white/50 leading-relaxed mb-6">
-              Your group administrator has sent you an invitation link to access the member portal.
-              Please open that link to get started.
-            </p>
-            <p className="text-[11px] text-white/25">
-              If you already set up your PIN on another device, contact your administrator for a new link.
-            </p>
-          </div>
-        )}
-
-        {/* Email step */}
+        {/* Step 1 — Email */}
         {step === 'email' && (
           <form onSubmit={handleEmailNext} className="space-y-4">
-            <p className="text-[15px] text-white/70 text-center mb-6">Enter your email to sign in</p>
+            <p className="text-[15px] text-white/60 text-center mb-6">Enter your email to continue</p>
             <input
               type="email"
               value={email}
@@ -144,7 +106,7 @@ export default function MemberLoginPage() {
           </form>
         )}
 
-        {/* PIN step */}
+        {/* Step 2 — PIN */}
         {step === 'pin' && (
           <div className="flex flex-col items-center">
             <p className="text-[15px] text-white/70 mb-1.5 text-center">Enter your PIN</p>
@@ -162,7 +124,9 @@ export default function MemberLoginPage() {
               ))}
             </div>
 
-            {error && <p className="text-[13px] text-red-400 mb-5 text-center px-4">{error}</p>}
+            {error && (
+              <p className="text-[13px] text-red-400 mb-5 text-center px-4 leading-relaxed">{error}</p>
+            )}
             {loading && (
               <div className="mb-5 flex items-center gap-2 text-white/40">
                 <div className="h-4 w-4 border-2 border-white/20 border-t-white/50 rounded-full animate-spin" />
