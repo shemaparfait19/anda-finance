@@ -13,6 +13,8 @@ const NAV = [
 
 export function MobileShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   useEffect(() => {
     // Register service worker
@@ -22,10 +24,65 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
 
     // Request push permission and subscribe
     subscribeToPush();
+
+    // Already installed as PWA — don't show banner
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    // User already dismissed the banner
+    if (localStorage.getItem('af_install_dismissed')) return;
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler as any);
+    return () => window.removeEventListener('beforeinstallprompt', handler as any);
   }, []);
+
+  async function handleInstall() {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowInstallBanner(false);
+      setInstallPrompt(null);
+    }
+  }
+
+  function handleDismiss() {
+    setShowInstallBanner(false);
+    localStorage.setItem('af_install_dismissed', '1');
+  }
 
   return (
     <div className="min-h-screen bg-[#f7f8f9] flex flex-col max-w-md mx-auto relative">
+      {/* PWA install banner */}
+      {showInstallBanner && (
+        <div className="fixed bottom-[68px] left-0 right-0 z-40 max-w-md mx-auto px-3">
+          <div className="bg-[#0d1526] rounded-2xl px-4 py-4 flex items-center gap-3 shadow-2xl">
+            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+              <span className="text-lg font-bold text-white">A</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold text-white leading-tight">Install ANDA Finance</p>
+              <p className="text-[11px] text-white/45 mt-0.5">Add to home screen for quick access</p>
+            </div>
+            <button
+              onClick={handleInstall}
+              className="bg-white text-[#0d1526] text-[12px] font-semibold px-3.5 py-2 rounded-lg flex-shrink-0 active:opacity-80 transition-opacity"
+            >
+              Install
+            </button>
+            <button
+              onClick={handleDismiss}
+              className="text-white/30 hover:text-white/60 text-[18px] leading-none flex-shrink-0 pl-1"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Content */}
       <div className="flex-1 pb-20">{children}</div>
 
