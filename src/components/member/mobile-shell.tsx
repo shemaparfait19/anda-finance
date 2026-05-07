@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { setInstallPrompt, clearInstallPrompt, isInstalledPWA } from '@/lib/install-prompt';
 
 const NAV = [
   { href: '/member/dashboard', label: 'Home', icon: HomeIcon },
@@ -26,13 +27,13 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
     subscribeToPush();
 
     // Already installed as PWA — don't show banner
-    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    if (isInstalledPWA()) return;
     // User already dismissed the banner
     if (localStorage.getItem('af_install_dismissed')) return;
 
     const handler = (e: Event) => {
       e.preventDefault();
-      setInstallPrompt(e);
+      setInstallPrompt(e);       // store in module for Profile page
       setShowInstallBanner(true);
     };
     window.addEventListener('beforeinstallprompt', handler as any);
@@ -46,6 +47,7 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
     if (outcome === 'accepted') {
       setShowInstallBanner(false);
       setInstallPrompt(null);
+      clearInstallPrompt();
     }
   }
 
