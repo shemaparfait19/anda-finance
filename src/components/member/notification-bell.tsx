@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { MemberNotification } from '@/lib/member-data';
 
-export function NotificationBell() {
+export function NotificationBell({ sidebarMode }: { sidebarMode?: boolean } = {}) {
   const router = useRouter();
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
@@ -88,22 +88,48 @@ export function NotificationBell() {
 
   return (
     <>
-      {/* Bell button — fixed top-right */}
-      <button
-        onClick={handleOpen}
-        className="fixed top-4 right-4 z-30 h-10 w-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center transition-all active:scale-95"
-        aria-label="Notifications"
-      >
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-          <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a1 1 0 10-2 0v1.083A6 6 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 h-5 min-w-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
-            {unread > 99 ? '99+' : unread}
+      {/* Bell button */}
+      {sidebarMode ? (
+        <button
+          onClick={handleOpen}
+          className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:bg-white/6 hover:text-white/80 transition-colors"
+          aria-label="Notifications"
+        >
+          <span className="relative flex-shrink-0">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+              <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a1 1 0 10-2 0v1.083A6 6 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {unread > 0 && (
+              <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                {unread > 99 ? '99+' : unread}
+              </span>
+            )}
           </span>
-        )}
-      </button>
+          <span className="text-[13px] font-medium">Notifications</span>
+          {unread > 0 && (
+            <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+              {unread > 99 ? '99+' : unread}
+            </span>
+          )}
+        </button>
+      ) : (
+        <button
+          onClick={handleOpen}
+          className="fixed top-4 right-4 z-30 h-10 w-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center transition-all active:scale-95"
+          aria-label="Notifications"
+        >
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a1 1 0 10-2 0v1.083A6 6 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+              stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          {unread > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 h-5 min-w-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+              {unread > 99 ? '99+' : unread}
+            </span>
+          )}
+        </button>
+      )}
 
       {/* Drawer overlay */}
       {open && (
