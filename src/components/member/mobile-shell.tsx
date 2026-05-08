@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { setInstallPrompt, clearInstallPrompt, isInstalledPWA } from '@/lib/install-prompt';
+import { NotificationBell } from './notification-bell';
 
 const NAV = [
   { href: '/member/dashboard', label: 'Home', icon: HomeIcon },
@@ -81,6 +82,9 @@ export function MobileShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       )}
+
+      {/* Notification bell — always visible top-right */}
+      <NotificationBell />
 
       {/* Content */}
       <div className="flex-1 pb-20">{children}</div>

@@ -1,5 +1,5 @@
 import webpush from 'web-push';
-import { getMemberPushSubscriptions, deletePushSubscription } from './member-data';
+import { getMemberPushSubscriptions, deletePushSubscription, addMemberNotification } from './member-data';
 
 let vapidConfigured = false;
 
@@ -20,6 +20,9 @@ export async function sendMemberPushNotification(
   url = '/member/dashboard'
 ): Promise<void> {
   try {
+    // Always store in DB so in-app notification center shows it (even without push)
+    await addMemberNotification(memberId, title, body, url).catch(() => {});
+
     ensureVapid();
     if (!vapidConfigured) return;
 

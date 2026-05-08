@@ -472,6 +472,18 @@ async function insertInitialData() {
         UNIQUE (member_id, endpoint)
       )
     `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS member_notifications (
+        id          SERIAL PRIMARY KEY,
+        member_id   VARCHAR(50) NOT NULL,
+        title       TEXT NOT NULL,
+        body        TEXT NOT NULL DEFAULT '',
+        url         TEXT NOT NULL DEFAULT '/member/dashboard',
+        is_read     BOOLEAN DEFAULT FALSE,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_member_notifs ON member_notifications(member_id, is_read, created_at DESC)`;
 
     // Sync super-admin credentials from env vars
     const adminEmail    = process.env.ADMIN_EMAIL;

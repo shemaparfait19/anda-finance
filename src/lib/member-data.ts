@@ -330,3 +330,62 @@ export async function deletePushSubscription(memberId: string, endpoint: string)
     DELETE FROM member_push_subscriptions WHERE member_id = ${memberId} AND endpoint = ${endpoint}
   `;
 }
+
+// ── In-app notifications ──────────────────────────────────────────────────────
+
+export type MemberNotification = {
+  id: number;
+  memberId: string;
+  title: string;
+  body: string;
+  url: string;
+  isRead: boolean;
+  createdAt: string;
+};
+
+export async function addMemberNotification(
+  memberId: string,
+  title: string,
+  body: string,
+  url = '/member/dashboard'
+): Promise<void> {
+  await sql`
+    INSERT INTO member_notifications (member_id, title, body, url)
+    VALUES (${memberId}, ${title}, ${body}, ${url})
+  `;
+}
+
+export async function getMemberNotifications(memberId: string, limit = 30): Promise<MemberNotification[]> {
+  const rows = await sql`
+    SELECT id, member_id as "memberId", title, body, url,
+           is_read as "isRead", created_at as "createdAt"
+    FROM member_notifications
+    WHERE member_id = ${memberId}
+    ORDER BY created_at DESC
+    LIMIT ${limit}
+  `;
+  return rows as MemberNotification[];
+}
+
+export async function getUnreadNotificationCount(memberId: string): Promise<number> {
+  const rows = await sql`
+    SELECT COUNT(*)::int as count FROM member_notifications
+    WHERE member_id = ${memberId} AND is_read = FALSE
+  `;
+  return rows[0]?.count ?? 0;
+}
+
+export async function markNotificationsRead(memberId: string, ids?: number[]): Promise<void> {
+  if (ids?.length) {
+    await sql`
+      UPDATE member_notifications SET is_read = TRUE
+      WHERE member_id = ${memberId} AND id = ANY(${ids})
+    `;
+  } else {
+    await sql`UPDATE member_notifications SET is_read = TRUE WHERE member_id = ${memberId}`;
+  }
+}
+
+export async function clearMemberNotifications(memberId: string): Promise<void> {
+  await sql`DELETE FROM member_notifications WHERE member_id = ${memberId}`;
+}
