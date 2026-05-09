@@ -1,9 +1,14 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 
-const SECRET = process.env.MEMBER_JWT_SECRET || 'member_portal_secret_change_in_production_32chars';
 const COOKIE = 'af_member';
 const EXPIRES_IN = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+function getSecret(): string {
+  const s = process.env.MEMBER_JWT_SECRET;
+  if (!s) throw new Error('MEMBER_JWT_SECRET environment variable is not set');
+  return s;
+}
 
 export type MemberSession = {
   memberId: string;   // DB UUID
@@ -13,7 +18,7 @@ export type MemberSession = {
 };
 
 function sign(payload: string): string {
-  return createHmac('sha256', SECRET).update(payload).digest('base64url');
+  return createHmac('sha256', getSecret()).update(payload).digest('base64url');
 }
 
 export function createMemberToken(session: MemberSession): string {
@@ -54,7 +59,8 @@ export async function getMemberSession(): Promise<MemberSession | null> {
 
 export function setMemberCookieHeader(token: string): string {
   const maxAge = Math.floor(EXPIRES_IN / 1000);
-  return `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`;
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  return `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
 }
 
 export function clearMemberCookieHeader(): string {

@@ -16,6 +16,9 @@ export async function POST(req: NextRequest) {
     if (principal <= 0 || interestRate <= 0 || loanTerm <= 0) {
       return NextResponse.json({ error: 'Invalid loan parameters.' }, { status: 400 });
     }
+    if (principal > 100_000_000 || interestRate > 100 || loanTerm > 360) {
+      return NextResponse.json({ error: 'Loan parameters out of allowed range.' }, { status: 400 });
+    }
 
     // Get member's group_id for isolation
     const memberRows = await sql`SELECT group_id FROM members WHERE id = ${session.memberId} LIMIT 1`;
@@ -47,6 +50,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, loanId });
   } catch (e: any) {
     console.error('[member/loan-apply]', e);
-    return NextResponse.json({ error: e.message || 'Server error.' }, { status: 500 });
+    return NextResponse.json({ error: 'Server error.' }, { status: 500 });
   }
 }

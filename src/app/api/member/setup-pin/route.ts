@@ -14,6 +14,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'A valid 6-digit PIN and invite token are required.' }, { status: 400 });
     }
 
+    const WEAK_PINS = new Set([
+      '000000','111111','222222','333333','444444','555555','666666','777777','888888','999999',
+      '123456','654321','123123','112233','121212','101010','000001','111000',
+    ]);
+    if (WEAK_PINS.has(pin)) {
+      return NextResponse.json({ error: 'This PIN is too easy to guess. Please choose a less obvious combination.' }, { status: 400 });
+    }
+
     await ensureMemberPortalTables();
 
     const invite = await consumeInviteToken(token);

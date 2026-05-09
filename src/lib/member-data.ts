@@ -73,12 +73,17 @@ const sql = neon(process.env.DATABASE_URL!);
 export async function ensureMemberPortalTables() {
   await sql`
     CREATE TABLE IF NOT EXISTS member_pins (
-      member_id  VARCHAR(50) PRIMARY KEY,
-      pin_hash   TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      member_id       VARCHAR(50) PRIMARY KEY,
+      pin_hash        TEXT NOT NULL,
+      failed_attempts INTEGER DEFAULT 0,
+      locked_until    TIMESTAMP NULL,
+      created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `;
+  // Idempotent migration: add lockout columns to existing installs
+  await sql`ALTER TABLE member_pins ADD COLUMN IF NOT EXISTS failed_attempts INTEGER DEFAULT 0`;
+  await sql`ALTER TABLE member_pins ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP NULL`;
   await sql`
     CREATE TABLE IF NOT EXISTS member_invite_tokens (
       token      TEXT PRIMARY KEY,
@@ -152,6 +157,42 @@ export async function memberHasPin(memberId: string): Promise<boolean> {
   return rows.length > 0;
 }
 
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MINUTES = 15;
+
+export async function checkPinLockout(memberId: string): Promise<{ locked: boolean; minutesLeft?: number }> {
+  const rows = await sql`SELECT locked_until FROM member_pins WHERE member_id = ${memberId}`;
+  if (!rows[0]?.locked_until) return { locked: false };
+  const lockedUntil = new Date(rows[0].locked_until);
+  if (lockedUntil > new Date()) {
+    const minutesLeft = Math.ceil((lockedUntil.getTime() - Date.now()) / 60_000);
+    return { locked: true, minutesLeft };
+  }
+  return { locked: false };
+}
+
+export async function recordFailedPinAttempt(memberId: string): Promise<void> {
+  await sql`
+    UPDATE member_pins
+    SET
+      failed_attempts = failed_attempts + 1,
+      locked_until = CASE
+        WHEN failed_attempts + 1 >= ${MAX_ATTEMPTS}
+        THEN NOW() + (${LOCKOUT_MINUTES} || ' minutes')::INTERVAL
+        ELSE locked_until
+      END,
+      updated_at = NOW()
+    WHERE member_id = ${memberId}
+  `;
+}
+
+export async function resetPinAttempts(memberId: string): Promise<void> {
+  await sql`
+    UPDATE member_pins SET failed_attempts = 0, locked_until = NULL, updated_at = NOW()
+    WHERE member_id = ${memberId}
+  `;
+}
+
 // ── Member lookup ─────────────────────────────────────────────────────────────
 
 export async function getMemberByEmail(email: string, groupId: string): Promise<MemberPortalMember | null> {
@@ -194,8 +235,10 @@ export async function getMemberByEmailAny(email: string): Promise<MemberPortalMe
     FROM members m
     INNER JOIN member_pins mp ON mp.member_id = m.id
     WHERE LOWER(m.email) = LOWER(${email})
-    LIMIT 1
+    LIMIT 2
   `;
+  // If the same email exists in multiple groups we can't safely choose one — require groupId
+  if (rows.length > 1) return null;
   if (!rows[0]) return null;
   return {
     ...(rows[0] as any),

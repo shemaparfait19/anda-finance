@@ -5,6 +5,9 @@ import {
   verifyMemberPin,
   memberHasPin,
   ensureMemberPortalTables,
+  checkPinLockout,
+  recordFailedPinAttempt,
+  resetPinAttempts,
 } from '@/lib/member-data';
 import { createMemberToken, setMemberCookieHeader } from '@/lib/member-auth';
 
@@ -13,6 +16,9 @@ export async function POST(req: NextRequest) {
     const { email, pin, groupId } = await req.json();
     if (!email || !pin) {
       return NextResponse.json({ error: 'Email and PIN are required.' }, { status: 400 });
+    }
+    if (pin.length !== 6 || !/^\d+$/.test(pin)) {
+      return NextResponse.json({ error: 'PIN must be 6 digits.' }, { status: 400 });
     }
 
     await ensureMemberPortalTables();
@@ -23,8 +29,6 @@ export async function POST(req: NextRequest) {
       : await getMemberByEmailAny(email);
 
     if (!member) {
-      // If they have no PIN set yet, guide them to the invite
-      const noPin = true;
       return NextResponse.json(
         { error: 'No portal access found for this email. Please use your invite link to set up access.', code: 'NO_MEMBER' },
         { status: 404 }
@@ -39,10 +43,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const lockout = await checkPinLockout(member.id);
+    if (lockout.locked) {
+      return NextResponse.json(
+        { error: `Too many failed attempts. Try again in ${lockout.minutesLeft} minute${lockout.minutesLeft === 1 ? '' : 's'}.` },
+        { status: 429 }
+      );
+    }
+
     const valid = await verifyMemberPin(member.id, pin);
     if (!valid) {
+      await recordFailedPinAttempt(member.id);
       return NextResponse.json({ error: 'Incorrect PIN.' }, { status: 401 });
     }
+    await resetPinAttempts(member.id);
 
     const token = createMemberToken({
       memberId: member.id,
