@@ -5,7 +5,10 @@ import { neon } from '@neondatabase/serverless';
 import nodemailer from 'nodemailer';
 
 const sql = neon(process.env.DATABASE_URL!);
-const APP_URL = (process.env.NEXTAUTH_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+const APP_URL = (
+  process.env.NEXTAUTH_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+).replace(/\/$/, '');
 
 export async function POST(req: NextRequest) {
   try {
