@@ -213,33 +213,37 @@ export async function updateMember(
 
     const updateSets: string[] = [];
 
-    if (updates.name !== undefined) {
-      updateSets.push(`name = '${updates.name.replace(/'/g, "''")}'`);
-    }
-    if (updates.firstName !== undefined) {
-      updateSets.push(`first_name = '${updates.firstName.replace(/'/g, "''")}'`);
-    }
-    if (updates.lastName !== undefined) {
-      updateSets.push(`last_name = '${updates.lastName.replace(/'/g, "''")}'`);
-    }
-    if (updates.phoneNumber !== undefined) {
-      updateSets.push(`phone_number = '${updates.phoneNumber.replace(/'/g, "''")}'`);
-    }
-    if (updates.status !== undefined) {
-      updateSets.push(`status = '${updates.status.replace(/'/g, "''")}'`);
-    }
-    if (updates.deactivationReason !== undefined) {
-      updateSets.push(`deactivation_reason = '${updates.deactivationReason.replace(/'/g, "''")}'`);
-    }
-    if (updates.savingsBalance !== undefined) {
-      updateSets.push(`savings_balance = ${updates.savingsBalance}`);
-    }
-    if (updates.loanBalance !== undefined) {
-      updateSets.push(`loan_balance = ${updates.loanBalance}`);
-    }
-    if (updates.avatarId !== undefined) {
-      updateSets.push(`avatar_id = '${updates.avatarId.replace(/'/g, "''")}'`);
-    }
+    const esc = (s: string) => s.replace(/'/g, "''");
+
+    if (updates.name !== undefined) updateSets.push(`name = '${esc(updates.name)}'`);
+    if (updates.firstName !== undefined) updateSets.push(`first_name = '${esc(updates.firstName)}'`);
+    if (updates.lastName !== undefined) updateSets.push(`last_name = '${esc(updates.lastName)}'`);
+    if ((updates as any).middleName !== undefined) updateSets.push(`middle_name = '${esc((updates as any).middleName ?? '')}'`);
+    if (updates.phoneNumber !== undefined) updateSets.push(`phone_number = '${esc(updates.phoneNumber)}'`);
+    if (updates.status !== undefined) updateSets.push(`status = '${esc(updates.status)}'`);
+    if (updates.deactivationReason !== undefined) updateSets.push(`deactivation_reason = '${esc(updates.deactivationReason)}'`);
+    if (updates.savingsBalance !== undefined) updateSets.push(`savings_balance = ${updates.savingsBalance}`);
+    if (updates.loanBalance !== undefined) updateSets.push(`loan_balance = ${updates.loanBalance}`);
+    if (updates.avatarId !== undefined) updateSets.push(`avatar_id = '${esc(updates.avatarId)}'`);
+    // Profile fields (email can be empty string → NULL)
+    if (updates.email !== undefined) updateSets.push(updates.email ? `email = '${esc(updates.email)}'` : `email = NULL`);
+    if (updates.gender !== undefined) updateSets.push(updates.gender ? `gender = '${esc(updates.gender)}'` : `gender = NULL`);
+    if (updates.nationalId !== undefined) updateSets.push(updates.nationalId ? `national_id = '${esc(updates.nationalId)}'` : `national_id = NULL`);
+    if ((updates as any).dateOfBirth !== undefined) updateSets.push((updates as any).dateOfBirth ? `date_of_birth = '${esc((updates as any).dateOfBirth)}'` : `date_of_birth = NULL`);
+    // Location
+    if (updates.province !== undefined) updateSets.push(updates.province ? `province = '${esc(updates.province)}'` : `province = NULL`);
+    if (updates.district !== undefined) updateSets.push(updates.district ? `district = '${esc(updates.district)}'` : `district = NULL`);
+    if (updates.sector !== undefined) updateSets.push(updates.sector ? `sector = '${esc(updates.sector)}'` : `sector = NULL`);
+    if (updates.cell !== undefined) updateSets.push(updates.cell ? `cell = '${esc(updates.cell)}'` : `cell = NULL`);
+    if (updates.village !== undefined) updateSets.push(updates.village ? `village = '${esc(updates.village)}'` : `village = NULL`);
+    if (updates.address !== undefined) updateSets.push(updates.address ? `address = '${esc(updates.address)}'` : `address = NULL`);
+    // Next of kin
+    if (updates.nextOfKinName !== undefined) updateSets.push(`next_of_kin_name = '${esc(updates.nextOfKinName)}'`);
+    if (updates.nextOfKinPhone !== undefined) updateSets.push(`next_of_kin_phone = '${esc(updates.nextOfKinPhone)}'`);
+    if (updates.nextOfKinRelationship !== undefined) updateSets.push(`next_of_kin_relationship = '${esc(updates.nextOfKinRelationship)}'`);
+    // Shares / contribution
+    if (updates.monthlyContribution !== undefined) updateSets.push(`monthly_contribution = ${updates.monthlyContribution}`);
+    if (updates.numberOfShares !== undefined) updateSets.push(`number_of_shares = ${updates.numberOfShares}`);
 
     updateSets.push(`updated_at = CURRENT_TIMESTAMP`);
 

@@ -67,6 +67,20 @@ async function handleTransaction(
                 amount,
                 date: today,
             }, account, reason ?? undefined);
+
+            // Debit the source account if provided (double-entry for internal transfers)
+            if (debitAccountNumber?.trim()) {
+                const debited = await creditSavingsAccountByNumber(debitAccountNumber.trim(), -amount);
+                if (debited) {
+                    await addTransaction({
+                        member: { name: 'Internal Account', avatarId: '' },
+                        type: 'Withdrawal',
+                        amount,
+                        date: today,
+                    }, debitAccountNumber.trim(), `Transfer to ${account}${reason ? ` — ${reason}` : ''}`);
+                }
+            }
+
             revalidatePath('/savings');
             revalidatePath('/');
             return { message: `Deposit of RWF ${amount.toLocaleString()} to ${account} successful.`, success: true };
